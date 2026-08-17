@@ -2244,8 +2244,8 @@ const APP_BUILD_ID = "20260815a";
    client (mọi quyền thật đã bị khóa ở RLS, chỉ mở qua RPC — xem file
    supabase_schema.sql). ANSWER_SHEET_ENDPOINT ở trên vẫn giữ nguyên,
    CHỈ dùng cho action "student_answer" (sheet Answers không chuyển). */
-const SUPABASE_URL = "https://sdrjjkkmxxiqlpysjoyw.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_MtVPCTWyUgIdEVZNrg5pFg_9jsiguOh";
+const SUPABASE_URL = "https://lloyrptuayudrcqodcbk.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_wtg526_eE17ZGL5pwaEFoQ_3nyNabGE";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* Map "action" cũ (Apps Script) -> tên RPC function trong Supabase +
@@ -8009,6 +8009,38 @@ function renderGiftFeed() {
   renderClassFeedInto("gift-feed-list", "classGiftFeeds", "Chưa có lượt tặng đạo cụ nào trong lớp.");
 }
 
+/* FIX: gắn logic thật cho 2 nút "Reset Bảng Tin" (#reset-activity-feed-btn
+   ở view Bảng Tin và #cms-reset-feed-btn trong CMS) — trước đây có nút
+   trên giao diện nhưng không có addEventListener nào cả nên bấm không có
+   tác dụng gì. Xoá sạch cả 3 kho tin của LỚP ĐANG CHỌN (classFeeds,
+   classStealFeeds, classGiftFeeds) — đây đều là SHARED_FIELDS nên
+   saveState() sẽ tự đẩy thay đổi lên server qua save_shared_config và mọi
+   học viên trong lớp sẽ hết thấy tin cũ ở lượt poll tiếp theo. Chỉ giáo
+   viên mới được reset, và luôn hỏi xác nhận vì đây là thao tác không thể
+   hoàn tác. */
+function resetClassActivityFeed() {
+  if (state.role !== "teacher") {
+    alert("Chỉ giáo viên mới có quyền reset Bảng Tin!");
+    return;
+  }
+  const cName = state.currentClassName;
+  if (!cName) {
+    alert("Chưa chọn lớp nào để reset Bảng Tin!");
+    return;
+  }
+  if (!confirm(`Xoá TOÀN BỘ Bảng Tin Lớp Học & Nhật Ký Gấu Trúc (kể cả Cướp Trúc, Tặng Đạo Cụ) của lớp "${cName}"?\n\nHành động này KHÔNG THỂ hoàn tác.`)) {
+    return;
+  }
+  if (state.classFeeds) state.classFeeds[cName] = [];
+  if (state.classStealFeeds) state.classStealFeeds[cName] = [];
+  if (state.classGiftFeeds) state.classGiftFeeds[cName] = [];
+  saveState();
+  renderActivityFeed();
+  renderStealFeed();
+  renderGiftFeed();
+  alert(`Đã reset Bảng Tin & Nhật Ký Gấu Trúc cho lớp "${cName}"!`);
+}
+
 /* =========================================================
    1. FLASHCARD VIEW ENGINE
    ========================================================= */
@@ -12298,6 +12330,27 @@ window.addEventListener("DOMContentLoaded", () => {
     const m = document.getElementById("shop-modal");
     if (m) m.style.display = "none";
   });
+
+  /* FIX một phần: nút Hủy của #dictation-pass-modal ít nhất đóng được
+     modal (an toàn, không cần biết logic xác thực dự định là gì). Nút
+     "Xác nhận" (#submit-dictation-pass-btn) KHÔNG được gắn ở đây vì
+     chưa rõ nó phải xác thực với gì — xem ghi chú cuối phản hồi. */
+  document.getElementById("cancel-dictation-pass-btn")?.addEventListener("click", () => {
+    const m = document.getElementById("dictation-pass-modal");
+    if (m) m.style.display = "none";
+  });
+
+  /* FIX: nút "Tuyệt vời 🚀" trong modal ăn mừng lên Level trước đây
+     không có addEventListener nào — chỉ đóng được bằng cách bấm ra
+     ngoài nền overlay. */
+  document.getElementById("close-levelup-modal-btn")?.addEventListener("click", () => {
+    const m = document.getElementById("levelup-modal");
+    if (m) m.style.display = "none";
+  });
+
+  /* FIX: 2 nút Reset Bảng Tin (xem resetClassActivityFeed() ở trên) */
+  document.getElementById("reset-activity-feed-btn")?.addEventListener("click", resetClassActivityFeed);
+  document.getElementById("cms-reset-feed-btn")?.addEventListener("click", resetClassActivityFeed);
 
   document.getElementById("open-gift-btn")?.addEventListener("click", () => {
     openGiftModal();
