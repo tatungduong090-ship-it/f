@@ -3510,10 +3510,49 @@ function captureServerBaseline_() {
   _serverBaselineBadges = Array.isArray(g.unlockedBadges) ? g.unlockedBadges.slice() : [];
 }
 
-/* Thực hiện đúng 1 lượt gửi save_progress lên server (dùng chung cho cả
-   nhánh debounce bình thường LẪN nhánh "gửi ngay không chờ" bên dưới).
-   Tách riêng ra để 2 nhánh không lặp lại logic hoà giải baseline. */
+/* FIX (Trúc "được thưởng nhưng không vào túi thật"): hàm này trước đây có
+   2 LỖI khiến Trúc kiếm được từ Kiểm Tra / Kiểm Tra Pinyin / Bài Kiểm Tra
+   Lớp / Thử Thách Thời Gian có thể biến mất sau khi đồng bộ lại:
+
+   LỖI 1 — GHI ĐÈ CHỒNG (double-fire): doPushProgressNow_() KHÔNG kiểm tra
+   xem đã có 1 lượt save_progress khác đang bay hay chưa trước khi gửi.
+   Nếu học viên hoàn thành 2 hoạt động cộng Trúc liên tiếp thật nhanh (vd:
+   làm xong Kiểm Tra rồi bấm ngay sang Kiểm Tra Pinyin trước khi lượt lưu
+   đầu tiên kịp có phản hồi), CẢ 2 request đều dùng chung 1 giá trị
+   _serverBaselinePouch CŨ (vì baseline chỉ được chốt lại SAU KHI request
+   có phản hồi) -> server cộng nhầm delta của request 2 dựa trên baseline
+   sai, gây lệch số Trúc (thường bị CỘNG THỪA, nhưng cũng có thể khiến 1
+   trong 2 giao dịch bị tính sai/mất tuỳ thứ tự request tới server).
+
+   LỖI 2 — MẤT HẲN KHI LƯU THẤT BẠI: callServer() chỉ tự thử lại ĐÚNG 1 lần
+   (xem callServer() phía trên). Nếu cả 2 lần đều thất bại (mất mạng/server
+   bận thoáng qua), nhánh .then() ở dưới không chạy -> _serverBaselinePouch
+   KHÔNG được chốt lại theo bản mới, nhưng quan trọng hơn: KHÔNG có gì gửi
+   lại request này nữa. Trúc vừa cộng vẫn hiển thị đúng trên UI (vì đã cộng
+   vào state cục bộ ngay khi grantBamboo() chạy) nhưng KHÔNG hề tồn tại
+   trên server. Lần đồng bộ/poll/tải lại trang kế tiếp (get_progress) sẽ
+   kéo bản CŨ (chưa có Trúc) từ server về ghi đè state cục bộ -> Trúc "biến
+   mất" đúng như báo cáo, dù học viên chắc chắn đã thấy thông báo +Trúc.
+
+   Sửa bằng cách thêm cơ chế "hàng đợi 1 lượt" (single-flight + retry):
+   nếu đang có 1 request bay mà lại có yêu cầu lưu mới, hoặc nếu request
+   vừa gửi bị lỗi, chỉ đánh dấu cờ _pushAgainAfterCurrent_ thay vì bắn thêm
+   request chồng lên — rồi tự động gửi lại ĐÚNG 1 lượt nữa (với progress +
+   baseline mới nhất tại thời điểm đó) NGAY SAU KHI lượt hiện tại kết thúc,
+   lặp lại cho tới khi thành công. Nhờ vậy không bao giờ có 2 request bay
+   cùng lúc (hết Lỗi 1), và một lượt lưu thất bại luôn được tự động thử lại
+   ở lượt kế tiếp thay vì bị bỏ quên vĩnh viễn (hết Lỗi 2). */
+let _pushAgainAfterCurrent_ = false;
+
 function doPushProgressNow_() {
+  if (_progressSyncTimer) {
+    /* Đã có 1 lượt save_progress khác đang bay -> KHÔNG bắn request chồng
+       (đây chính là Lỗi 1 ở trên). Chỉ cần đánh dấu để gửi lại ngay khi
+       lượt hiện tại xong, request kế tiếp đó sẽ tự chụp progress + baseline
+       mới nhất nên không mất dữ liệu. */
+    _pushAgainAfterCurrent_ = true;
+    return Promise.resolve();
+  }
   _progressSyncTimer = true;
   return callServer("save_progress", {
     username: state.username,
@@ -3546,11 +3585,25 @@ function doPushProgressNow_() {
         Object.assign(state.gamification.counters, res.counters);
       }
       captureServerBaseline_();
+    } else {
+      /* FIX (Lỗi 2 ở trên): lưu thất bại kể cả sau khi callServer() đã tự
+         retry 1 lần — KHÔNG được bỏ cuộc ở đây, nếu không Trúc/XP vừa cộng
+         cục bộ sẽ bị mất ngay khi có 1 lượt poll/tải lại trang kéo bản cũ
+         từ server về. Đánh dấu để tự động gửi lại 1 lượt nữa. */
+      _pushAgainAfterCurrent_ = true;
+      console.warn("save_progress thất bại sau khi đã retry — sẽ tự động thử lưu lại.", res);
     }
   }).finally(() => {
     /* Chỉ mở khoá poll SAU KHI request đã có kết quả (thành công hay
        thất bại đều mở, để không khoá poll vĩnh viễn nếu mất mạng). */
     _progressSyncTimer = null;
+    if (_pushAgainAfterCurrent_) {
+      _pushAgainAfterCurrent_ = false;
+      /* Chờ 1 nhịp ngắn trước khi tự gửi lại — vừa đủ để không bắn liên
+         tục quá dồn dập nếu đang mất mạng thật sự (offline hoàn toàn),
+         vừa đủ nhanh để Trúc/XP không bị "treo" lâu chưa lên server. */
+      setTimeout(() => { doPushProgressNow_(); }, 1200);
+    }
   });
 }
 
