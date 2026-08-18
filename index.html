@@ -8201,7 +8201,20 @@ function feedPanda(amount) {
     addOrMergeFeedLog(toFeed, toFeed * 10);
   }
 
-  saveState();
+  /* FIX (Lv/Trúc lên trên máy mình nhưng thiết bị khác không thấy):
+     feedPanda() là nơi Trúc thực sự được "tiêu" để đổi thành XP/Level —
+     trước đây gọi saveState() (bản debounce, chờ 1.5s mới thực sự gửi lên
+     server). Nếu học sinh bấm cho ăn xong rồi thoát app/chuyển tab ngay
+     trong khoảng 1.5s đó (rất hay gặp trên điện thoại — hệ điều hành đình
+     chỉ tiến trình JS gần như ngay lập tức khi chuyển app nền), request
+     save_progress coi như CHƯA TỪNG được gửi: Level/Trúc mới CHỈ tồn tại
+     trên state cục bộ + localStorage của đúng máy đó, không hề lên server.
+     Các thiết bị khác (kể cả chính học sinh đó mở lại trên máy khác) đọc
+     dữ liệu qua get_class_members/get_progress từ server nên vẫn thấy
+     đúng Level/Trúc CŨ mãi mãi cho tới khi có 1 lượt lưu thành công khác.
+     Giống các FIX trước đó (Kiểm Tra, Luân Hồi, Độ Kiếp...), đổi sang
+     saveStateImmediate() để gửi lên server NGAY, không chờ debounce. */
+  saveStateImmediate();
   updateGamificationUI();
   playSound("correct");
 }
