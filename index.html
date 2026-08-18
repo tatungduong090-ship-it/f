@@ -3296,7 +3296,7 @@ function sanitizeState(s) {
 
   g.peers.forEach(p => {
     if (!Array.isArray(p.decorations)) p.decorations = [];
-    p.charm = calcPandaCharm(p.decorations);
+    p.charm = calcPandaCharm(p.decorations) + (p.badgeCharmBonus || 0);
   });
 
   return s;
@@ -3842,6 +3842,7 @@ function syncPeersFromRoster() {
     p.outfit = lMeta.outfit || lMeta.title;
     p.badges = s.unlockedBadges || [];
     p.decorations = s.decorations || [];
+    p.badgeCharmBonus = s.badgeCharmBonus || 0;
     p.charm = charm;
     p.charmLocked = lDetails.charmLocked;
     p.charmNeeded = lDetails.charmNeeded;
@@ -7693,7 +7694,7 @@ async function giftDecorationToPeer(itemId, itemIndex, targetUsername) {
   } else {
     peer.decorations.push(itemId);
   }
-  peer.charm = calcPandaCharm(peer.decorations);
+  peer.charm = calcPandaCharm(peer.decorations) + (peer.badgeCharmBonus || 0);
 
   /* FIX: giao dịch tặng đồ vừa chạy XONG trực tiếp trên server (atomic qua
      RPC transfer_decoration) — g.decorations ở trên giờ đã khớp CHÍNH XÁC
@@ -7722,7 +7723,15 @@ async function giftDecorationToPeer(itemId, itemIndex, targetUsername) {
   renderShopModal();
   renderGardenDecorations();
   renderLeaderboardContent();
-  refreshServerRoster().then(() => renderGiftModal(peer.username));
+  /* FIX: gọi lại renderLeaderboardContent() sau khi refreshServerRoster()
+     xong — trước đây chỉ renderGiftModal() ở bước này, nên nếu roster
+     server trả về có gì khác bản cập nhật lạc quan ở trên (vd: học viên
+     khác vừa Tặng/Cướp cùng lúc), Bảng Xếp Hạng Mị Lực vẫn hiện SỐ CŨ cho
+     tới lần chuyển tab kế tiếp. */
+  refreshServerRoster().then(() => {
+    renderGiftModal(peer.username);
+    renderLeaderboardContent();
+  });
   playSound("correct");
 
   showToast(`🎁 TẶNG QUÀ THÀNH CÔNG!\n- Đạo cụ ${item.icon} ${item.name} đã chuyển sang Vườn của ${peer.name} (+${item.charm} Mị Lực 💖).\n- Bạn đã chuyển giao vật phẩm này (-${item.charm} Mị Lực 💖).`, "success");
@@ -10246,7 +10255,12 @@ function renderLeaderboardContent() {
   if (!area) return;
 
   if (mode === "level") {
-    const peers = (state.gamification?.peers || []).slice();
+    /* FIX: .slice() chỉ nhân bản mảng ngoài — các object peer bên trong vẫn
+       là CÙNG tham chiếu với state.gamification.peers. Trước đây các dòng
+       gán p.totalXp/p.level/... bên dưới vô tình SỬA THẲNG lên g.peers gốc,
+       có thể làm sai lệch dữ liệu khi màn Mị Lực đọc lại g.peers ngay sau
+       đó. Nhân bản nông từng object để cô lập hoàn toàn. */
+    const peers = (state.gamification?.peers || []).map(p => ({ ...p }));
     const myCharmLb = getTotalCharm(state.gamification);
     const lDetails = calcLevelDetails(state.gamification?.totalXp || 0, myCharmLb, state.gamification?.reincarnationCount || 0, state.gamification?.tribulationCount || 0);
     const currentLMeta = getLevelMetadata(lDetails.level);
@@ -10346,7 +10360,17 @@ function renderLeaderboardContent() {
       btn.addEventListener("click", () => stealBambooFromPeer(btn.dataset.peerUsername));
     });
   } else if (mode === "charm") {
-    const peers = (state.gamification?.peers || []).slice();
+    /* FIX (BXH Mị Lực không cập nhật đúng sau khi Tặng Đạo Cụ): .slice()
+       chỉ nhân bản mảng ngoài, các object peer bên trong vẫn trỏ thẳng vào
+       state.gamification.peers. Dòng tính lại p.charm bên dưới trước đây
+       SỬA THẲNG lên object gốc và bỏ sót Mị Lực thưởng từ Huy Hiệu
+       (badgeCharmBonus) — mỗi lần render lại (vd: ngay sau khi tặng đạo cụ,
+       hàm này được gọi lại) sẽ ghi đè charm của MỌI bạn học khác thành chỉ
+       tính từ đạo cụ, làm mất phần thưởng huy hiệu đã có, khiến thứ hạng
+       hiển thị sai/không khớp cho tới khi đồng bộ lại roster từ server.
+       Nhân bản nông từng object + cộng lại badgeCharmBonus để tính đúng
+       ngay từ lần render đầu tiên. */
+    const peers = (state.gamification?.peers || []).map(p => ({ ...p }));
     if (state.studentName) {
       const myCharm = getTotalCharm(state.gamification);
       const me = peers.find(p => p.name === state.studentName);
@@ -10373,7 +10397,7 @@ function renderLeaderboardContent() {
     }
 
     peers.forEach(p => {
-      if (!p.isSelf) p.charm = calcPandaCharm(p.decorations || []);
+      if (!p.isSelf) p.charm = calcPandaCharm(p.decorations || []) + (p.badgeCharmBonus || 0);
     });
 
     peers.sort((a, b) => (b.charm || 0) - (a.charm || 0));
