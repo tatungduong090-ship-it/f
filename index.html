@@ -3450,7 +3450,8 @@ function describeServerError(res) {
   }
 }
 
-let _progressSyncTimer = null;
+let _progressSyncTimer = null;      // cờ boolean: đang có lượt lưu dang dở (từ lúc lên lịch tới khi có phản hồi)
+let _progressSyncTimeoutId_ = null; // id thực của setTimeout, chỉ dùng để clearTimeout
 
 /* FIX QUAN TRỌNG: bản vá save_progress trước đây (thêm p_baseline_pouch để
    server tự CỘNG DỒN delta thay vì GHI ĐÈ toàn bộ, tránh mất Trúc khi giáo
@@ -3496,20 +3497,24 @@ function captureServerBaseline_() {
 
 function pushProgressToServer() {
   if (!state.username) return;
-  clearTimeout(_progressSyncTimer);
-  _progressSyncTimer = setTimeout(() => {
-    /* FIX: trước đây KHÔNG reset _progressSyncTimer về null tại đây — sau
-       lần debounce ĐẦU TIÊN từng chạy, biến này giữ nguyên 1 timer ID CŨ
-       (đã fired) mãi mãi, khiến nó luôn "truthy". Guard trong
-       pollOwnProgressFromServer() (`if (!state.username || _progressSyncTimer) return;`)
-       vì vậy bị khóa vĩnh viễn ngay sau request save_progress đầu tiên,
-       nghĩa là app KHÔNG BAO GIỜ poll lại Trúc/XP/huy hiệu mới nhất của
-       chính học viên từ server nữa trong suốt phiên làm việc (vd: giáo
-       viên cộng Trúc tay từ thiết bị khác sẽ không hiện ra cho tới khi
-       học viên tải lại trang). Giờ reset về null ngay khi request hoàn
-       tất (dù thành công hay thất bại) để lần poll kế tiếp hoạt động
-       đúng như thiết kế. */
-    _progressSyncTimer = null;
+  clearTimeout(_progressSyncTimeoutId_);
+  /* FIX (Trúc "nhảy lên rồi tụt về cũ"): _progressSyncTimer giờ là CỜ
+     (boolean) báo "đang có 1 lượt lưu tiến trình dang dở", được giữ
+     TRUE liên tục từ lúc lên lịch cho tới khi request save_progress
+     THỰC SỰ nhận được phản hồi từ server — không chỉ trong lúc chờ
+     debounce 1.5s như trước.
+     LỖI CŨ: biến này bị đặt về null NGAY khi hết 1.5s debounce, tức
+     TRƯỚC KHI request save_progress kịp gửi xong lên server. Nếu đúng
+     lúc request đang bay trên mạng mà pollLiveUpdates() (chạy mỗi 8s)
+     kích hoạt, guard trong pollOwnProgressFromServer() đã bị mở khoá
+     quá sớm nên vẫn chạy get_progress -> lấy về số Trúc CŨ (server
+     chưa kịp ghi số mới) rồi ghi đè lên state -> đúng hiện tượng "vừa
+     thấy Trúc nhảy lên vì cộng thưởng, xong lại tụt về số cũ ngay sau
+     đó". Giờ chỉ mở khoá poll SAU KHI request đã thực sự hoàn tất (dù
+     thành công hay thất bại), đảm bảo poll không bao giờ xen vào giữa
+     lúc save_progress đang trên đường tới server. */
+  _progressSyncTimer = true;
+  _progressSyncTimeoutId_ = setTimeout(() => {
     callServer("save_progress", {
       username: state.username,
       progress: captureCurrentProgress(),
@@ -3529,8 +3534,23 @@ function pushProgressToServer() {
         if (typeof res.totalXp === "number") state.gamification.totalXp = res.totalXp;
         if (typeof res.badgeCharmBonus === "number") state.gamification.badgeCharmBonus = res.badgeCharmBonus;
         if (Array.isArray(res.unlockedBadges)) state.gamification.unlockedBadges = res.unlockedBadges;
+        /* FIX: server (save_progress) giờ tự hoà giải mọi bộ đếm trong
+           gamification.counters (vd: timedPassCount = số lần vượt Thử
+           Thách Thời Gian) bằng cách lấy giá trị LỚN HƠN giữa server và
+           local, KHÔNG BAO GIỜ để bị tụt. Đồng bộ lại ngay bản đã hoà
+           giải này về state cục bộ, để nếu thiết bị khác vừa ghi nhận
+           thêm lượt vượt thì thiết bị này cũng thấy đúng số mới nhất
+           thay vì phải đợi tới lượt poll kế tiếp mới cập nhật. */
+        if (res.counters && typeof res.counters === "object") {
+          if (!state.gamification.counters) state.gamification.counters = {};
+          Object.assign(state.gamification.counters, res.counters);
+        }
         captureServerBaseline_();
       }
+    }).finally(() => {
+      /* Chỉ mở khoá poll SAU KHI request đã có kết quả (thành công hay
+         thất bại đều mở, để không khoá poll vĩnh viễn nếu mất mạng). */
+      _progressSyncTimer = null;
     });
   }, 1500);
 }
@@ -3566,9 +3586,16 @@ function pushProgressToServer() {
    lỗi ra console để dễ chẩn đoán, tránh nguy cơ ghi đè mất dữ liệu
    thật trên server. */
 async function syncProgressFromServer() {
-  if (!state.username) return;
+  if (!state.username) return { ok: true };
   const res = await callServer("get_progress", { username: state.username });
-  if (res && res.ok && res.found && res.progress) {
+  if (res && res.ok === false && res.error === "account_not_found") {
+    /* FIX: tài khoản không (còn) tồn tại trên server (vd: đã bị xoá,
+       hoặc DB vừa được rebuild/reset) — KHÁC với "tài khoản mới chưa
+       có tiến trình". Báo hiệu rõ cho nơi gọi (checkAutoSession) để
+       đăng xuất phiên ma này, TUYỆT ĐỐI không được đẩy state cục bộ
+       lên server (sẽ vô tình "hồi sinh" tài khoản không hợp lệ). */
+    return { ok: false, error: "account_not_found" };
+  } else if (res && res.ok && res.found && res.progress) {
     applyProgressToState(res.progress);
     sanitizeState(state);
     state.studentProgress[state.username] = captureCurrentProgress();
@@ -3590,6 +3617,7 @@ async function syncProgressFromServer() {
        server"), và log lỗi để dễ chẩn đoán. */
     console.warn("syncProgressFromServer: get_progress thất bại, giữ nguyên tiến trình cục bộ, KHÔNG đẩy đè lên server.", res);
   }
+  return { ok: true };
 }
 
 /* =========================================================
@@ -4005,6 +4033,23 @@ async function pollLiveUpdates() {
 async function pollOwnProgressFromServer() {
   if (!state.username || _progressSyncTimer) return;
   const res = await callServer("get_progress", { username: state.username });
+  /* FIX (Trúc "lãi/lỗ hiện thông báo xong vài giây sau tự tụt về số cũ"):
+     guard _progressSyncTimer ở dòng trên chỉ được kiểm tra TRƯỚC khi gửi
+     request get_progress này. Nhưng request là bất đồng bộ, có thể mất
+     vài trăm ms tới vài giây. Nếu ĐÚNG LÚC request đang bay mà người
+     dùng chơi 1 minigame (quay vòng quay, câu cá, thả đèn...), local
+     saveState() sẽ bật cờ _progressSyncTimer = true NGAY SAU KHI guard ở
+     trên đã đi qua. Response res.progress lúc này là bản CHỤP TỪ TRƯỚC
+     khi chơi (server chưa nhận được thay đổi), nếu vẫn ghi đè xuống state
+     thì sẽ xoá mất kết quả vừa chơi (biểu hiện ra ngoài đúng như báo cáo:
+     hiện banner lãi/lỗ đúng, nhưng vài giây sau Trúc tự tụt về số cũ) —
+     và còn tệ hơn: captureServerBaseline_() sau đó sẽ "chốt" baseline
+     theo số cũ này, khiến request save_progress (đã lên lịch từ trước)
+     khi thực sự gửi đi cũng tính ra delta = 0, làm mất kết quả ván chơi
+     VĨNH VIỄN chứ không chỉ là nhấp nháy UI. Nên phải kiểm tra lại cờ
+     NGAY SAU KHI await xong, ngay trước khi ghi đè: nếu cờ đã bật lên
+     trong lúc chờ, coi kết quả poll này là stale và bỏ qua hoàn toàn. */
+  if (_progressSyncTimer) return;
   if (res && res.ok && res.found && res.progress) {
     applyProgressToState(res.progress);
     sanitizeState(state);
@@ -4061,6 +4106,58 @@ function sendAnswerToGoogleSheet(extra = {}) {
     body: payload,
     keepalive: true
   }).catch(() => {});
+}
+
+/* =========================================================
+   TOP NỔI BẬT GỬI KÈM KHI BÁO CÁO KẾT QUẢ QUA ZALO
+   ---------------------------------------------------------
+   Dùng ĐÚNG tiêu chí với Bảng Xếp Hạng chính của app (mục "🐼 Xếp hạng
+   theo Level Gấu & Trúc" — sắp theo Tổng XP), để hạng hiện trong tin
+   nhắn Zalo luôn khớp với những gì học viên tự thấy trong mục Bảng Xếp
+   Hạng, không phải một chỉ số riêng chỉ dùng cho tin nhắn.
+   ========================================================= */
+function computeMyClassRankInfo() {
+  if (!state.username) return null;
+  const members = (serverRoster || []).filter(s => s.role !== "teacher");
+  if (!members.length) return null;
+
+  /* serverRoster có thể vừa được poll cách đây vài giây, nên số TotalXp
+     của CHÍNH MÌNH trong đó chưa chắc là bản mới nhất — luôn ưu tiên
+     lấy số cục bộ mới nhất (state.gamification.totalXp) cho riêng dòng
+     của mình, giữ nguyên số roster cho các bạn học khác. */
+  const myUserLower = String(state.username).toLowerCase();
+  let list = members.map(s => ({
+    username: s.username,
+    totalXp: String(s.username).toLowerCase() === myUserLower
+      ? (state.gamification?.totalXp || 0)
+      : (s.totalXp || 0)
+  }));
+
+  if (!list.some(p => String(p.username).toLowerCase() === myUserLower)) {
+    /* Vừa vào lớp, roster chưa kịp poll lại nên chưa có mặt mình -> tự
+       thêm vào để không bị thiếu 1 suất khi tính hạng. */
+    list.push({ username: state.username, totalXp: state.gamification?.totalXp || 0 });
+  }
+
+  list.sort((a, b) => b.totalXp - a.totalXp);
+  const idx = list.findIndex(p => String(p.username).toLowerCase() === myUserLower);
+  if (idx === -1) return null;
+  return { rank: idx + 1, total: list.length };
+}
+
+/* Độ "hoành tráng" của dòng ghi chú giảm dần theo hạng — Top 3 luôn nổi
+   bật nhất, càng xuống dưới càng giản dị (nhưng vẫn giữ tinh thần động
+   viên, không làm các bạn hạng thấp cảm thấy bị dìm). */
+function getZaloRankNoteLine() {
+  const info = computeMyClassRankInfo();
+  if (!info || info.total < 2) return ""; // lớp chỉ có 1 mình thì không cần khoe hạng
+  const { rank, total } = info;
+  if (rank === 1) return "👑🔥 ĐANG GIỮ TOP 1 TOÀN LỚP 🔥👑";
+  if (rank === 2) return "🥈✨ ĐANG GIỮ TOP 2 TOÀN LỚP ✨🥈";
+  if (rank === 3) return "🥉🌟 ĐANG GIỮ TOP 3 TOÀN LỚP 🌟🥉";
+  if (rank <= 10) return `🎖️ Đang giữ Hạng #${rank}/${total} toàn lớp`;
+  if (rank <= Math.ceil(total / 2)) return `🎋 Hạng #${rank}/${total} toàn lớp`;
+  return `🎋 Hạng #${rank}/${total} toàn lớp — Cố lên, làm thêm bài để leo hạng nhé!`;
 }
 
 function sendResultToZalo(summaryText) {
@@ -4750,7 +4847,23 @@ async function checkAutoSession() {
       state.studentName = saved.displayName || saved.username;
       state.role = saved.role || "student";
       switchToUserProgress(state.username);
-      await syncProgressFromServer();
+      const syncResult = await syncProgressFromServer();
+      if (syncResult && syncResult.ok === false && syncResult.error === "account_not_found") {
+        /* FIX: phiên đăng nhập cũ lưu trong localStorage trỏ tới 1 tài
+           khoản không còn tồn tại trên server (đã bị xoá / DB đã được
+           rebuild) — trước đây bị hiểu nhầm thành "tài khoản mới" nên
+           tự động cho vào và âm thầm dùng dữ liệu cache cũ. Giờ xoá
+           thẳng phiên ma này, đưa người dùng về màn hình đăng nhập
+           thay vì để họ tưởng nhầm mình vẫn còn tài khoản/tiến trình. */
+        state.username = null;
+        const errEl = document.getElementById("auth-error-msg");
+        if (errEl) {
+          errEl.textContent = "Tài khoản này không còn tồn tại trên hệ thống (có thể do dữ liệu đã được làm mới). Vui lòng đăng nhập hoặc đăng ký lại.";
+          errEl.style.display = "block";
+        }
+        document.getElementById("auth-overlay").style.display = "flex";
+        return;
+      }
       await refreshServerRoster();
       saveState();
 
@@ -5999,6 +6112,18 @@ function castFishingLine() {
   g.bambooPouch -= FISH_CAST_COST;
   g.fishing.castsToday = (g.fishing.castsToday || 0) + 1;
   trackMinigamePlayed("fishing");
+  /* FIX (Trúc bị trừ đúng nhưng vài giây sau tự "hồi" lại số cũ): từ lúc
+     trừ cược tới lúc resolveFishingCast() thực sự cộng lại + gọi
+     saveState() có một khoảng CHỜ ANIMATION (~1.7-2.2s) mà KHÔNG có
+     saveState() nào đang chạy, nên cờ _progressSyncTimer vẫn đang false
+     -> nếu đúng lúc này pollLiveUpdates() (chạy mỗi 8s) kích hoạt,
+     pollOwnProgressFromServer() sẽ vô tư gọi get_progress, nhận về bản
+     TRƯỚC KHI đặt cược từ server rồi ghi đè state -> Trúc vừa bị trừ trên
+     màn hình "tự hồi lại" y hệt hiện tượng báo cáo. Bật cờ NGAY KHI trừ
+     cược (không đợi tới lúc saveState() ở resolve) để khoá poll xuyên
+     suốt toàn bộ thời gian chờ animation; cờ sẽ tự được mở lại đúng lúc
+     bởi pushProgressToServer() khi saveState() ở resolve chạy xong. */
+  _progressSyncTimer = true;
 
   _fishingCasting = true;
   const castBtn = document.getElementById("cast-fishing-btn");
@@ -6246,6 +6371,10 @@ function releaseLantern() {
   g.bambooPouch -= LANTERN_COST;
   g.lantern.releasesToday = (g.lantern.releasesToday || 0) + 1;
   trackMinigamePlayed("lantern");
+  /* FIX (Trúc bị trừ đúng nhưng vài giây sau tự "hồi" lại số cũ) — xem
+     giải thích chi tiết ở castFishingLine(): khoá poll ngay khi trừ cược,
+     không đợi tới saveState() ở resolveLanternRelease(). */
+  _progressSyncTimer = true;
 
   _lanternReleasing = true;
   const releaseBtn = document.getElementById("release-lantern-btn");
@@ -6475,6 +6604,10 @@ function castKiteLine() {
   g.bambooPouch -= KITE_COST;
   g.kite.releasesToday = (g.kite.releasesToday || 0) + 1;
   trackMinigamePlayed("kite");
+  /* FIX (Trúc bị trừ đúng nhưng vài giây sau tự "hồi" lại số cũ) — xem
+     giải thích chi tiết ở castFishingLine(): khoá poll ngay khi trừ cược,
+     không đợi tới saveState() ở resolveKiteLaunch(). */
+  _progressSyncTimer = true;
   updateGamificationUI();
   renderKiteModal();
 
@@ -6752,6 +6885,10 @@ function drawFortuneSlip() {
   g.bambooPouch -= FORTUNE_COST;
   g.fortune.drawsToday = (g.fortune.drawsToday || 0) + 1;
   trackMinigamePlayed("fortune");
+  /* FIX (Trúc bị trừ đúng nhưng vài giây sau tự "hồi" lại số cũ) — xem
+     giải thích chi tiết ở castFishingLine(): khoá poll ngay khi trừ cược,
+     không đợi tới saveState() ở resolveFortuneDraw(). */
+  _progressSyncTimer = true;
 
   _fortuneDrawing = true;
   const drawBtn = document.getElementById("draw-fortune-btn");
@@ -6994,6 +7131,10 @@ function smashPot(potBtn) {
   g.bambooPouch -= POT_COST;
   g.potSmash.smashesToday = (g.potSmash.smashesToday || 0) + 1;
   trackMinigamePlayed("potsmash");
+  /* FIX (Trúc bị trừ đúng nhưng vài giây sau tự "hồi" lại số cũ) — xem
+     giải thích chi tiết ở castFishingLine(): khoá poll ngay khi trừ cược,
+     không đợi tới saveState() ở resolvePotSmash(). */
+  _progressSyncTimer = true;
 
   _potSmashing = true;
   document.querySelectorAll(".pot-item").forEach(btn => { btn.disabled = true; });
@@ -7297,6 +7438,21 @@ function spinLuckyWheel() {
   g.bambooPouch -= WHEEL_SPIN_COST;
   g.luckyWheel.spinsToday = (g.luckyWheel.spinsToday || 0) + 1;
   trackMinigamePlayed("wheel");
+  /* FIX QUAN TRỌNG (Trúc bị trừ đúng, hiện thông báo lãi/lỗ, nhưng vài
+     giây sau tự "hồi" lại số cũ): từ lúc trừ cược ở đây tới lúc
+     resolveWheelSpin() thực sự cộng lại tiền thắng + gọi saveState() có
+     một khoảng CHỜ ANIMATION dài ~4.5 GIÂY mà KHÔNG có saveState() nào
+     đang chạy — cờ _progressSyncTimer vẫn đang false suốt khoảng đó. Nếu
+     đúng lúc này pollLiveUpdates() (chạy định kỳ mỗi 8 giây) kích hoạt,
+     pollOwnProgressFromServer() sẽ vô tư gọi get_progress, nhận về bản
+     TRƯỚC KHI đặt cược từ server (vì server chưa hề biết về lượt chơi
+     đang diễn ra) rồi ghi đè thẳng lên state.gamification.bambooPouch —
+     đúng hiện tượng "Trúc vừa bị trừ trên màn hình tự hồi lại số cũ".
+     Bật cờ NGAY KHI trừ cược (thay vì đợi tới lúc saveState() ở
+     resolveWheelSpin() mới bật) để khoá poll xuyên suốt toàn bộ 4.5 giây
+     quay; cờ sẽ được pushProgressToServer() tự mở lại đúng lúc khi
+     saveState() ở resolveWheelSpin() chạy xong. */
+  _progressSyncTimer = true;
 
   _wheelSpinning = true;
   const spinBtn = document.getElementById("spin-wheel-btn");
@@ -8009,38 +8165,6 @@ function renderGiftFeed() {
   renderClassFeedInto("gift-feed-list", "classGiftFeeds", "Chưa có lượt tặng đạo cụ nào trong lớp.");
 }
 
-/* FIX: gắn logic thật cho 2 nút "Reset Bảng Tin" (#reset-activity-feed-btn
-   ở view Bảng Tin và #cms-reset-feed-btn trong CMS) — trước đây có nút
-   trên giao diện nhưng không có addEventListener nào cả nên bấm không có
-   tác dụng gì. Xoá sạch cả 3 kho tin của LỚP ĐANG CHỌN (classFeeds,
-   classStealFeeds, classGiftFeeds) — đây đều là SHARED_FIELDS nên
-   saveState() sẽ tự đẩy thay đổi lên server qua save_shared_config và mọi
-   học viên trong lớp sẽ hết thấy tin cũ ở lượt poll tiếp theo. Chỉ giáo
-   viên mới được reset, và luôn hỏi xác nhận vì đây là thao tác không thể
-   hoàn tác. */
-function resetClassActivityFeed() {
-  if (state.role !== "teacher") {
-    alert("Chỉ giáo viên mới có quyền reset Bảng Tin!");
-    return;
-  }
-  const cName = state.currentClassName;
-  if (!cName) {
-    alert("Chưa chọn lớp nào để reset Bảng Tin!");
-    return;
-  }
-  if (!confirm(`Xoá TOÀN BỘ Bảng Tin Lớp Học & Nhật Ký Gấu Trúc (kể cả Cướp Trúc, Tặng Đạo Cụ) của lớp "${cName}"?\n\nHành động này KHÔNG THỂ hoàn tác.`)) {
-    return;
-  }
-  if (state.classFeeds) state.classFeeds[cName] = [];
-  if (state.classStealFeeds) state.classStealFeeds[cName] = [];
-  if (state.classGiftFeeds) state.classGiftFeeds[cName] = [];
-  saveState();
-  renderActivityFeed();
-  renderStealFeed();
-  renderGiftFeed();
-  alert(`Đã reset Bảng Tin & Nhật Ký Gấu Trúc cho lớp "${cName}"!`);
-}
-
 /* =========================================================
    1. FLASHCARD VIEW ENGINE
    ========================================================= */
@@ -8280,6 +8404,14 @@ function initQuizHandlers() {
     }
     qzQueue = shuffle(words).slice(0, Math.min(countLimit, words.length));
     qzFullListCount = words.length;
+    /* FIX: trước đây qzUseAll chỉ được set qua nút "Tất cả" — nếu học viên
+       TỰ GÕ số câu bằng đúng tổng số từ trong list (không bấm nút "Tất
+       cả"), qzUseAll vẫn là false dù thực chất đã làm 100% list, khiến
+       computeQuizReward() tính nhầm thành "Tách List" (thưởng ít hơn) và
+       báo cáo Zalo cũng hiện sai chế độ. Chốt lại cờ này dựa trên SỐ CÂU
+       THỰC TẾ đã đưa vào hàng đợi so với tổng số từ, không phụ thuộc vào
+       việc học viên bấm nút hay tự gõ tay. */
+    qzUseAll = qzQueue.length >= words.length;
     qzIdx = 0;
     qzScore = 0;
     qzCorrectCount = 0;
@@ -8405,7 +8537,7 @@ function renderQuizResult() {
     const qzModeLine = qzUseAll
       ? `Full List — đủ ${qzFullListCount} từ`
       : `Tách List — làm ${qzQueue.length}/${qzFullListCount} từ`;
-    sendResultToZalo(`🐼 Kết quả Kiểm Tra Từ Vựng\nHọc viên: ${state.studentName}\nLớp: ${state.currentClassName}\nChủ đề/List: ${qzListLabel}\nChế độ: ${qzModeLine}\nSố câu đã làm: ${qzQueue.length}\nĐiểm: ${qzScore}/${qzQueue.length} (${pct}%)\nTrúc nhận được: +${rewardAmt} 🎋`);
+    sendResultToZalo(`🐼 Kết quả Kiểm Tra Từ Vựng\nHọc viên: ${state.studentName}\nLớp: ${state.currentClassName}\nChủ đề/List: ${qzListLabel}\nChế độ: ${qzModeLine}\nSố câu đã làm: ${qzQueue.length}\nĐiểm: ${qzScore}/${qzQueue.length} (${pct}%)\nTrúc nhận được: +${rewardAmt} 🎋${getZaloRankNoteLine() ? "\n" + getZaloRankNoteLine() : ""}`);
   });
 }
 
@@ -8483,6 +8615,11 @@ function initPinyinTestHandlers() {
     }
     pyQueue = shuffle(words).slice(0, Math.min(countLimit, words.length));
     pyFullListCount = words.length;
+    /* FIX: cùng lớp lỗi với Quiz — chốt lại pyUseAll dựa trên SỐ CÂU THỰC
+       TẾ đã đưa vào hàng đợi so với tổng số từ, thay vì chỉ tin vào việc
+       học viên có bấm nút "Tất cả" hay không (tự gõ tay đủ số từ cũng
+       phải được tính là Full List). */
+    pyUseAll = pyQueue.length >= words.length;
     pyIdx = 0;
     pyCorrectCount = 0;
     pyWrongCount = 0;
@@ -8607,7 +8744,7 @@ function renderPinyinTestResult() {
     const pyModeLine = pyUseAll
       ? `Full List — đủ ${pyFullListCount} từ`
       : `Tách List — làm ${total}/${pyFullListCount} từ`;
-    sendResultToZalo(`🀄 Kết quả Kiểm Tra Pinyin\nHọc viên: ${state.studentName}\nLớp: ${state.currentClassName}\nChủ đề/List: ${pyListLabel}\nChế độ: ${pyModeLine}\nSố câu đã làm: ${total}\nĐiểm: ${pyCorrectCount}/${total} (${pct}%)\nTrúc nhận được: +${rewardAmt} 🎋`);
+    sendResultToZalo(`🀄 Kết quả Kiểm Tra Pinyin\nHọc viên: ${state.studentName}\nLớp: ${state.currentClassName}\nChủ đề/List: ${pyListLabel}\nChế độ: ${pyModeLine}\nSố câu đã làm: ${total}\nĐiểm: ${pyCorrectCount}/${total} (${pct}%)\nTrúc nhận được: +${rewardAmt} 🎋${getZaloRankNoteLine() ? "\n" + getZaloRankNoteLine() : ""}`);
   });
 }
 
@@ -8722,7 +8859,11 @@ function renderTimedIdle() {
     if (chosenMode === "split" && canSplit) {
       let count = parseInt(document.getElementById("tm-split-count")?.value, 10) || minSplit;
       count = Math.max(minSplit, Math.min(words.length, count));
-      tmMode = "split";
+      /* FIX: cùng lớp lỗi với Quiz/Pinyin — nếu học viên chọn radio "Tách"
+         nhưng tự gõ số từ bằng đúng tổng số từ của list, thực chất đó là
+         Full List rồi, không được tính/báo cáo là "Tách List" (thưởng ít
+         hơn). Chốt lại tmMode dựa trên số từ THỰC TẾ so với tổng list. */
+      tmMode = (count >= words.length) ? "full" : "split";
       tmSessionWords = shuffle(words).slice(0, count);
     } else {
       tmMode = "full";
@@ -8861,7 +9002,7 @@ function renderTimedPass() {
     const tmModeLine = tmMode === "split"
       ? `Tách List — làm ${tmSessionWords.length}/${tmFullListCount} từ`
       : `Full List — đủ ${tmFullListCount} từ`;
-    sendResultToZalo(`⚡ Thử Thách Thời Gian${modeLabel}\nHọc viên: ${state.studentName}\nLớp: ${state.currentClassName}\nChủ đề/List: ${listName}\nChế độ: ${tmModeLine}\nHoàn thành sau: ${tmAttempts} lượt thử\nTrúc nhận được: +${rewardAmt} 🎋`);
+    sendResultToZalo(`⚡ Thử Thách Thời Gian${modeLabel}\nHọc viên: ${state.studentName}\nLớp: ${state.currentClassName}\nChủ đề/List: ${listName}\nChế độ: ${tmModeLine}\nHoàn thành sau: ${tmAttempts} lượt thử\nTrúc nhận được: +${rewardAmt} 🎋${getZaloRankNoteLine() ? "\n" + getZaloRankNoteLine() : ""}`);
   });
 }
 
@@ -12238,8 +12379,14 @@ window.addEventListener("DOMContentLoaded", () => {
      khi học viên thoát app ngay sau khi vừa hoàn thành bài tập. */
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && _progressSyncTimer && state.username) {
-      clearTimeout(_progressSyncTimer);
-      _progressSyncTimer = null;
+      /* FIX: trước đây gọi clearTimeout(_progressSyncTimer) — nhưng
+         _progressSyncTimer giờ là CỜ boolean (đang có lượt lưu dang dở),
+         không còn là id thật của setTimeout nữa -> phải hủy đúng
+         _progressSyncTimeoutId_. Đồng thời GIỮ cờ _progressSyncTimer =
+         true trong lúc request này đang bay (thay vì đặt null ngay lập
+         tức) để không mở khoá poll giữa chừng, cùng lớp lỗi race
+         condition đã sửa ở pushProgressToServer(). */
+      clearTimeout(_progressSyncTimeoutId_);
       callServer("save_progress", {
         username: state.username,
         progress: captureCurrentProgress(),
@@ -12257,6 +12404,8 @@ window.addEventListener("DOMContentLoaded", () => {
           if (Array.isArray(res.unlockedBadges)) state.gamification.unlockedBadges = res.unlockedBadges;
           captureServerBaseline_();
         }
+      }).finally(() => {
+        _progressSyncTimer = null;
       });
     }
   });
@@ -12330,27 +12479,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const m = document.getElementById("shop-modal");
     if (m) m.style.display = "none";
   });
-
-  /* FIX một phần: nút Hủy của #dictation-pass-modal ít nhất đóng được
-     modal (an toàn, không cần biết logic xác thực dự định là gì). Nút
-     "Xác nhận" (#submit-dictation-pass-btn) KHÔNG được gắn ở đây vì
-     chưa rõ nó phải xác thực với gì — xem ghi chú cuối phản hồi. */
-  document.getElementById("cancel-dictation-pass-btn")?.addEventListener("click", () => {
-    const m = document.getElementById("dictation-pass-modal");
-    if (m) m.style.display = "none";
-  });
-
-  /* FIX: nút "Tuyệt vời 🚀" trong modal ăn mừng lên Level trước đây
-     không có addEventListener nào — chỉ đóng được bằng cách bấm ra
-     ngoài nền overlay. */
-  document.getElementById("close-levelup-modal-btn")?.addEventListener("click", () => {
-    const m = document.getElementById("levelup-modal");
-    if (m) m.style.display = "none";
-  });
-
-  /* FIX: 2 nút Reset Bảng Tin (xem resetClassActivityFeed() ở trên) */
-  document.getElementById("reset-activity-feed-btn")?.addEventListener("click", resetClassActivityFeed);
-  document.getElementById("cms-reset-feed-btn")?.addEventListener("click", resetClassActivityFeed);
 
   document.getElementById("open-gift-btn")?.addEventListener("click", () => {
     openGiftModal();
