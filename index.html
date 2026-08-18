@@ -877,6 +877,21 @@
   }
   .lb-lvl-aura-8::after{ content:""; position:absolute; top:0; left:-60%; width:35%; height:100%; background:linear-gradient(120deg, transparent, rgba(255,255,255,0.85), transparent); animation:badgeSparkleSweep 2.2s linear infinite; pointer-events:none; }
   .lb-lvl-tag{ display:inline-flex; align-items:center; gap:3px; margin-left:6px; vertical-align:middle; font-size:10px; font-weight:900; color:#fff; padding:2px 9px; border-radius:999px; letter-spacing:0.2px; white-space:nowrap; }
+  /* Danh hiệu (Trạng thái) trên Bảng Xếp Hạng — chữ ánh lửa thiêng cam-đỏ rực rỡ, hào quang bừng sáng như thần lửa giáng thế */
+  .lb-outfit-title{
+    font-weight:900; font-size:13.5px; letter-spacing:0.3px;
+    background:linear-gradient(90deg,#FFF3E0,#FF6D00,#FF3D00,#FFAB00,#FF3D00,#FFF3E0);
+    background-size:300% auto;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lb-outfit-title.lb-outfit-sheen{ animation:lbOutfitSheen 3s linear infinite; }
+  .lb-outfit-title.lb-outfit-glow{ animation:lbOutfitSheen 3s linear infinite, lbOutfitPulse 1.6s ease-in-out infinite; }
+  .lb-outfit-icon{ font-size:13px; }
+  @keyframes lbOutfitSheen{ 0%{ background-position:0% center; } 100%{ background-position:300% center; } }
+  @keyframes lbOutfitPulse{
+    0%,100%{ filter:drop-shadow(0 0 3px rgba(255,109,0,0.55)) drop-shadow(0 0 1px rgba(255,255,255,0.8)); }
+    50%{ filter:drop-shadow(0 0 8px rgba(255,61,0,0.95)) drop-shadow(0 0 14px rgba(255,171,0,0.55)); }
+  }
   .lb-lvl-tag.aura-1{ background:#B87333; }
   .lb-lvl-tag.aura-2{ background:#8C8C8C; }
   .lb-lvl-tag.aura-3{ background:linear-gradient(90deg,#FFD700,#FFA500); color:#5C3D00; }
@@ -3887,7 +3902,8 @@ function syncPeersFromRoster() {
     p.totalXp = s.totalXp || 0;
     p.bambooPouch = s.bambooPouch || 0;
     p.level = lDetails.level;
-    p.outfit = lMeta.outfit || lMeta.title;
+    p.outfit = lMeta.title || lMeta.outfit;
+    p.outfitIcon = lMeta.outfit || lMeta.title;
     p.badges = s.unlockedBadges || [];
     p.decorations = s.decorations || [];
     p.badgeCharmBonus = s.badgeCharmBonus || 0;
@@ -10362,6 +10378,19 @@ function renderLevelAuraTagHtml(level) {
   return `<span class="lb-lvl-tag aura-${info.tier}" title="Đạt mốc Level ${level} — Uy Danh Cấp ${info.tier}${cycleTxt ? ', Vòng ' + (info.cycle + 1) : ''}">🔱 Uy Danh ${info.name}${cycleTxt}</span>`;
 }
 
+/* Trả về HTML danh hiệu cạnh tên trên Bảng Xếp Hạng, phân tầng hiệu ứng theo Level:
+   - Dưới Level 50: chỉ hiện Icon (không hiện chữ danh hiệu)
+   - Từ Level 50 đến 59: hiện đủ chữ + hiệu ứng ánh kim quét sáng
+   - Từ Level 60 trở lên: hiện đủ chữ + ánh kim quét sáng + hào quang bừng nhấp nháy */
+function renderOutfitTitleHtml(p) {
+  const lvl = p.level || 0;
+  if (lvl < 50) {
+    return `<span class="lb-outfit-icon" title="${p.outfit}">${p.outfitIcon || p.outfit}</span>`;
+  }
+  const cls = lvl >= 60 ? "lb-outfit-title lb-outfit-sheen lb-outfit-glow" : "lb-outfit-title lb-outfit-sheen";
+  return `<span class="${cls}">${p.outfit}</span>`;
+}
+
 function renderLeaderboardContent() {
   const modeSel = document.getElementById("lb-mode-select");
   if (!modeSel) return;
@@ -10387,6 +10416,7 @@ function renderLeaderboardContent() {
         me.bambooPouch = state.gamification?.bambooPouch || 0;
         me.level = lDetails.level;
         me.outfit = currentLMeta.title;
+        me.outfitIcon = currentLMeta.outfit;
         me.badges = state.gamification?.unlockedBadges || [];
         me.spiritAnimal = state.gamification?.spiritAnimal || "";
         me.charmLocked = lDetails.charmLocked;
@@ -10402,6 +10432,7 @@ function renderLeaderboardContent() {
           bambooPouch: state.gamification?.bambooPouch || 0,
           level: lDetails.level,
           outfit: currentLMeta.title,
+          outfitIcon: currentLMeta.outfit,
           badges: state.gamification?.unlockedBadges || [],
           spiritAnimal: state.gamification?.spiritAnimal || "",
           charmLocked: lDetails.charmLocked,
@@ -10452,7 +10483,7 @@ function renderLeaderboardContent() {
               <span style="font-size:24px;" class="${medalClass}">${animal ? animal.icon : medal}</span>
               <div>
                 <strong style="color:var(--seal-dark); font-size:15px;">#${idx + 1} ${p.name} ${isMe ? ' (Bạn)' : ''}${renderBadgeChipsHtml(p.badges)}${renderLightspeedBadgeHtml(p.badges)}${renderLevelAuraTagHtml(p.level)}${animal ? renderTransformBadgeHtml(p.spiritAnimal) : ''}${renderReincarnationBadgeHtml(p.reincarnationCount)}${renderTribulationBadgeHtml(p.tribulationCount)}</strong>
-                <div style="font-size:12px; color:${isPendingTribulation ? '#FFEE58' : isPendingReincarnation ? '#C62828' : 'var(--ink-soft)'}; font-weight:${(isPendingTribulation || isPendingReincarnation) ? '800' : '400'};">Trạng thái: ${p.outfit} · ${levelStatusHtml}${p.charmLocked ? ` <span style="color:#D81B60; font-weight:800;" title="Đủ XP nhưng thiếu Mị Lực để lên Level tiếp">🔒 cần thêm 💖</span>` : ''}${isLegendaryGateLocked ? ` <span style="color:#FFC107; font-weight:800;" title="Đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết">✨🔒 cần Thú Truyền Thuyết</span>` : ''}</div>
+                <div style="font-size:12px; color:${isPendingTribulation ? '#FFEE58' : isPendingReincarnation ? '#C62828' : 'var(--ink-soft)'}; font-weight:${(isPendingTribulation || isPendingReincarnation) ? '800' : '400'};">Trạng thái: ${renderOutfitTitleHtml(p)} · ${levelStatusHtml}${p.charmLocked ? ` <span style="color:#D81B60; font-weight:800;" title="Đủ XP nhưng thiếu Mị Lực để lên Level tiếp">🔒 cần thêm 💖</span>` : ''}${isLegendaryGateLocked ? ` <span style="color:#FFC107; font-weight:800;" title="Đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết">✨🔒 cần Thú Truyền Thuyết</span>` : ''}</div>
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:14px;">
