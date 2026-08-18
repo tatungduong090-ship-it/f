@@ -3495,6 +3495,50 @@ function captureServerBaseline_() {
   _serverBaselineBadges = Array.isArray(g.unlockedBadges) ? g.unlockedBadges.slice() : [];
 }
 
+/* Thực hiện đúng 1 lượt gửi save_progress lên server (dùng chung cho cả
+   nhánh debounce bình thường LẪN nhánh "gửi ngay không chờ" bên dưới).
+   Tách riêng ra để 2 nhánh không lặp lại logic hoà giải baseline. */
+function doPushProgressNow_() {
+  _progressSyncTimer = true;
+  return callServer("save_progress", {
+    username: state.username,
+    progress: captureCurrentProgress(),
+    baselinePouch: _serverBaselinePouch,
+    baselineDecorations: _serverBaselineDecorations,
+    baselineXp: _serverBaselineXp,
+    baselineBadgeCharm: _serverBaselineBadgeCharm,
+    baselineBadges: _serverBaselineBadges
+  }).then(res => {
+    /* Server trả về giá trị CUỐI CÙNG đã hoà giải xong (bambooPouch,
+       decorations, totalXp, badgeCharmBonus, unlockedBadges) -> đồng bộ
+       lại state cục bộ + baseline theo đúng bản đó, để lần lưu kế tiếp
+       tính delta đúng, không bị lệch dần. */
+    if (res && res.ok && state.gamification) {
+      if (typeof res.bambooPouch === "number") state.gamification.bambooPouch = res.bambooPouch;
+      if (Array.isArray(res.decorations)) state.gamification.decorations = res.decorations;
+      if (typeof res.totalXp === "number") state.gamification.totalXp = res.totalXp;
+      if (typeof res.badgeCharmBonus === "number") state.gamification.badgeCharmBonus = res.badgeCharmBonus;
+      if (Array.isArray(res.unlockedBadges)) state.gamification.unlockedBadges = res.unlockedBadges;
+      /* FIX: server (save_progress) giờ tự hoà giải mọi bộ đếm trong
+         gamification.counters (vd: timedPassCount = số lần vượt Thử
+         Thách Thời Gian) bằng cách lấy giá trị LỚN HƠN giữa server và
+         local, KHÔNG BAO GIỜ để bị tụt. Đồng bộ lại ngay bản đã hoà
+         giải này về state cục bộ, để nếu thiết bị khác vừa ghi nhận
+         thêm lượt vượt thì thiết bị này cũng thấy đúng số mới nhất
+         thay vì phải đợi tới lượt poll kế tiếp mới cập nhật. */
+      if (res.counters && typeof res.counters === "object") {
+        if (!state.gamification.counters) state.gamification.counters = {};
+        Object.assign(state.gamification.counters, res.counters);
+      }
+      captureServerBaseline_();
+    }
+  }).finally(() => {
+    /* Chỉ mở khoá poll SAU KHI request đã có kết quả (thành công hay
+       thất bại đều mở, để không khoá poll vĩnh viễn nếu mất mạng). */
+    _progressSyncTimer = null;
+  });
+}
+
 function pushProgressToServer() {
   if (!state.username) return;
   clearTimeout(_progressSyncTimeoutId_);
@@ -3515,44 +3559,48 @@ function pushProgressToServer() {
      lúc save_progress đang trên đường tới server. */
   _progressSyncTimer = true;
   _progressSyncTimeoutId_ = setTimeout(() => {
-    callServer("save_progress", {
-      username: state.username,
-      progress: captureCurrentProgress(),
-      baselinePouch: _serverBaselinePouch,
-      baselineDecorations: _serverBaselineDecorations,
-      baselineXp: _serverBaselineXp,
-      baselineBadgeCharm: _serverBaselineBadgeCharm,
-      baselineBadges: _serverBaselineBadges
-    }).then(res => {
-      /* Server trả về giá trị CUỐI CÙNG đã hoà giải xong (bambooPouch,
-         decorations, totalXp, badgeCharmBonus, unlockedBadges) -> đồng bộ
-         lại state cục bộ + baseline theo đúng bản đó, để lần lưu kế tiếp
-         tính delta đúng, không bị lệch dần. */
-      if (res && res.ok && state.gamification) {
-        if (typeof res.bambooPouch === "number") state.gamification.bambooPouch = res.bambooPouch;
-        if (Array.isArray(res.decorations)) state.gamification.decorations = res.decorations;
-        if (typeof res.totalXp === "number") state.gamification.totalXp = res.totalXp;
-        if (typeof res.badgeCharmBonus === "number") state.gamification.badgeCharmBonus = res.badgeCharmBonus;
-        if (Array.isArray(res.unlockedBadges)) state.gamification.unlockedBadges = res.unlockedBadges;
-        /* FIX: server (save_progress) giờ tự hoà giải mọi bộ đếm trong
-           gamification.counters (vd: timedPassCount = số lần vượt Thử
-           Thách Thời Gian) bằng cách lấy giá trị LỚN HƠN giữa server và
-           local, KHÔNG BAO GIỜ để bị tụt. Đồng bộ lại ngay bản đã hoà
-           giải này về state cục bộ, để nếu thiết bị khác vừa ghi nhận
-           thêm lượt vượt thì thiết bị này cũng thấy đúng số mới nhất
-           thay vì phải đợi tới lượt poll kế tiếp mới cập nhật. */
-        if (res.counters && typeof res.counters === "object") {
-          if (!state.gamification.counters) state.gamification.counters = {};
-          Object.assign(state.gamification.counters, res.counters);
-        }
-        captureServerBaseline_();
-      }
-    }).finally(() => {
-      /* Chỉ mở khoá poll SAU KHI request đã có kết quả (thành công hay
-         thất bại đều mở, để không khoá poll vĩnh viễn nếu mất mạng). */
-      _progressSyncTimer = null;
-    });
+    doPushProgressNow_();
   }, 1500);
+}
+
+/* FIX (đôi lúc không cộng/không trừ Trúc — vượt Thử Thách Thời Gian,
+   Luân Hồi, Độ Kiếp...): pushProgressToServer() bình thường vẫn phải
+   chờ debounce 1.5s trước khi thực sự gửi lên server, để gộp nhiều thay
+   đổi nhỏ liên tiếp lại thành 1 request cho đỡ tốn mạng. Nhưng với các
+   thời điểm CỘNG/TRỪ TRÚC quan trọng (thưởng vượt Thử Thách, mua Luân
+   Hồi Đan, Độ Kiếp...), học viên thường bấm thoát app NGAY sau khi thấy
+   thông báo — nếu vẫn còn nằm trong 1.5s debounce đó mà app bị đóng/bị
+   hệ điều hành di động đình chỉ (rất hay gặp khi chuyển app nền trên
+   điện thoại, xảy ra gần như NGAY LẬP TỨC chứ không chờ JS kịp gửi xong
+   request), request save_progress coi như chưa từng gửi -> Trúc không
+   lên server -> lần mở lại app, syncProgressFromServer() kéo bản CŨ về
+   đè mất phần Trúc vừa cộng/trừ. Các cơ chế "flush khi ẩn tab"
+   (beforeunload/visibilitychange) chỉ giảm bớt chứ không loại bỏ hẳn
+   rủi ro này, vì bản thân chúng cũng chỉ là gọi fetch() bất đồng bộ,
+   không đảm bảo tiến trình JS còn sống đủ lâu để gửi xong trên di động.
+   Cách giảm rủi ro triệt để nhất là RÚT NGẮN cửa sổ debounce xuống gần
+   như 0 CHO ĐÚNG những sự kiện quan trọng này: gọi thẳng hàm này (gửi
+   NGAY, không chờ 1.5s) thay vì saveState() thường ở các nơi cộng/trừ
+   Trúc quan trọng (grantBamboo, buyReincarnationElixir, buyTribulation),
+   để rủi ro "thoát app đúng lúc" chỉ còn đúng khoảng thời gian 1 lượt
+   request mạng (thường vài trăm mili-giây) thay vì cộng thêm 1.5s chờ
+   debounce vô ích. */
+function pushProgressToServerNow() {
+  if (!state.username) return Promise.resolve();
+  clearTimeout(_progressSyncTimeoutId_);
+  return doPushProgressNow_();
+}
+
+/* Bản "lưu ngay" của saveState() — dùng cho các thời điểm cộng/trừ Trúc
+   quan trọng (xem giải thích ở pushProgressToServerNow() phía trên). */
+function saveStateImmediate() {
+  if (state.username) {
+    if (!state.studentProgress || typeof state.studentProgress !== "object") state.studentProgress = {};
+    state.studentProgress[state.username] = captureCurrentProgress();
+    pushProgressToServerNow();
+  }
+  pushSharedConfigToServer();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 /* Lấy tiến trình mới nhất từ server. Nếu server đã có dữ liệu (vì học
@@ -4017,6 +4065,7 @@ async function pollLiveUpdates() {
     refreshServerRoster(),
     pollOwnProgressFromServer()
   ]);
+  syncOwnDisplayNameFromRoster();
 
   const activeView = document.querySelector("section.view.active");
   const vId = activeView ? activeView.id : "";
@@ -4840,6 +4889,48 @@ async function loginSuccess(user) {
   startLiveSync();
 }
 
+/* FIX (tên hiển thị không cập nhật khi giáo viên đổi tên):
+   Trước đây, sau khi giáo viên bấm "Đổi Tên" (update_account_name) cho
+   một học viên, riêng THIẾT BỊ của học viên đó vẫn tiếp tục dùng tên cũ
+   mãi mãi -> vì checkAutoSession() chỉ đọc displayName từ CACHE cũ trong
+   localStorage (zhVocabApp_current_user), không hề hỏi lại server; và
+   suốt phiên làm việc sau đó cũng không có chỗ nào tự đối chiếu lại. Chỉ
+   khi học viên chủ động đăng xuất rồi đăng nhập lại (đi qua loginSuccess,
+   lấy displayName mới từ phản hồi server) thì tên mới mới hiện ra.
+   Hệ quả nghiêm trọng hơn: rất nhiều chỗ trong app so khớp "ai là ai"
+   bằng TÊN HIỂN THỊ (bảng xếp hạng, gamification.peers, kiểm tra "đã nộp
+   bài chưa" của Thử Thách Thời Gian / Kiểm Tra / Đặt Câu...) chứ không
+   bằng username -> khi tên trên máy học viên (cũ) và tên trên server/
+   giáo viên (mới) bị lệch nhau, các phép so khớp này trật, sinh ra đủ
+   loại lỗi vặt (không thấy bài đã nộp, không thấy mình trong danh sách...)
+   NHƯNG chỉ xảy ra đúng trên tài khoản vừa bị đổi tên.
+   Hàm này đối chiếu state.studentName với displayName mới nhất lấy từ
+   serverRoster (đã được refreshServerRoster() nạp) và tự sửa lại +
+   đồng bộ vào cache localStorage nếu phát hiện lệch — được gọi cả lúc
+   mở app (checkAutoSession) LẪN mỗi vòng poll khi app đang mở
+   (pollLiveUpdates, ~8s/lần), để tên mới hiện ra gần như ngay lập tức
+   mà học viên không cần đăng xuất/đăng nhập lại. */
+function syncOwnDisplayNameFromRoster() {
+  if (!state.username) return;
+  const myRosterEntry = (serverRoster || []).find(
+    s => s.username && s.username.toLowerCase() === state.username.toLowerCase()
+  );
+  if (myRosterEntry && myRosterEntry.displayName && myRosterEntry.displayName !== state.studentName) {
+    state.studentName = myRosterEntry.displayName;
+    try {
+      const cachedUser = JSON.parse(localStorage.getItem("zhVocabApp_current_user") || "{}");
+      cachedUser.displayName = myRosterEntry.displayName;
+      localStorage.setItem("zhVocabApp_current_user", JSON.stringify(cachedUser));
+    } catch (e) {}
+    const nameEl = document.getElementById("auth-current-username");
+    if (nameEl) nameEl.textContent = state.studentName;
+    const selEl = document.getElementById("selector-student-name");
+    if (selEl) selEl.value = state.studentName;
+    const studentTitle = document.getElementById("ph-student-title");
+    if (studentTitle) studentTitle.textContent = `Gấu Trúc Của ${state.studentName}`;
+  }
+}
+
 async function checkAutoSession() {
   try {
     const saved = JSON.parse(localStorage.getItem("zhVocabApp_current_user"));
@@ -4866,6 +4957,9 @@ async function checkAutoSession() {
         return;
       }
       await refreshServerRoster();
+
+      syncOwnDisplayNameFromRoster();
+
       saveState();
 
       document.getElementById("auth-overlay").style.display = "none";
@@ -5710,7 +5804,10 @@ function buyReincarnationElixir() {
   const modal = document.getElementById("levelup-modal");
   if (modal) modal.style.display = "flex";
 
-  saveState();
+  /* FIX (đôi lúc Luân Hồi xong không thấy trừ Trúc): gửi save_progress
+     NGAY thay vì chờ debounce 1.5s, xem giải thích chi tiết ở
+     pushProgressToServerNow(). */
+  saveStateImmediate();
   updateGamificationUI();
   playSound("correct");
 }
@@ -5812,7 +5909,10 @@ function buyTribulation() {
   const modal = document.getElementById("levelup-modal");
   if (modal) modal.style.display = "flex";
 
-  saveState();
+  /* FIX (đôi lúc Độ Kiếp xong không thấy trừ Trúc): gửi save_progress
+     NGAY thay vì chờ debounce 1.5s, xem giải thích chi tiết ở
+     pushProgressToServerNow(). */
+  saveStateImmediate();
   updateGamificationUI();
   playSound("correct");
 }
@@ -8526,8 +8626,10 @@ function renderQuizResult() {
      tự lưu — trước đây saveState() chỉ được gọi ở nhánh rewardAmt===0,
      khiến Trúc vừa cộng (khi rewardAmt>0) không được lưu xuống localStorage
      lẫn đẩy lên server, hiện lên UI một lúc rồi mất khi tải lại trang /
-     đồng bộ lại. Giờ luôn gọi saveState() bất kể có Trúc hay không. */
-  saveState();
+     đồng bộ lại. Giờ luôn gọi saveState() bất kể có Trúc hay không.
+     FIX thêm: dùng saveStateImmediate() thay vì saveState() để gửi lên
+     server ngay, không chờ debounce 1.5s (xem pushProgressToServerNow()). */
+  saveStateImmediate();
 
   const rewardLine = rewardAmt > 0
     ? `Xuất sắc! Bạn đạt ${pct}% câu trả lời đúng 🐼 (+${rewardAmt} Trúc 🎋)`
@@ -8737,8 +8839,10 @@ function renderPinyinTestResult() {
   }
   /* FIX: giống lỗi ở Kiểm Tra Quiz — grantBamboo() không tự lưu, phải luôn
      gọi saveState() sau đó dù có Trúc hay không, nếu không Trúc vừa cộng
-     sẽ mất khi tải lại trang / đồng bộ lại. */
-  saveState();
+     sẽ mất khi tải lại trang / đồng bộ lại.
+     FIX thêm: dùng saveStateImmediate() để gửi lên server ngay, không
+     chờ debounce 1.5s (xem pushProgressToServerNow()). */
+  saveStateImmediate();
 
   const rewardLine = rewardAmt > 0
     ? `Xuất sắc! Bạn đạt ${pct}% câu trả lời đúng 🀄 (+${rewardAmt} Trúc 🎋)`
@@ -9000,7 +9104,10 @@ function renderTimedPass() {
       timestamp: Date.now()
     });
   }
-  saveState();
+  /* FIX (đôi lúc vượt Thử Thách Thời Gian xong không thấy cộng Trúc): gửi
+     save_progress NGAY thay vì chờ debounce 1.5s, xem giải thích chi tiết
+     ở pushProgressToServerNow(). */
+  saveStateImmediate();
 
   tmArea.innerHTML = `
     <div style="text-align:center; padding:30px; background:var(--card-bg); border:3px solid var(--paper-darker); border-radius:24px;">
@@ -9147,8 +9254,10 @@ function renderWcArea() {
     /* FIX: grantBamboo() không tự lưu — trước đây hàm này chuyển thẳng sang
        gửi Google Sheet mà quên gọi saveState(), khiến Trúc vừa cộng cho bài
        Đặt Câu không được lưu xuống localStorage/server, mất khi tải lại
-       trang. Gọi saveState() ngay sau khi cộng Trúc. */
-    saveState();
+       trang. Gọi saveState() ngay sau khi cộng Trúc.
+       FIX thêm: dùng saveStateImmediate() để gửi lên server ngay, không
+       chờ debounce 1.5s (xem pushProgressToServerNow()). */
+    saveStateImmediate();
 
     sendAnswerToGoogleSheet({
       activity: "sentence_challenge",
@@ -9341,7 +9450,9 @@ function initGrammarHandlers() {
     }
 
     if (isFirstSubmit) grantBamboo(rewardAmt, `Nộp Bài Tập Ngữ Pháp: ${sec.title}`);
-    saveState();
+    /* FIX: gửi save_progress ngay khi có cộng Trúc, không chờ debounce
+       1.5s (xem pushProgressToServerNow()). */
+    if (isFirstSubmit) { saveStateImmediate(); } else { saveState(); }
 
     const summaryText = answers.map((a, i) => `Câu ${i + 1} (${a.itemName}): ${a.answer}`).join("\n");
 
@@ -9718,7 +9829,9 @@ function submitClassTest(auto = false, toastMsg = null) {
 
   const rewardAmt = cData.rewardMatrix?.classTest || 25; // FIX: đọc từ cấu hình lớp (đồng bộ), không phải state.gamification cá nhân
   grantBamboo(rewardAmt, `Bài Kiểm Tra: ${list.name}`);
-  saveState();
+  /* FIX: gửi save_progress ngay khi có cộng Trúc, không chờ debounce
+     1.5s (xem pushProgressToServerNow()). */
+  saveStateImmediate();
 
   const summaryText = answers.map((a, i) => `${i + 1}. ${a.hanzi} (${a.pinyin}) — Học sinh trả lời: "${a.studentAnswer}" | Đáp án: "${a.correctMeaning}"`).join("\n");
 
@@ -10051,7 +10164,9 @@ function initDictationControls() {
       text: text,
       timestamp: Date.now()
     });
-    saveState();
+    /* FIX: gửi save_progress ngay khi có cộng Trúc, không chờ debounce
+       1.5s (xem pushProgressToServerNow()). */
+    saveStateImmediate();
 
     sendAnswerToGoogleSheet({
       activity: "dictation",
@@ -12409,36 +12524,27 @@ window.addEventListener("DOMContentLoaded", () => {
      đếm debounce đang chờ và gửi save_progress NGAY LẬP TỨC thay vì chờ
      đủ 1.5 giây. Đây là cách chính, đáng tin cậy hơn để không mất Trúc/XP
      khi học viên thoát app ngay sau khi vừa hoàn thành bài tập. */
-  document.addEventListener("visibilitychange", () => {
+  /* FIX: gộp lại dùng chung doPushProgressNow_()/pushProgressToServerNow()
+     (đã tự lo việc hủy timer debounce + giữ cờ _progressSyncTimer đúng
+     cách) thay vì lặp lại y hệt logic gọi callServer("save_progress",...)
+     ở đây — tránh 2 nơi cùng sửa mà quên đồng bộ nhau. */
+  const flushProgressOnHide_ = () => {
     if (document.hidden && _progressSyncTimer && state.username) {
-      /* FIX: trước đây gọi clearTimeout(_progressSyncTimer) — nhưng
-         _progressSyncTimer giờ là CỜ boolean (đang có lượt lưu dang dở),
-         không còn là id thật của setTimeout nữa -> phải hủy đúng
-         _progressSyncTimeoutId_. Đồng thời GIỮ cờ _progressSyncTimer =
-         true trong lúc request này đang bay (thay vì đặt null ngay lập
-         tức) để không mở khoá poll giữa chừng, cùng lớp lỗi race
-         condition đã sửa ở pushProgressToServer(). */
-      clearTimeout(_progressSyncTimeoutId_);
-      callServer("save_progress", {
-        username: state.username,
-        progress: captureCurrentProgress(),
-        baselinePouch: _serverBaselinePouch,
-        baselineDecorations: _serverBaselineDecorations,
-        baselineXp: _serverBaselineXp,
-        baselineBadgeCharm: _serverBaselineBadgeCharm,
-        baselineBadges: _serverBaselineBadges
-      }).then(res => {
-        if (res && res.ok && state.gamification) {
-          if (typeof res.bambooPouch === "number") state.gamification.bambooPouch = res.bambooPouch;
-          if (Array.isArray(res.decorations)) state.gamification.decorations = res.decorations;
-          if (typeof res.totalXp === "number") state.gamification.totalXp = res.totalXp;
-          if (typeof res.badgeCharmBonus === "number") state.gamification.badgeCharmBonus = res.badgeCharmBonus;
-          if (Array.isArray(res.unlockedBadges)) state.gamification.unlockedBadges = res.unlockedBadges;
-          captureServerBaseline_();
-        }
-      }).finally(() => {
-        _progressSyncTimer = null;
-      });
+      pushProgressToServerNow();
+    }
+  };
+  document.addEventListener("visibilitychange", flushProgressOnHide_);
+
+  /* FIX (bổ sung, cùng lớp lỗi mất Trúc/XP khi thoát app đột ngột):
+     "visibilitychange" không phải lúc nào cũng kịp bắn trên di động khi
+     người dùng vuốt tắt hẳn app hoặc trình duyệt/app-webview (Zalo,...)
+     đình chỉ tiến trình ngay lập tức. "pagehide" là sự kiện đáng tin cậy
+     hơn cho đúng tình huống này (kể cả khi trang được đưa vào bfcache),
+     nên thêm 1 lượt flush nữa ở đây làm lưới an toàn thứ 2 — không thay
+     thế visibilitychange, chỉ tăng thêm cơ hội gửi kịp save_progress. */
+  window.addEventListener("pagehide", () => {
+    if (_progressSyncTimer && state.username) {
+      pushProgressToServerNow();
     }
   });
 
