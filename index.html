@@ -8369,7 +8369,11 @@ function initQuizHandlers() {
     });
   }
   if (qzTopicSel) {
-    qzTopicSel.addEventListener("change", () => { qzUseAll = false; updateQuizCountHint(); });
+    qzTopicSel.addEventListener("change", () => {
+      qzUseAll = false;
+      document.getElementById("qz-count-all-btn")?.classList.remove("btn-primary");
+      updateQuizCountHint();
+    });
   }
   document.getElementById("qz-count-all-btn")?.addEventListener("click", () => {
     qzUseAll = !qzUseAll;
@@ -8580,7 +8584,11 @@ function updatePyCountHint() {
 
 function initPinyinTestHandlers() {
   if (pyTopicSel) {
-    pyTopicSel.addEventListener("change", () => { pyUseAll = false; updatePyCountHint(); });
+    pyTopicSel.addEventListener("change", () => {
+      pyUseAll = false;
+      document.getElementById("py-count-all-btn")?.classList.remove("btn-primary");
+      updatePyCountHint();
+    });
   }
   document.getElementById("py-count-all-btn")?.addEventListener("click", () => {
     pyUseAll = !pyUseAll;
