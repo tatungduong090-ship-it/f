@@ -854,6 +854,23 @@
      tông tím-đen giông bão, khác hẳn màu đỏ của "Chờ Luân Hồi" để phân biệt rõ */
   .lb-row-pending-tribulation{ border-color:#7C4DFF !important; background:linear-gradient(135deg,#2A1A4D,#1A1030) !important; position:relative; overflow:hidden; }
   .lb-row-pending-tribulation *{ color:#E1D5FF !important; }
+  /* FIX: khi dòng "Chờ Độ Kiếp" (chữ tím nhạt #E1D5FF, thiết kế cho nền tím than)
+     bị hào quang Top 1-3 hoặc Uy Danh Level đè thành nền SÁNG (cam/vàng/trắng...),
+     chữ tím nhạt gần như biến mất vì không đủ tương phản. Trả riêng màu TÊN
+     (thẻ <strong>) về var(--seal-dark) như mọi dòng bình thường khác — mọi hiệu
+     ứng, badge, viền, nền, animation khác giữ nguyên 100% không đổi. */
+  .lb-row-pending-tribulation.lb-rank-1 strong,
+  .lb-row-pending-tribulation.lb-rank-2 strong,
+  .lb-row-pending-tribulation.lb-rank-3 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-1 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-2 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-3 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-4 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-5 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-6 strong,
+  .lb-row-pending-tribulation.lb-lvl-aura-7 strong{
+    color:var(--seal-dark) !important;
+  }
   .lb-row-pending-tribulation::after{ content:""; position:absolute; top:0; left:-60%; width:35%; height:100%; background:linear-gradient(120deg, transparent, rgba(0,229,255,0.55), transparent); animation:badgeSparkleSweep 1.5s linear infinite; pointer-events:none; }
   .lb-row-pending-tribulation::before{ content:"⛈️"; position:absolute; top:2px; right:8px; font-size:18px; z-index:2; pointer-events:none; animation:tribBoltFlicker 0.7s steps(2,end) infinite; }
 
@@ -877,21 +894,6 @@
   }
   .lb-lvl-aura-8::after{ content:""; position:absolute; top:0; left:-60%; width:35%; height:100%; background:linear-gradient(120deg, transparent, rgba(255,255,255,0.85), transparent); animation:badgeSparkleSweep 2.2s linear infinite; pointer-events:none; }
   .lb-lvl-tag{ display:inline-flex; align-items:center; gap:3px; margin-left:6px; vertical-align:middle; font-size:10px; font-weight:900; color:#fff; padding:2px 9px; border-radius:999px; letter-spacing:0.2px; white-space:nowrap; }
-  /* Danh hiệu (Trạng thái) trên Bảng Xếp Hạng — chữ ánh lửa thiêng cam-đỏ rực rỡ, hào quang bừng sáng như thần lửa giáng thế */
-  .lb-outfit-title{
-    font-weight:900; font-size:13.5px; letter-spacing:0.3px;
-    background:linear-gradient(90deg,#FFF3E0,#FF6D00,#FF3D00,#FFAB00,#FF3D00,#FFF3E0);
-    background-size:300% auto;
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .lb-outfit-title.lb-outfit-sheen{ animation:lbOutfitSheen 3s linear infinite; }
-  .lb-outfit-title.lb-outfit-glow{ animation:lbOutfitSheen 3s linear infinite, lbOutfitPulse 1.6s ease-in-out infinite; }
-  .lb-outfit-icon{ font-size:13px; }
-  @keyframes lbOutfitSheen{ 0%{ background-position:0% center; } 100%{ background-position:300% center; } }
-  @keyframes lbOutfitPulse{
-    0%,100%{ filter:drop-shadow(0 0 3px rgba(255,109,0,0.55)) drop-shadow(0 0 1px rgba(255,255,255,0.8)); }
-    50%{ filter:drop-shadow(0 0 8px rgba(255,61,0,0.95)) drop-shadow(0 0 14px rgba(255,171,0,0.55)); }
-  }
   .lb-lvl-tag.aura-1{ background:#B87333; }
   .lb-lvl-tag.aura-2{ background:#8C8C8C; }
   .lb-lvl-tag.aura-3{ background:linear-gradient(90deg,#FFD700,#FFA500); color:#5C3D00; }
@@ -3510,49 +3512,10 @@ function captureServerBaseline_() {
   _serverBaselineBadges = Array.isArray(g.unlockedBadges) ? g.unlockedBadges.slice() : [];
 }
 
-/* FIX (Trúc "được thưởng nhưng không vào túi thật"): hàm này trước đây có
-   2 LỖI khiến Trúc kiếm được từ Kiểm Tra / Kiểm Tra Pinyin / Bài Kiểm Tra
-   Lớp / Thử Thách Thời Gian có thể biến mất sau khi đồng bộ lại:
-
-   LỖI 1 — GHI ĐÈ CHỒNG (double-fire): doPushProgressNow_() KHÔNG kiểm tra
-   xem đã có 1 lượt save_progress khác đang bay hay chưa trước khi gửi.
-   Nếu học viên hoàn thành 2 hoạt động cộng Trúc liên tiếp thật nhanh (vd:
-   làm xong Kiểm Tra rồi bấm ngay sang Kiểm Tra Pinyin trước khi lượt lưu
-   đầu tiên kịp có phản hồi), CẢ 2 request đều dùng chung 1 giá trị
-   _serverBaselinePouch CŨ (vì baseline chỉ được chốt lại SAU KHI request
-   có phản hồi) -> server cộng nhầm delta của request 2 dựa trên baseline
-   sai, gây lệch số Trúc (thường bị CỘNG THỪA, nhưng cũng có thể khiến 1
-   trong 2 giao dịch bị tính sai/mất tuỳ thứ tự request tới server).
-
-   LỖI 2 — MẤT HẲN KHI LƯU THẤT BẠI: callServer() chỉ tự thử lại ĐÚNG 1 lần
-   (xem callServer() phía trên). Nếu cả 2 lần đều thất bại (mất mạng/server
-   bận thoáng qua), nhánh .then() ở dưới không chạy -> _serverBaselinePouch
-   KHÔNG được chốt lại theo bản mới, nhưng quan trọng hơn: KHÔNG có gì gửi
-   lại request này nữa. Trúc vừa cộng vẫn hiển thị đúng trên UI (vì đã cộng
-   vào state cục bộ ngay khi grantBamboo() chạy) nhưng KHÔNG hề tồn tại
-   trên server. Lần đồng bộ/poll/tải lại trang kế tiếp (get_progress) sẽ
-   kéo bản CŨ (chưa có Trúc) từ server về ghi đè state cục bộ -> Trúc "biến
-   mất" đúng như báo cáo, dù học viên chắc chắn đã thấy thông báo +Trúc.
-
-   Sửa bằng cách thêm cơ chế "hàng đợi 1 lượt" (single-flight + retry):
-   nếu đang có 1 request bay mà lại có yêu cầu lưu mới, hoặc nếu request
-   vừa gửi bị lỗi, chỉ đánh dấu cờ _pushAgainAfterCurrent_ thay vì bắn thêm
-   request chồng lên — rồi tự động gửi lại ĐÚNG 1 lượt nữa (với progress +
-   baseline mới nhất tại thời điểm đó) NGAY SAU KHI lượt hiện tại kết thúc,
-   lặp lại cho tới khi thành công. Nhờ vậy không bao giờ có 2 request bay
-   cùng lúc (hết Lỗi 1), và một lượt lưu thất bại luôn được tự động thử lại
-   ở lượt kế tiếp thay vì bị bỏ quên vĩnh viễn (hết Lỗi 2). */
-let _pushAgainAfterCurrent_ = false;
-
+/* Thực hiện đúng 1 lượt gửi save_progress lên server (dùng chung cho cả
+   nhánh debounce bình thường LẪN nhánh "gửi ngay không chờ" bên dưới).
+   Tách riêng ra để 2 nhánh không lặp lại logic hoà giải baseline. */
 function doPushProgressNow_() {
-  if (_progressSyncTimer) {
-    /* Đã có 1 lượt save_progress khác đang bay -> KHÔNG bắn request chồng
-       (đây chính là Lỗi 1 ở trên). Chỉ cần đánh dấu để gửi lại ngay khi
-       lượt hiện tại xong, request kế tiếp đó sẽ tự chụp progress + baseline
-       mới nhất nên không mất dữ liệu. */
-    _pushAgainAfterCurrent_ = true;
-    return Promise.resolve();
-  }
   _progressSyncTimer = true;
   return callServer("save_progress", {
     username: state.username,
@@ -3585,25 +3548,11 @@ function doPushProgressNow_() {
         Object.assign(state.gamification.counters, res.counters);
       }
       captureServerBaseline_();
-    } else {
-      /* FIX (Lỗi 2 ở trên): lưu thất bại kể cả sau khi callServer() đã tự
-         retry 1 lần — KHÔNG được bỏ cuộc ở đây, nếu không Trúc/XP vừa cộng
-         cục bộ sẽ bị mất ngay khi có 1 lượt poll/tải lại trang kéo bản cũ
-         từ server về. Đánh dấu để tự động gửi lại 1 lượt nữa. */
-      _pushAgainAfterCurrent_ = true;
-      console.warn("save_progress thất bại sau khi đã retry — sẽ tự động thử lưu lại.", res);
     }
   }).finally(() => {
     /* Chỉ mở khoá poll SAU KHI request đã có kết quả (thành công hay
        thất bại đều mở, để không khoá poll vĩnh viễn nếu mất mạng). */
     _progressSyncTimer = null;
-    if (_pushAgainAfterCurrent_) {
-      _pushAgainAfterCurrent_ = false;
-      /* Chờ 1 nhịp ngắn trước khi tự gửi lại — vừa đủ để không bắn liên
-         tục quá dồn dập nếu đang mất mạng thật sự (offline hoàn toàn),
-         vừa đủ nhanh để Trúc/XP không bị "treo" lâu chưa lên server. */
-      setTimeout(() => { doPushProgressNow_(); }, 1200);
-    }
   });
 }
 
@@ -3955,8 +3904,7 @@ function syncPeersFromRoster() {
     p.totalXp = s.totalXp || 0;
     p.bambooPouch = s.bambooPouch || 0;
     p.level = lDetails.level;
-    p.outfit = lMeta.title || lMeta.outfit;
-    p.outfitIcon = lMeta.outfit || lMeta.title;
+    p.outfit = lMeta.outfit || lMeta.title;
     p.badges = s.unlockedBadges || [];
     p.decorations = s.decorations || [];
     p.badgeCharmBonus = s.badgeCharmBonus || 0;
@@ -8201,20 +8149,7 @@ function feedPanda(amount) {
     addOrMergeFeedLog(toFeed, toFeed * 10);
   }
 
-  /* FIX (Lv/Trúc lên trên máy mình nhưng thiết bị khác không thấy):
-     feedPanda() là nơi Trúc thực sự được "tiêu" để đổi thành XP/Level —
-     trước đây gọi saveState() (bản debounce, chờ 1.5s mới thực sự gửi lên
-     server). Nếu học sinh bấm cho ăn xong rồi thoát app/chuyển tab ngay
-     trong khoảng 1.5s đó (rất hay gặp trên điện thoại — hệ điều hành đình
-     chỉ tiến trình JS gần như ngay lập tức khi chuyển app nền), request
-     save_progress coi như CHƯA TỪNG được gửi: Level/Trúc mới CHỈ tồn tại
-     trên state cục bộ + localStorage của đúng máy đó, không hề lên server.
-     Các thiết bị khác (kể cả chính học sinh đó mở lại trên máy khác) đọc
-     dữ liệu qua get_class_members/get_progress từ server nên vẫn thấy
-     đúng Level/Trúc CŨ mãi mãi cho tới khi có 1 lượt lưu thành công khác.
-     Giống các FIX trước đó (Kiểm Tra, Luân Hồi, Độ Kiếp...), đổi sang
-     saveStateImmediate() để gửi lên server NGAY, không chờ debounce. */
-  saveStateImmediate();
+  saveState();
   updateGamificationUI();
   playSound("correct");
 }
@@ -10444,19 +10379,6 @@ function renderLevelAuraTagHtml(level) {
   return `<span class="lb-lvl-tag aura-${info.tier}" title="Đạt mốc Level ${level} — Uy Danh Cấp ${info.tier}${cycleTxt ? ', Vòng ' + (info.cycle + 1) : ''}">🔱 Uy Danh ${info.name}${cycleTxt}</span>`;
 }
 
-/* Trả về HTML danh hiệu cạnh tên trên Bảng Xếp Hạng, phân tầng hiệu ứng theo Level:
-   - Dưới Level 50: chỉ hiện Icon (không hiện chữ danh hiệu)
-   - Từ Level 50 đến 59: hiện đủ chữ + hiệu ứng ánh kim quét sáng
-   - Từ Level 60 trở lên: hiện đủ chữ + ánh kim quét sáng + hào quang bừng nhấp nháy */
-function renderOutfitTitleHtml(p) {
-  const lvl = p.level || 0;
-  if (lvl < 50) {
-    return `<span class="lb-outfit-icon" title="${p.outfit}">${p.outfitIcon || p.outfit}</span>`;
-  }
-  const cls = lvl >= 60 ? "lb-outfit-title lb-outfit-sheen lb-outfit-glow" : "lb-outfit-title lb-outfit-sheen";
-  return `<span class="${cls}">${p.outfit}</span>`;
-}
-
 function renderLeaderboardContent() {
   const modeSel = document.getElementById("lb-mode-select");
   if (!modeSel) return;
@@ -10482,7 +10404,6 @@ function renderLeaderboardContent() {
         me.bambooPouch = state.gamification?.bambooPouch || 0;
         me.level = lDetails.level;
         me.outfit = currentLMeta.title;
-        me.outfitIcon = currentLMeta.outfit;
         me.badges = state.gamification?.unlockedBadges || [];
         me.spiritAnimal = state.gamification?.spiritAnimal || "";
         me.charmLocked = lDetails.charmLocked;
@@ -10498,7 +10419,6 @@ function renderLeaderboardContent() {
           bambooPouch: state.gamification?.bambooPouch || 0,
           level: lDetails.level,
           outfit: currentLMeta.title,
-          outfitIcon: currentLMeta.outfit,
           badges: state.gamification?.unlockedBadges || [],
           spiritAnimal: state.gamification?.spiritAnimal || "",
           charmLocked: lDetails.charmLocked,
@@ -10549,7 +10469,7 @@ function renderLeaderboardContent() {
               <span style="font-size:24px;" class="${medalClass}">${animal ? animal.icon : medal}</span>
               <div>
                 <strong style="color:var(--seal-dark); font-size:15px;">#${idx + 1} ${p.name} ${isMe ? ' (Bạn)' : ''}${renderBadgeChipsHtml(p.badges)}${renderLightspeedBadgeHtml(p.badges)}${renderLevelAuraTagHtml(p.level)}${animal ? renderTransformBadgeHtml(p.spiritAnimal) : ''}${renderReincarnationBadgeHtml(p.reincarnationCount)}${renderTribulationBadgeHtml(p.tribulationCount)}</strong>
-                <div style="font-size:12px; color:${isPendingTribulation ? '#FFEE58' : isPendingReincarnation ? '#C62828' : 'var(--ink-soft)'}; font-weight:${(isPendingTribulation || isPendingReincarnation) ? '800' : '400'};">Trạng thái: ${renderOutfitTitleHtml(p)} · ${levelStatusHtml}${p.charmLocked ? ` <span style="color:#D81B60; font-weight:800;" title="Đủ XP nhưng thiếu Mị Lực để lên Level tiếp">🔒 cần thêm 💖</span>` : ''}${isLegendaryGateLocked ? ` <span style="color:#FFC107; font-weight:800;" title="Đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết">✨🔒 cần Thú Truyền Thuyết</span>` : ''}</div>
+                <div style="font-size:12px; color:${isPendingTribulation ? '#FFEE58' : isPendingReincarnation ? '#C62828' : 'var(--ink-soft)'}; font-weight:${(isPendingTribulation || isPendingReincarnation) ? '800' : '400'};">Trạng thái: ${p.outfit} · ${levelStatusHtml}${p.charmLocked ? ` <span style="color:#D81B60; font-weight:800;" title="Đủ XP nhưng thiếu Mị Lực để lên Level tiếp">🔒 cần thêm 💖</span>` : ''}${isLegendaryGateLocked ? ` <span style="color:#FFC107; font-weight:800;" title="Đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết">✨🔒 cần Thú Truyền Thuyết</span>` : ''}</div>
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:14px;">
