@@ -3812,6 +3812,22 @@ async function syncSharedConfigFromServer() {
      _sharedConfigPushPending phía trên). */
   if (_sharedConfigPushPending) return;
   const res = await callServer("get_shared_config", {});
+  /* FIX (mất list từ vựng vài tiếng sau khi giáo viên up): guard
+     _sharedConfigPushPending ở trên chỉ được kiểm tra TRƯỚC khi gửi request
+     get_shared_config này. Nhưng request là bất đồng bộ, có thể mất vài
+     trăm ms tới vài giây. Nếu ĐÚNG LÚC request đang bay mà giáo viên thêm/
+     sửa từ vựng, đổi màu, đổi thông báo lớp... thì pushSharedConfigToServer()
+     sẽ bật _sharedConfigPushPending = true NGAY SAU KHI guard ở trên đã đi
+     qua. res.config lúc này là bản CHỤP TỪ TRƯỚC khi sửa (server chưa nhận
+     được thay đổi mới), nếu vẫn ghi đè xuống state thì sẽ xoá mất từ vựng
+     vừa thêm trên chính thiết bị này — và tệ hơn, dòng _lastSharedConfigJson
+     bên dưới sẽ "chốt" theo bản cũ này, khiến lần lưu kế tiếp (dù chỉ đổi 1
+     field nhỏ khác) đẩy nguyên cả bản classes cũ (thiếu từ mới) đè lên
+     server, xoá mất từ vựng cho MỌI thiết bị khác. Giống hệt lỗi đã vá ở
+     pollOwnProgressFromServer(): phải kiểm tra lại cờ NGAY SAU KHI await
+     xong, ngay trước khi ghi đè — nếu cờ đã bật lên trong lúc chờ, coi kết
+     quả lần kéo này là stale và bỏ qua hoàn toàn. */
+  if (_sharedConfigPushPending) return;
   if (res && res.ok && res.found && res.config) {
     applySharedConfig(res.config);
     sanitizeState(state);
