@@ -4564,6 +4564,35 @@ function shuffle(arr) {
   return a;
 }
 
+/* FIX: Sinh đáp án nhiễu KHÔNG trùng nghĩa với từ đúng (và không trùng
+   nghĩa lẫn nhau) — dùng cho "Kiểm Tra" và "Thử Thách Giờ". Trước đây các
+   hàm này chỉ lọc theo id khác nhau (x.id !== w.id), nên nếu 2 từ khác id
+   nhưng trùng nghĩa tiếng Việt (VD: "Hối hận" xuất hiện ở 2 mục từ vựng
+   khác nhau) thì màn hình sẽ hiện 2 đáp án giống hệt nhau, khiến học viên
+   tưởng có 2 đáp án đúng. Hàm này ưu tiên chọn đáp án nhiễu có nghĩa khác
+   biệt; chỉ khi list quá ít lựa chọn không trùng nghĩa mới phải lấy tạm từ
+   trùng nghĩa để không làm vỡ luồng ra câu hỏi (đủ 4 đáp án). */
+function pickMeaningDistinctDistractors(words, target, count) {
+  const seenMeanings = new Set([String(target.meaning || "").trim()]);
+  const pool = shuffle(words.filter(x => x.id !== target.id));
+  const result = [];
+  for (const cand of pool) {
+    if (result.length >= count) break;
+    const m = String(cand.meaning || "").trim();
+    if (seenMeanings.has(m)) continue;
+    seenMeanings.add(m);
+    result.push(cand);
+  }
+  if (result.length < count) {
+    for (const cand of pool) {
+      if (result.length >= count) break;
+      if (result.includes(cand)) continue;
+      result.push(cand);
+    }
+  }
+  return result;
+}
+
 /* =========================================================
    PINYIN DISTRACTOR GENERATOR (dùng cho mục Kiểm Tra Pinyin)
    Sinh các đáp án "gây nhiễu" từ CHÍNH pinyin đúng của từ đó (không lấy
@@ -8557,7 +8586,7 @@ function renderQuizQuestion() {
   }
   const words = allWords().filter(w => qzTopicSel.value === "all" || w.topic === qzTopicSel.value);
   const w = qzQueue[qzIdx];
-  const distractors = shuffle(words.filter(x => x.id !== w.id)).slice(0, 3);
+  const distractors = pickMeaningDistinctDistractors(words, w, 3);
   const options = shuffle([w, ...distractors]);
 
   qzArea.innerHTML = `
@@ -9023,7 +9052,7 @@ function renderTimedQuestion() {
 
   const words = allWords().filter(w => tmTopicSel.value === "all" || w.topic === tmTopicSel.value);
   const w = tmQueue[tmIdx];
-  const distractors = shuffle(words.filter(x => x.id !== w.id)).slice(0, 3);
+  const distractors = pickMeaningDistinctDistractors(words, w, 3);
   const options = shuffle([w, ...distractors]);
   const limitMs = (state.challengeSeconds || 4) * 1000;
 
