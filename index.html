@@ -483,6 +483,22 @@
   }
   select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--jade); box-shadow:0 0 0 4px var(--accent-light); }
   select:hover, input:hover, textarea:hover{ border-color:var(--jade); }
+  /* FIX: trên điện thoại (đặc biệt Safari/iOS), khi một ô input/select/textarea
+     có font-size nhỏ hơn 16px được bấm vào (focus), trình duyệt sẽ TỰ ĐỘNG
+     phóng to (zoom) cả trang để "giúp" người dùng nhìn rõ chữ đang gõ — đây là
+     hành vi mặc định của trình duyệt di động, không phải lỗi JavaScript của
+     web. Đây chính là lý do khi học sinh bấm vào ô trả lời ở mục "KT Trên Lớp"
+     (input#classtest-ans-input dùng chung rule bên trên) thì màn hình bị phóng
+     to và lệch, phải kéo/pinch lại mới thấy đúng. Cách sửa chuẩn và an toàn
+     nhất là đảm bảo mọi ô nhập liệu có font-size >= 16px TRÊN ĐIỆN THOẠI, mà
+     không đổi kích thước chữ trên desktop/tablet lớn (nên đặt trong @media
+     max-width:768px, không sửa rule gốc phía trên) — nhờ vậy không ảnh hưởng
+     gì tới bố cục hay tính năng khác của web. */
+  @media (max-width:768px){
+    select, input[type=text], input[type=password], input[type=number], input[type=color], textarea{
+      font-size:16px;
+    }
+  }
   .stat-pill{ font-size:13px; color:var(--seal-dark); background:var(--accent-light); padding:8px 15px; border-radius:999px; font-weight:700; border:2px solid rgba(47,158,82,0.28); }
 
   .btn{ font-family:var(--sans); font-weight:700; font-size:14px; padding:12px 22px; border-radius:999px; border:2px solid transparent; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform 0.15s var(--ease), box-shadow 0.15s var(--ease), filter 0.15s var(--ease); display:inline-flex; align-items:center; justify-content:center; gap:6px; }
@@ -2031,6 +2047,19 @@
           </div>
           <input type="file" id="classtest-csv-file" accept=".csv" style="display:none;">
           <button class="btn btn-outline" id="classtest-csv-trigger-btn">⬆️ Nhập CSV → Tạo List Mới (Hán tự, Pinyin, Nghĩa)</button>
+        </div>
+
+        <div style="background:var(--paper); border:2px solid var(--paper-darker); border-radius:16px; padding:16px; margin-bottom:14px;">
+          <h5 style="margin:0 0 8px; color:var(--seal-dark);">✏️ Sửa Từ Trong List Đang Chọn</h5>
+          <p style="margin:0 0 10px; font-size:11px; color:var(--ink-soft); font-weight:600;">Chỉnh sửa Hán tự/Pinyin/Nghĩa, xóa bớt hoặc thêm từ mới vào List đã chọn ở trên (kể cả List vừa nhập từ CSV). Mọi thay đổi được lưu ngay lập tức.</p>
+          <div id="classtest-words-editor-warning"></div>
+          <div id="classtest-words-editor-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px; max-height:340px; overflow-y:auto;"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:6px; align-items:center;">
+            <input type="text" id="classtest-new-word-hanzi" placeholder="Hán tự">
+            <input type="text" id="classtest-new-word-pinyin" placeholder="Pinyin">
+            <input type="text" id="classtest-new-word-meaning" placeholder="Nghĩa">
+            <button class="btn btn-primary" id="classtest-add-word-btn" style="white-space:nowrap;">+ Thêm từ</button>
+          </div>
         </div>
 
         <div style="background:var(--paper); border:2px solid var(--paper-darker); border-radius:16px; padding:16px; margin-bottom:14px;">
@@ -9610,6 +9639,85 @@ function updateClassTestListInfo() {
   info.textContent = list ? `Ví dụ: ${list.words.slice(0, 3).map(w => w.hanzi).join(", ")}${list.words.length > 3 ? "..." : ""}` : "";
 }
 
+/* Cho phép giáo viên sửa/thêm/xóa từng từ trong List đang chọn ở dropdown
+   "classtest-list-select" — kể cả List vừa tạo từ CSV. Mọi thay đổi gọi
+   saveState() ngay (giống các CMS khác trong app) nên tự động lưu +
+   đồng bộ lên server qua pushSharedConfigToServer(), không đụng tới luồng
+   nhập CSV / bắt đầu / đóng bài kiểm tra hiện có. */
+function renderClassTestWordsEditor() {
+  const wrap = document.getElementById("classtest-words-editor-list");
+  const warnBox = document.getElementById("classtest-words-editor-warning");
+  const addBtn = document.getElementById("classtest-add-word-btn");
+  if (!wrap) return;
+  const sel = document.getElementById("classtest-list-select");
+  const cData = getCurrentClassData();
+  const list = cData.classTest.lists.find(l => l.id === (sel && sel.value));
+
+  if (!list) {
+    wrap.innerHTML = '<div class="empty-note">Chưa chọn List nào — hãy chọn hoặc nhập CSV tạo List trước.</div>';
+    if (warnBox) warnBox.innerHTML = "";
+    if (addBtn) addBtn.disabled = true;
+    return;
+  }
+  if (addBtn) addBtn.disabled = false;
+
+  const active = cData.classTest.active;
+  if (warnBox) {
+    warnBox.innerHTML = (active.listId === list.id && active.visible && !active.closed)
+      ? '<div style="font-size:11px; font-weight:700; color:#B45309; background:rgba(180,83,9,0.08); border-radius:8px; padding:6px 10px; margin-bottom:8px;">⚠️ List này đang MỞ cho học sinh làm bài — sửa/thêm/xóa từ lúc này có thể khiến bài học sinh đang làm không khớp với List mới.</div>'
+      : "";
+  }
+
+  if (list.words.length === 0) {
+    wrap.innerHTML = '<div class="empty-note">List này chưa có từ nào — thêm từ mới bên dưới.</div>';
+    return;
+  }
+
+  wrap.innerHTML = list.words.map((w, idx) => `
+    <div style="display:grid; grid-template-columns:22px 1fr 1fr 1fr auto; gap:6px; align-items:center; background:var(--card-bg); border:1px solid var(--paper-darker); border-radius:8px; padding:6px 8px;">
+      <span style="font-size:11px; color:var(--ink-soft); font-weight:700;">${idx + 1}.</span>
+      <input type="text" class="ctw-edit-in" data-list="${list.id}" data-word="${w.id}" data-field="hanzi" value="${escapeHtml(w.hanzi)}" style="font-size:13px;" placeholder="Hán tự">
+      <input type="text" class="ctw-edit-in" data-list="${list.id}" data-word="${w.id}" data-field="pinyin" value="${escapeHtml(w.pinyin)}" style="font-size:13px;" placeholder="Pinyin">
+      <input type="text" class="ctw-edit-in" data-list="${list.id}" data-word="${w.id}" data-field="meaning" value="${escapeHtml(w.meaning)}" style="font-size:13px;" placeholder="Nghĩa">
+      <button class="btn btn-bad ctw-del-btn" data-list="${list.id}" data-word="${w.id}" style="font-size:10px; padding:4px 8px; white-space:nowrap;">🗑️ Xóa</button>
+    </div>
+  `).join("");
+
+  wrap.querySelectorAll(".ctw-edit-in").forEach(inp => {
+    inp.addEventListener("change", () => {
+      const cData2 = getCurrentClassData();
+      const list2 = cData2.classTest.lists.find(l => l.id === inp.dataset.list);
+      if (!list2) return;
+      const word = list2.words.find(w2 => w2.id === inp.dataset.word);
+      if (!word) return;
+      const field = inp.dataset.field;
+      const val = inp.value.trim();
+      if (field === "hanzi" && !val) {
+        alert("Hán tự không được để trống!");
+        inp.value = word.hanzi;
+        return;
+      }
+      word[field] = val;
+      saveState();
+      fillClassTestListSelect();
+    });
+  });
+
+  wrap.querySelectorAll(".ctw-del-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const cData2 = getCurrentClassData();
+      const list2 = cData2.classTest.lists.find(l => l.id === btn.dataset.list);
+      if (!list2) return;
+      const word = list2.words.find(w2 => w2.id === btn.dataset.word);
+      if (!confirm(`Xóa từ "${word ? word.hanzi : ""}" khỏi List "${list2.name}"?`)) return;
+      list2.words = list2.words.filter(w2 => w2.id !== btn.dataset.word);
+      saveState();
+      fillClassTestListSelect();
+      renderClassTestWordsEditor();
+    });
+  });
+}
+
 function renderClassTestStatus() {
   const box = document.getElementById("classtest-status");
   if (!box) return;
@@ -9654,6 +9762,7 @@ function renderClassTestSubmissionsList() {
 
 function renderClassTestTeacherManager() {
   fillClassTestListSelect();
+  renderClassTestWordsEditor();
   renderClassTestStatus();
   renderClassTestSubmissionsList();
   const cData = getCurrentClassData();
@@ -9664,7 +9773,32 @@ function renderClassTestTeacherManager() {
 }
 
 function initClassTestTeacherHandlers() {
-  document.getElementById("classtest-list-select")?.addEventListener("change", updateClassTestListInfo);
+  document.getElementById("classtest-list-select")?.addEventListener("change", () => {
+    updateClassTestListInfo();
+    renderClassTestWordsEditor();
+  });
+
+  document.getElementById("classtest-add-word-btn")?.addEventListener("click", () => {
+    const sel = document.getElementById("classtest-list-select");
+    const cData = getCurrentClassData();
+    const list = cData.classTest.lists.find(l => l.id === sel.value);
+    if (!list) return alert("Vui lòng chọn (hoặc nhập CSV tạo) 1 List trước!");
+    const hanziIn = document.getElementById("classtest-new-word-hanzi");
+    const pinyinIn = document.getElementById("classtest-new-word-pinyin");
+    const meaningIn = document.getElementById("classtest-new-word-meaning");
+    const hanzi = hanziIn.value.trim();
+    const pinyin = pinyinIn.value.trim();
+    const meaning = meaningIn.value.trim();
+    if (!hanzi) return alert("Vui lòng nhập Hán tự cho từ mới!");
+    list.words.push({ id: ctGenId("ctw"), hanzi, pinyin, meaning });
+    saveState();
+    hanziIn.value = "";
+    pinyinIn.value = "";
+    meaningIn.value = "";
+    fillClassTestListSelect();
+    renderClassTestWordsEditor();
+    hanziIn.focus();
+  });
 
   document.getElementById("classtest-csv-trigger-btn")?.addEventListener("click", () => {
     document.getElementById("classtest-csv-file")?.click();
@@ -9690,7 +9824,8 @@ function initClassTestTeacherHandlers() {
       fillClassTestListSelect();
       document.getElementById("classtest-list-select").value = list.id;
       updateClassTestListInfo();
-      alert(`Đã tạo List "${list.name}" với ${words.length} từ!`);
+      renderClassTestWordsEditor();
+      alert(`Đã tạo List "${list.name}" với ${words.length} từ! Bạn có thể chỉnh sửa/thêm/bớt từ ở mục "✏️ Sửa Từ Trong List Đang Chọn" bên dưới.`);
       e.target.value = "";
     };
     reader.readAsText(file);
@@ -9709,6 +9844,7 @@ function initClassTestTeacherHandlers() {
     }
     saveState();
     fillClassTestListSelect();
+    renderClassTestWordsEditor();
     renderClassTestStatus();
   });
 
@@ -9894,6 +10030,32 @@ function submitClassTest(auto = false, toastMsg = null) {
   /* FIX: gửi save_progress ngay khi có cộng Trúc, không chờ debounce
      1.5s (xem pushProgressToServerNow()). */
   saveStateImmediate();
+
+  /* FIX (bài nộp Kiểm Tra Trên Lớp bị "mất", giáo viên không nhận được dù
+     học sinh đã nộp sớm hơn giờ quy định):
+     submission ở trên được push vào cData.classTest.submissions, là dữ
+     liệu thuộc field "classes" trong SHARED_FIELDS — nghĩa là nó chỉ thực
+     sự "tới tay" giáo viên (thiết bị khác) SAU KHI được đẩy lên server
+     qua save_shared_config. saveStateImmediate() ở trên chỉ lo phần
+     TIẾN TRÌNH CÁ NHÂN (Trúc/XP) được đẩy ngay (pushProgressToServerNow),
+     còn phần CẤU HÌNH DÙNG CHUNG (trong đó có submission này) vẫn đi qua
+     pushSharedConfigToServer() debounce 1.5s như bình thường — y hệt lớp
+     lỗi "vượt Thử Thách Thời Gian, thấy +Trúc nhưng vào lại app thì mất"
+     đã từng gặp và được vá bằng pushProgressToServerNow() ở trên. Học
+     sinh nộp bài sớm thường bấm thoát/tắt màn hình NGAY sau khi thấy
+     toast "Nộp bài thành công", nên nếu đúng lúc đó tab bị ẩn/đóng trước
+     khi 1.5s debounce kịp chạy, request save_shared_config bị hủy giữa
+     chừng -> bài nộp không lên server -> giáo viên (đang mở CMS ở máy
+     khác) không bao giờ thấy, dù học sinh đã "nộp thành công" trên máy
+     của chính mình. Gọi thẳng pushSharedConfigNow() ở đây (giống hệt
+     cách "Bắt Đầu Kiểm Tra"/"Đóng Bài Ngay" đã làm) để đẩy bài nộp lên
+     server NGAY LẬP TỨC, không chờ debounce — thu hẹp rủi ro chỉ còn
+     đúng khoảng thời gian 1 lượt gọi mạng (thường vài trăm ms) thay vì
+     cộng thêm 1.5s chờ vô ích. Nếu mạng lỗi tạm thời, cờ
+     _sharedConfigPushPending vẫn giữ nguyên nên lượt poll/flush kế tiếp
+     (xem flushSharedConfigOnHide_ và pollLiveUpdates) sẽ tự thử lại,
+     không cần báo lỗi làm học sinh hoang mang. */
+  pushSharedConfigNow().catch(() => {});
 
   const summaryText = answers.map((a, i) => `${i + 1}. ${a.hanzi} (${a.pinyin}) — Học sinh trả lời: "${a.studentAnswer}" | Đáp án: "${a.correctMeaning}"`).join("\n");
 
@@ -11176,6 +11338,17 @@ function initTeacherCMSHandlers() {
     const cData = getCurrentClassData();
     cData.videos.push({ id: "v_" + Date.now(), title, url, note, supportTopic });
     saveState();
+    /* FIX: trước đây chỉ gọi saveState() (đẩy lên server qua debounce
+       1.5s, không chờ xác nhận) — nếu giáo viên đóng tab/chuyển trang
+       trong lúc đó, hoặc có 1 tab/thiết bị khác đang mở với bản cấu hình
+       cũ vô tình lưu đè đúng lúc này, thì bài tập Video Chép Chính Tả
+       vừa thêm sẽ "biến mất" ở lần đồng bộ kế tiếp (~8s/lần) — cùng
+       nguyên nhân đã được vá cho "Xóa lớp/Đổi tên lớp" ở nơi khác. Đẩy
+       NGAY lên server (không đợi debounce) và chờ xác nhận để tránh mất
+       bài tập vừa thêm. */
+    pushSharedConfigNow().catch(() => {
+      alert("⚠️ Đã thêm cục bộ nhưng chưa đồng bộ được lên server (có thể do mất mạng). Vui lòng kiểm tra kết nối và thêm lại nếu bài tập bị mất sau này.");
+    });
     document.getElementById("new-video-title").value = "";
     document.getElementById("new-video-url").value = "";
     document.getElementById("new-video-note").value = "";
@@ -11530,6 +11703,17 @@ function renderUnifiedListRows() {
       if (wcMinVal > 0) cData2.wcMinCounts[topic] = wcMinVal; else delete cData2.wcMinCounts[topic];
 
       saveState();
+      /* FIX: trước đây chỉ gọi saveState() (đẩy lên server qua debounce
+         1.5s, không chờ xác nhận) — nếu giáo viên đóng tab/chuyển trang
+         trong lúc đó, hoặc có 1 tab/thiết bị khác đang mở với bản cấu
+         hình cũ vô tình lưu đè lên đúng lúc này, thì cấu trúc thưởng Trúc
+         vừa sửa sẽ bị "hoàn tác" về bản cũ ở lần đồng bộ kế tiếp (~8s/lần)
+         — cùng nguyên nhân đã được vá cho "Xóa lớp/Đổi tên lớp" ở nơi
+         khác. Đẩy NGAY lên server (không đợi debounce) và chờ xác nhận
+         để tránh mất thay đổi này. */
+      pushSharedConfigNow().catch(() => {
+        alert("⚠️ Đã lưu cục bộ nhưng chưa đồng bộ được lên server (có thể do mất mạng). Vui lòng kiểm tra kết nối và lưu lại nếu cấu hình bị hoàn tác sau này.");
+      });
       alert(`Đã lưu toàn bộ cấu hình cho bài "${topic}"!`);
       renderUnifiedListRows();
     };
@@ -12597,6 +12781,25 @@ window.addEventListener("DOMContentLoaded", () => {
   };
   document.addEventListener("visibilitychange", flushProgressOnHide_);
 
+  /* FIX (bổ sung, cùng lớp lỗi "bài nộp Kiểm Tra Trên Lớp bị mất" — xem
+     chú thích chi tiết ở pushSharedConfigNow() trong submitClassTest()):
+     flushProgressOnHide_ ở trên chỉ flush phần TIẾN TRÌNH CÁ NHÂN
+     (_progressSyncTimer). Cấu hình DÙNG CHUNG (_sharedConfigPushPending —
+     trong đó có classTest.submissions, tức bài nộp Kiểm Tra Trên Lớp) lại
+     KHÔNG có lưới an toàn tương tự, nên trước đây nếu học sinh nộp bài
+     xong rồi tắt màn hình/thoát app ngay trong lúc còn chờ debounce 1.5s,
+     bài nộp bị hủy giữa chừng, không bao giờ tới được server. Thêm đúng
+     1 lưới an toàn tương tự cho _sharedConfigPushPending ở đây — chỉ chạy
+     khi THỰC SỰ đang có 1 lượt đẩy chờ debounce (guard bên trong
+     pushSharedConfigNow không hề đổi hành vi cũ ở bất kỳ nơi nào khác
+     đang gọi saveState()/pushSharedConfigToServer() bình thường). */
+  const flushSharedConfigOnHide_ = () => {
+    if (document.hidden && _sharedConfigPushPending) {
+      pushSharedConfigNow().catch(() => {});
+    }
+  };
+  document.addEventListener("visibilitychange", flushSharedConfigOnHide_);
+
   /* FIX (bổ sung, cùng lớp lỗi mất Trúc/XP khi thoát app đột ngột):
      "visibilitychange" không phải lúc nào cũng kịp bắn trên di động khi
      người dùng vuốt tắt hẳn app hoặc trình duyệt/app-webview (Zalo,...)
@@ -12607,6 +12810,14 @@ window.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("pagehide", () => {
     if (_progressSyncTimer && state.username) {
       pushProgressToServerNow();
+    }
+    /* FIX (cùng lớp lỗi mất bài nộp Kiểm Tra Trên Lớp — xem chú thích ở
+       flushSharedConfigOnHide_ phía trên): "pagehide" đáng tin cậy hơn
+       "visibilitychange" trên di động khi app bị vuốt tắt/đình chỉ đột
+       ngột, nên thêm thêm 1 lượt flush nữa ở đây cho _sharedConfigPushPending,
+       y hệt cách đã làm cho _progressSyncTimer ở trên. */
+    if (_sharedConfigPushPending) {
+      pushSharedConfigNow().catch(() => {});
     }
   });
 
