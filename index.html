@@ -15203,6 +15203,17 @@ window.addEventListener("DOMContentLoaded", () => {
       logCard(txt);
     }catch(e){}
   }
+  /* Báo lượt quay Vòng Quay Ngũ Hành lên Bảng Tin thẻ (giống thẻ bài: dưới tên Người Ẩn Danh nếu đang bật Ẩn Dấu Phù) */
+  function announceSpin(r){
+    try{
+      if(typeof addActivityLog!=="function") return;
+      var logCard=function(t){ if(typeof addCardFeedLog==="function") addCardFeedLog(t); else addActivityLog(t); };
+      var s=ctx(); if(!s||!r) return;
+      var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username);
+      if(r.outcome==="jade") logCard("🔮 "+me+" quay Vòng Quay Ngũ Hành và trúng Ngọc Bội Ngũ Hành! Ô thẻ thứ 5 đã mở 🎉");
+      else logCard("🎡 "+me+" quay Vòng Quay Ngũ Hành, chưa ra Ngọc Bội nhưng nhận +"+r.xp+" XP");
+    }catch(e){}
+  }
   async function refreshMine(){
     try{ await pollOwnProgressFromServer(); }catch(e){}
     try{ await refreshServerRoster(); }catch(e){}
@@ -15234,6 +15245,7 @@ window.addEventListener("DOMContentLoaded", () => {
       else if(kind==="spin"){
         if(r.outcome==="jade") msg="🔮 Chúc mừng! Vòng Quay Ngũ Hành cho bạn Ngọc Bội Ngũ Hành — ô thẻ thứ 5 đã mở! (-1000 🎋)";
         else msg="🎡 Chưa ra Ngọc Bội: bạn nhận +"+r.xp+" XP (-1000 🎋). Đã trượt "+r.pity+"/15 lần"+(r.pity>=15?" — lần quay tới CHẮC CHẮN ra Ngọc Bội!":".");
+        announceSpin(r);
         try{ await pollOwnProgressFromServer(); }catch(e){}
         if(r.outcome==="jade"){ try{ await refreshServerRoster(); }catch(e){} try{ if(lbActive()&&typeof renderLeaderboardContent==="function") renderLeaderboardContent(); }catch(e){} }
         try{ updateGamificationUI(); }catch(e){}
