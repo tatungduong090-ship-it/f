@@ -2616,6 +2616,8 @@
 <footer>🐼 Chúc bạn học tập cùng gấu trúc thật vui vẻ và tiến bộ mỗi ngày! 🎋</footer>
 
 <script>
+/* Ngày theo GIỜ VIỆT NAM (UTC+7) cho mọi mốc "ngày mới" (lượt chơi, câu cá, đập niêu, trộm Trúc...). Trước đây dùng UTC nên 0h VN vẫn là hôm qua đến 7h sáng. */
+function vnTodayStr_() { return new Date(Date.now() + 7 * 3600 * 1000).toISOString().split("T")[0]; }
 /* =========================================================
    🎋 雅趣学堂 · MULTI-CLASS GAMIFICATION & VOCABULARY ENGINE 🐼
    Author: Thầy Marcus
@@ -3649,7 +3651,7 @@ function sanitizeState(s) {
   if (!g.dailyMinigames || typeof g.dailyMinigames !== "object") g.dailyMinigames = { date: "", played: [] };
   if (!Array.isArray(g.dailyMinigames.played)) g.dailyMinigames.played = [];
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.dailySteals || typeof g.dailySteals !== "object") {
     g.dailySteals = { date: todayStr, count: 0 };
   } else if (g.dailySteals.date !== todayStr) {
@@ -7203,7 +7205,7 @@ const WHEEL_SEGMENTS = [
 function checkResetWheelDaily() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.luckyWheel || typeof g.luckyWheel !== "object") {
     g.luckyWheel = { date: todayStr, spinsToday: 0, netTotal: 0, recentResults: [] };
   } else if (g.luckyWheel.date !== todayStr) {
@@ -7340,7 +7342,7 @@ const FISH_SPECIES = [
 function checkResetFishingDaily() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.fishing || typeof g.fishing !== "object") {
     g.fishing = { date: todayStr, castsToday: 0, netTotal: 0, recentResults: [] };
   } else if (g.fishing.date !== todayStr) {
@@ -7603,7 +7605,7 @@ const LANTERN_OUTCOMES = [
 function checkResetLanternDaily() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.lantern || typeof g.lantern !== "object") {
     g.lantern = { date: todayStr, releasesToday: 0, netTotal: 0, recentResults: [] };
   } else if (g.lantern.date !== todayStr) {
@@ -7869,7 +7871,7 @@ const KITE_OUTCOMES = [
 function checkResetKiteDaily() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.kite || typeof g.kite !== "object") {
     g.kite = { date: todayStr, releasesToday: 0, netTotal: 0, recentResults: [] };
   } else if (g.kite.date !== todayStr) {
@@ -8154,7 +8156,7 @@ const FORTUNE_SLIPS = [
 function checkResetFortuneDaily() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.fortune || typeof g.fortune !== "object") {
     g.fortune = { date: todayStr, drawsToday: 0, netTotal: 0, recentResults: [] };
   } else if (g.fortune.date !== todayStr) {
@@ -8393,7 +8395,7 @@ const POT_REWARDS = [
 function checkResetPotDaily() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.potSmash || typeof g.potSmash !== "object") {
     g.potSmash = { date: todayStr, smashesToday: 0, netTotal: 0, recentResults: [] };
   } else if (g.potSmash.date !== todayStr) {
@@ -8669,7 +8671,7 @@ const MINIGAMES = [
 function ensureDailyMinigamesTracking() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.dailyMinigames || g.dailyMinigames.date !== todayStr) {
     g.dailyMinigames = { date: todayStr, played: [] };
   }
@@ -9147,7 +9149,7 @@ async function giftDecorationToPeer(itemId, itemIndex, targetUsername) {
 function checkResetDailySteals() {
   const g = state.gamification;
   if (!g) return;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = vnTodayStr_();
   if (!g.dailySteals || typeof g.dailySteals !== "object") {
     g.dailySteals = { date: todayStr, count: 0 };
   } else if (g.dailySteals.date !== todayStr) {
@@ -9257,7 +9259,7 @@ async function stealBambooFromPeer(peerUsername) {
   if (!res || !res.ok) {
     const code = res && res.error;
     if (code === "steal_quota") {
-      if (!g.dailySteals) g.dailySteals = { date: new Date().toISOString().split("T")[0], count: 0 };
+      if (!g.dailySteals) g.dailySteals = { date: vnTodayStr_(), count: 0 };
       g.dailySteals.count = Math.max(g.dailySteals.count || 0, typeof res.used === "number" ? res.used : 5);
       renderStealModal();
       return alert("Hôm nay bạn đã dùng hết 5 lượt cướp rồi! Hãy quay lại vào ngày mai nhé 🐾");
@@ -9293,7 +9295,7 @@ async function stealBambooFromPeer(peerUsername) {
     captureServerBaseline_();
   }
 
-  if (!g.dailySteals) g.dailySteals = { date: new Date().toISOString().split("T")[0], count: 0 };
+  if (!g.dailySteals) g.dailySteals = { date: vnTodayStr_(), count: 0 };
   g.dailySteals.count = (typeof res.used === "number") ? res.used : (g.dailySteals.count || 0) + 1;
 
   const msg = isCrit
