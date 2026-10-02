@@ -14839,6 +14839,42 @@ window.addEventListener("DOMContentLoaded", () => {
   #view-thebai details.tb-item summary::after{ content:" ▾"; opacity:.6; }
   #view-thebai details.tb-item[open] summary::after{ content:" ▴"; }
   #view-thebai details.tb-item .tb-idesc{ margin-top:6px; }
+  /* Ô thẻ thứ 5 bị khóa + Vòng Quay Ngũ Hành + huy hiệu Ngọc Bội trên Bảng Xếp Hạng */
+  #view-thebai .tb-slot.tb-locked{ flex-direction:column; gap:6px; opacity:.6; border-color:#B8860B; padding:8px; text-align:center; background:repeating-linear-gradient(45deg,rgba(184,134,11,.07) 0 8px,transparent 8px 16px); }
+  #view-thebai .tb-lock-ico{ font-size:30px; line-height:1; }
+  #view-thebai .tb-lock-txt{ font-size:11px; font-weight:800; line-height:1.3; color:var(--ink-soft,#666); }
+  #view-thebai .tb-wheel{ display:flex; gap:14px; align-items:center; margin:12px 0; padding:14px; border:3px solid #B8860B; border-radius:20px; background:linear-gradient(135deg,#FFFDF2,#F4F8F0 50%,#F0F6FF); color:#3E2723; }
+  #view-thebai .tb-wheel-ico{ font-size:52px; line-height:1; flex:0 0 auto; }
+  #view-thebai .tb-wheel.tb-spinning .tb-wheel-ico{ animation:tbSpin .7s linear infinite; }
+  @keyframes tbSpin{ to{ transform:rotate(360deg); } }
+  #view-thebai .tb-wheel-body{ flex:1 1 auto; min-width:0; }
+  #view-thebai .tb-pity{ height:8px; border-radius:99px; background:#E0E0E0; overflow:hidden; margin:8px 0 4px; }
+  #view-thebai .tb-pity span{ display:block; height:100%; background:linear-gradient(90deg,#FFD54F,#FF8F00); }
+  .tb-jade-tag{ display:inline-block; margin-left:6px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:900; color:#fff; vertical-align:middle; text-shadow:0 1px 2px rgba(0,0,0,.45);
+    background:linear-gradient(90deg,#FBC02D,#43A047,#1E88E5,#E53935,#8D6E63,#FBC02D); background-size:200% 100%; animation:tbJadeFlow 3s linear infinite; box-shadow:0 0 8px 2px rgba(251,192,45,.45); }
+  @keyframes tbJadeFlow{ 0%{ background-position:0% 50%; } 100%{ background-position:200% 50%; } }
+  @media (prefers-reduced-motion:reduce){ .tb-jade-tag, #view-thebai .tb-wheel.tb-spinning .tb-wheel-ico{ animation:none; } }
+
+  /* ===== Vòng Quay Ngũ Hành huyền bí (SVG) ===== */
+  #view-thebai .tb-wheel-ico{ width:92px; height:92px; position:relative; }
+  .tb-mw{ display:block; width:100%; height:100%; overflow:visible; }
+  .tb-mw .tb-mw-rot{ transform-origin:100px 100px; animation:tbMwIdle 24s linear infinite; }
+  #view-thebai .tb-wheel.tb-spinning .tb-mw-rot{ animation:tbMwFast .6s linear infinite; }
+  .tb-mw .tb-mw-aura{ transform-origin:100px 100px; animation:tbMwIdle 9s linear infinite reverse; }
+  @keyframes tbMwIdle{ to{ transform:rotate(360deg); } }
+  @keyframes tbMwFast{ to{ transform:rotate(360deg); } }
+  #tb-spin-ov{ position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px;
+    background:radial-gradient(circle at 50% 40%,rgba(60,30,110,.92),rgba(8,6,24,.96)); color:#fff; text-align:center; overflow:hidden; animation:tbOvIn .25s ease-out; }
+  @keyframes tbOvIn{ from{ opacity:0; } to{ opacity:1; } }
+  #tb-spin-ov .tb-ov-wheel{ position:relative; width:min(72vw,300px); height:min(72vw,300px); filter:drop-shadow(0 0 22px rgba(255,215,64,.55)); }
+  #tb-spin-ov .tb-ov-wheel.tb-glow{ animation:tbGlow 1s ease-in-out infinite alternate; }
+  @keyframes tbGlow{ from{ filter:drop-shadow(0 0 18px rgba(255,215,64,.6)); } to{ filter:drop-shadow(0 0 46px rgba(255,255,255,.95)); } }
+  #tb-spin-ov .tb-ov-title{ font-size:22px; font-weight:900; letter-spacing:.5px; text-shadow:0 0 14px rgba(255,215,64,.8); }
+  #tb-spin-ov .tb-ov-sub{ font-size:14px; line-height:1.5; max-width:340px; opacity:.95; }
+  #tb-spin-ov .tb-ov-btn{ margin-top:6px; padding:10px 28px; border-radius:999px; border:2px solid #FFD54F; background:linear-gradient(90deg,#FBC02D,#FF8F00); color:#3A2E00; font-weight:900; font-size:15px; cursor:pointer; }
+  #tb-spin-ov .tb-spark{ position:absolute; top:-10%; font-size:22px; pointer-events:none; animation:tbFall linear forwards; }
+  @keyframes tbFall{ to{ transform:translateY(120vh) rotate(360deg); opacity:.2; } }
+  @media (prefers-reduced-motion:reduce){ .tb-mw .tb-mw-rot,.tb-mw .tb-mw-aura,#view-thebai .tb-wheel.tb-spinning .tb-mw-rot,#tb-spin-ov .tb-ov-wheel.tb-glow,#tb-spin-ov .tb-spark{ animation:none; } }
 </style>
 <script id="thebai-js">
 (function(){
@@ -14867,7 +14903,7 @@ window.addEventListener("DOMContentLoaded", () => {
     not_in_class:"Bạn không thuộc lớp này, hãy chọn lại lớp rồi thử lại.",cannot_target_self:"Không thể tự đánh mình.",nothing_to_take:"Bạn đó chưa đủ XP/Trúc để lấy.",
     no_target:"Chưa có mục tiêu phù hợp (Top 5 XP đang ẩn thân hoặc chưa có ai), hoặc chưa có bạn nào có Trúc để nhận.",teacher_not_allowed:"Giáo viên không chơi thẻ bài.",network:"Không kết nối được máy chủ, thử lại sau.",
     free_draw_available:"Bạn vẫn còn lượt bốc miễn phí hôm nay.",max_draws:"Hôm nay bạn đã bốc tối đa 2 lần.",
-    bag_full:"Túi đã đủ 4 thẻ. Hãy dùng hoặc bỏ 1 thẻ để bốc thêm.",not_enough_bamboo:"Không đủ 1000 Cành Trúc để bốc thêm.",
+    bag_full:"Túi đã đầy. Hãy dùng hoặc bỏ 1 thẻ để bốc thêm.",already_owned:"Bạn đã sở hữu Ngọc Bội Ngũ Hành rồi.",not_enough_bamboo:"Không đủ 1000 Cành Trúc để bốc thêm.",
     missing_target:"Hãy chọn 1 bạn làm mục tiêu.",target_not_in_class:"Bạn này không thuộc lớp của bạn.",target_is_teacher:"Không thể chọn giáo viên.",
     target_hidden:"Bạn này đang ẩn thân, không chọn được.",no_rob_target:"Chưa có bạn nào để cướp (chưa ai có Trúc hoặc đều đang ẩn thân).",target_bag_empty:"Túi của bạn này đang trống.",stealth_active:"Bạn đang ẩn thân rồi.",no_other_cards:"Túi không còn thẻ nào khác để đổi vận.",trace_active:"Bạn đang ẩn dấu rồi.",sealed:"Bạn đang bị phong ấn: không dùng được thẻ công kích và không bật được thẻ phòng thủ mới.",already_sealed:"Bạn này đã đang bị phong ấn rồi."};
   try{
@@ -14880,6 +14916,7 @@ window.addEventListener("DOMContentLoaded", () => {
       SUPABASE_ACTIONS_.card_get_trace={fn:"card_get_trace_p",params:{username:"p_username",password:"p_password"}};
       SUPABASE_ACTIONS_.card_use2={fn:"card_use_p",params:{username:"p_username",password:"p_password",className:"p_class",card:"p_card",target:"p_target"}};
       SUPABASE_ACTIONS_.card_get_seals={fn:"card_get_seals",params:{className:"p_class"}};
+      SUPABASE_ACTIONS_.card_spin={fn:"card_spin_ngu_hanh_p",params:{username:"p_username",password:"p_password"}};
     }
   }catch(e){}
   var MATE={
@@ -14890,7 +14927,7 @@ window.addEventListener("DOMContentLoaded", () => {
     thien_ly_nhan:{note:"Chọn 1 bạn để nhìn trộm xem có đang bật thẻ phòng thủ không:",btn:"👁️ Nhìn trộm!",cls:"btn-ok",atk:true},
     pha_gioi_chuy:{note:"Chọn 1 bạn để phá thẻ phòng thủ (trượt nếu bạn ấy không có phòng thủ):",btn:"💥 Phá!",cls:"btn-bad",atk:true}
   };
-  var drawnId=null, st=null, sel=-1, picking=false, msg="", busy=false, newCard=-1;
+  var drawnId=null, st=null, sel=-1, picking=false, msg="", busy=false, newCard=-1, spinning=false;
   function getBag(){ return ((st&&st.bag)||[]).filter(function(x){return CARDS[x];}); }
   function pw(u){ try{ var a=getLocalAccounts(), k=String(u||"").toLowerCase(), x=a[k]||a[u]; return (x&&x.password)||null; }catch(e){ return null; } }
   function ctx(){ try{ return (state && state.username && state.currentClassName) ? state : null; }catch(e){ return null; } }
@@ -14937,6 +14974,95 @@ window.addEventListener("DOMContentLoaded", () => {
       draw();
     }catch(e){ drawnId=null; say('<p class="tb-note">⚠️ Lỗi tải thẻ bài.</p>'); }
   }
+  /* Vòng Quay Ngũ Hành: 1000 Trúc/lượt, có tỉ lệ ra Ngọc Bội (mở ô thẻ thứ 5), trượt nhận 800-2000 XP, bảo hiểm 15 lần trượt -> lần 16 chắc chắn ra */
+
+  /* ---- Vòng quay huyền bí: SVG 5 hành (Kim Mộc Thủy Hỏa Thổ) ---- */
+  var EL=[{n:"金",c:"#F9A825",c2:"#FFF59D"},{n:"木",c:"#2E9E4F",c2:"#A5D6A7"},{n:"水",c:"#1E78D6",c2:"#90CAF9"},{n:"火",c:"#E53935",c2:"#FFAB91"},{n:"土",c:"#8D6E63",c2:"#D7CCC8"}];
+  function pol(r,a){ var t=(a-90)*Math.PI/180; return [100+r*Math.cos(t), 100+r*Math.sin(t)]; }
+  function mysticSvg(){
+    var s='<svg class="tb-mw" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="tbmg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFFDE7"/><stop offset=".55" stop-color="#C9A0FF"/><stop offset="1" stop-color="#4A148C"/></radialGradient></defs>';
+    s+='<g class="tb-mw-aura"><circle cx="100" cy="100" r="98" fill="none" stroke="#FFD54F" stroke-width="2" stroke-dasharray="2 7" opacity=".9"/><circle cx="100" cy="100" r="93" fill="none" stroke="#E1BEE7" stroke-width="1" stroke-dasharray="14 6" opacity=".6"/></g>';
+    s+='<g class="tb-mw-rot">';
+    for(var i=0;i<5;i++){
+      var a0=i*72-36, a1=a0+72, p0=pol(88,a0), p1=pol(88,a1), q0=pol(30,a0), q1=pol(30,a1), m=pol(60,i*72);
+      s+='<path d="M'+q0[0].toFixed(1)+' '+q0[1].toFixed(1)+' L'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A88 88 0 0 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' L'+q1[0].toFixed(1)+' '+q1[1].toFixed(1)+' A30 30 0 0 0 '+q0[0].toFixed(1)+' '+q0[1].toFixed(1)+'Z" fill="'+EL[i].c+'" stroke="#FFF8E1" stroke-width="2"/>';
+      s+='<text x="'+m[0].toFixed(1)+'" y="'+(m[1]+8).toFixed(1)+'" text-anchor="middle" font-size="24" font-weight="900" fill="#fff" stroke="rgba(0,0,0,.35)" stroke-width=".6" transform="rotate('+(i*72)+' '+m[0].toFixed(1)+' '+m[1].toFixed(1)+')">'+EL[i].n+'</text>';
+    }
+    s+='<circle cx="100" cy="100" r="88" fill="none" stroke="#FFD54F" stroke-width="3"/></g>';
+    s+='<circle cx="100" cy="100" r="30" fill="url(#tbmg)" stroke="#FFD54F" stroke-width="3"/><text x="100" y="111" text-anchor="middle" font-size="30">🔮</text>';
+    s+='<path d="M100 2 L93 -12 L107 -12Z" transform="translate(0 14)" fill="#FFD54F" stroke="#7A5A00" stroke-width="1.5"/></svg>';
+    return s;
+  }
+  var ov=null, ovRaf=0, ovAng=0, ovVel=0, ovMode="";
+  function ovLoop(t0){
+    var last=t0;
+    function f(t){
+      var dt=Math.min(50,t-last)/1000; last=t;
+      if(ovMode==="spin"){ ovVel=Math.min(900,ovVel+1400*dt); ovAng+=ovVel*dt; setRot(); }
+      if(ovMode) ovRaf=requestAnimationFrame(f);
+    }
+    ovRaf=requestAnimationFrame(f);
+  }
+  function setRot(){ try{ var g=ov&&ov.querySelector(".tb-mw-rot"); if(g){ g.style.animation="none"; g.style.transform="rotate("+ovAng+"deg)"; } }catch(e){} }
+  function spinOpen(){
+    spinClose();
+    ov=document.createElement("div"); ov.id="tb-spin-ov";
+    ov.innerHTML='<div class="tb-ov-title" id="tb-ov-t">🔮 Vòng Quay Ngũ Hành đang vận chuyển…</div><div class="tb-ov-wheel">'+mysticSvg()+'</div><div class="tb-ov-sub" id="tb-ov-s">Ngũ hành tụ khí, vận mệnh sắp lộ diện…</div>';
+    document.body.appendChild(ov);
+    ovAng=0; ovVel=60; ovMode="spin";
+    var rm=false; try{ rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+    if(!rm) ovLoop(performance.now());
+  }
+  function spinClose(){ ovMode=""; if(ovRaf) cancelAnimationFrame(ovRaf); ovRaf=0; if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); ov=null; }
+  function sparks(){
+    if(!ov) return; var ch=["✨","🔮","⭐","🌟","💫"], h="";
+    for(var i=0;i<26;i++) h+='<span class="tb-spark" style="left:'+Math.round(Math.random()*96)+'%;animation-duration:'+(2.4+Math.random()*2.6).toFixed(1)+'s;animation-delay:'+(Math.random()*1.2).toFixed(1)+'s;font-size:'+(16+Math.round(Math.random()*18))+'px;">'+ch[i%ch.length]+'</span>';
+    ov.insertAdjacentHTML("beforeend",h);
+  }
+  function spinReveal(r){
+    return new Promise(function(done){
+      if(!ov){ done(); return; }
+      var rm=false; try{ rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+      var a0=ovAng, v=ovVel, D=rm?1:2200;
+      var a1=a0+v*D/3000+360; a1=Math.round((a1-0)/72)*72;      /* dừng đúng giữa 1 hành */
+      ovMode="stop"; var tt=performance.now();
+      function show(){
+        ovMode=""; var w=ov&&ov.querySelector(".tb-ov-wheel"), t=$("tb-ov-t"), s=$("tb-ov-s"); if(!ov) { done(); return; }
+        if(r.outcome==="jade"){
+          if(w) w.classList.add("tb-glow");
+          if(t) t.textContent="🔮 NGỌC BỘI NGŨ HÀNH!";
+          if(s) s.innerHTML="Chúc mừng! Ô thẻ thứ 5 trong Túi Thẻ đã được mở.<br>Huy hiệu <b>🔮 Ngũ Hành</b> sẽ hiện trên Bảng Xếp Hạng.";
+          if(!rm) sparks();
+        } else {
+          if(t) t.textContent="🎡 +"+r.xp+" XP";
+          if(s) s.innerHTML="Chưa ra Ngọc Bội, nhưng ngũ hành ban thưởng cho bạn <b>"+r.xp+" XP</b>.<br>Đã trượt <b>"+r.pity+"/15</b> lần"+(r.pity>=15?" — lần quay tới <b>CHẮC CHẮN</b> ra Ngọc Bội!":".");
+        }
+        var b=document.createElement("button"); b.className="tb-ov-btn"; b.textContent="Đóng"; b.onclick=function(){ spinClose(); }; ov.appendChild(b);
+        done();
+      }
+      if(rm){ ovAng=a1; setRot(); show(); return; }
+      function step(now){
+        if(!ov){ done(); return; }
+        var p=Math.min(1,(now-tt)/D), e=1-Math.pow(1-p,3);
+        ovAng=a0+(a1-a0)*e; setRot();
+        if(p<1) ovRaf=requestAnimationFrame(step); else show();
+      }
+      ovRaf=requestAnimationFrame(step);
+    });
+  }
+  function wheelHtml(){
+    var h='<div class="tb-wheel'+(spinning?' tb-spinning':'')+'"><div class="tb-wheel-ico">'+mysticSvg()+'</div><div class="tb-wheel-body"><div class="tb-dn" style="text-align:left;">🔮 Vòng Quay Ngũ Hành</div>';
+    if(st&&st.jade){
+      h+='<div class="tb-note">✅ Bạn đã sở hữu 🔮 Ngọc Bội Ngũ Hành: ô thẻ thứ 5 đã mở và huy hiệu 🔮 Ngũ Hành đang hiện trên Bảng Xếp Hạng.</div>';
+    } else {
+      var p=(st&&st.jadePity)||0;
+      h+='<div class="tb-note">Mỗi lượt quay 1000 🎋. Có tỉ lệ ra 🔮 Ngọc Bội Ngũ Hành (mở ô thẻ thứ 5). Không ra thì nhận ngẫu nhiên 800–2000 XP. Bảo hiểm: trượt 15 lần liên tiếp thì lần quay thứ 16 chắc chắn ra.</div>';
+      h+='<div class="tb-pity"><span style="width:'+Math.min(100,Math.round(p/15*100))+'%"></span></div>';
+      h+='<div class="tb-note">Đã trượt liên tiếp: <b>'+p+'/15</b>'+(p>=15?' — lần quay tới CHẮC CHẮN ra Ngọc Bội!':'')+'</div>';
+      h+='<div class="tb-row" style="justify-content:flex-start;"><button class="btn btn-ok" data-tb="spin">🎡 Quay (1000 🎋)</button></div>';
+    }
+    return h+'</div></div>';
+  }
   function cardHtml(id,i){
     var c=CARDS[id];
     return '<div class="tb-c tb-'+c.k+(i===sel?' sel':'')+(i===newCard?' tb-new':'')+'" data-tb="pick" data-i="'+i+'"><div class="tb-ico">'+c.icon+'</div><div class="tb-cn">'+esc(c.name)+'</div><div class="tb-ct">'+esc(c.type)+'</div></div>';
@@ -14962,6 +15088,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     h+='<div class="tb-bag">';
     for(var i=0;i<max;i++) h+= bag[i] ? cardHtml(bag[i],i) : '<div class="tb-slot">＋</div>';
+    if(!st.jade) h+='<div class="tb-slot tb-locked" title="Quay Vòng Quay Ngũ Hành để có Ngọc Bội"><div class="tb-lock-ico">🔒</div><div class="tb-lock-txt">Cần ngọc bội ngũ hành để mở</div></div>';
     h+='</div>';
     if(sel>=0 && bag[sel]){
       var k=CARDS[bag[sel]];
@@ -14979,7 +15106,7 @@ window.addEventListener("DOMContentLoaded", () => {
     else if(bag.length>=max) h+='<div class="tb-note">Túi đã đầy ('+max+'/'+max+'): hãy dùng hoặc bỏ 1 thẻ để bốc thêm.</div>';
     else if(n===0) h+='<button class="btn btn-ok" data-tb="draw">🎴 Bốc thẻ hôm nay (miễn phí)</button>';
     else h+='<button class="btn btn-ok" data-tb="buy">🎴 Bốc thêm ('+(st.extraCost||1000)+' 🎋)</button>';
-    h+='</div><div class="tb-note">Các thẻ hiện có:</div><div class="tb-list">';
+    h+='</div>'; h+=wheelHtml(); h+='<div class="tb-note">Các thẻ hiện có:</div><div class="tb-list">';
     Object.keys(CARDS).forEach(function(id){ var c=CARDS[id]; h+='<details class="tb-item"><summary>'+c.icon+' '+esc(c.name)+' <span style="font-weight:600;opacity:.75;">· '+esc(c.type)+'</span></summary><div class="tb-idesc">'+esc(c.desc)+'</div></details>'; });
     say(h+'</div></div>');
     if(newCard>=0){ try{ var el=box().querySelector('.tb-c.tb-new'); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} newCard=-1; }
@@ -15081,19 +15208,34 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   async function act(kind,target){
     var s=ctx(); if(!s||busy) return; busy=true;
+    if(kind==="spin") spinning=true;
     try{ if(st) draw(); }catch(e){}
     try{
       var bag=getBag(), cid=bag[sel], r;
       if(kind==="draw") r=await callServer("card_draw",{username:s.username,password:pw(s.username)});
       else if(kind==="buy") r=await callServer("card_buy_draw",{username:s.username,password:pw(s.username)});
       else if(kind==="drop") r=await callServer("card_discard",{username:s.username,password:pw(s.username),card:cid});
+      else if(kind==="spin"){
+        var _t0=Date.now();
+        spinOpen();
+        r=await callServer("card_spin",{username:s.username,password:pw(s.username)});
+        var _w=1800-(Date.now()-_t0); if(_w>0) await new Promise(function(z){ setTimeout(z,_w); });
+        if(r&&r.ok) await spinReveal(r); else spinClose();
+      }
       else if(cid==="an_dau") r=await callServer("card_use_trace",{username:s.username,password:pw(s.username)});
       else {
         st.traceExpires=await fetchTrace(s.username); // làm mới trạng thái ẩn dấu (phòng khi bật từ thiết bị khác)
         var _args={username:s.username,password:pw(s.username),className:s.currentClassName,card:cid,target:target||null};
         r=await callServer("card_use2",_args);
       }
-      if(!r||!r.ok){ msg=ERR[r&&r.error]||("Lỗi: "+(r&&r.error||"không rõ")); }
+      if(!r||!r.ok){ msg=(kind==="spin"&&r&&r.error==="not_enough_bamboo")?"Không đủ 1000 Cành Trúc để quay.":(ERR[r&&r.error]||("Lỗi: "+(r&&r.error||"không rõ"))); }
+      else if(kind==="spin"){
+        if(r.outcome==="jade") msg="🔮 Chúc mừng! Vòng Quay Ngũ Hành cho bạn Ngọc Bội Ngũ Hành — ô thẻ thứ 5 đã mở! (-1000 🎋)";
+        else msg="🎡 Chưa ra Ngọc Bội: bạn nhận +"+r.xp+" XP (-1000 🎋). Đã trượt "+r.pity+"/15 lần"+(r.pity>=15?" — lần quay tới CHẮC CHẮN ra Ngọc Bội!":".");
+        try{ await pollOwnProgressFromServer(); }catch(e){}
+        if(r.outcome==="jade"){ try{ await refreshServerRoster(); }catch(e){} try{ if(lbActive()&&typeof renderLeaderboardContent==="function") renderLeaderboardContent(); }catch(e){} }
+        try{ updateGamificationUI(); }catch(e){}
+      }
       else if(kind==="draw"||kind==="buy"){
         msg="Bạn bốc được: "+CARDS[r.card].icon+" "+CARDS[r.card].name+"!"+(kind==="buy"?" (-1000 🎋)":"");
         drawnId=r.card; picking=false;
@@ -15101,7 +15243,7 @@ window.addEventListener("DOMContentLoaded", () => {
       } else if(kind==="drop"){ msg="Đã bỏ thẻ "+CARDS[cid].name+"."; sel=-1; }
       else { msg=report(r); announce(r,cid); picking=false; sel=-1; await refreshMine(); await refreshSeals(); }
     }catch(e){ msg="Có lỗi, thử lại sau."; }
-    busy=false; load(true);
+    busy=false; spinning=false; load(true);
   }
   document.addEventListener("click",function(ev){
     var b=ev.target.closest&&ev.target.closest("[data-tb]"); if(!b||!$("view-thebai")||!$("view-thebai").contains(b)||!st) return;
@@ -15110,6 +15252,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if(a==="pick"){ var i=parseInt(b.getAttribute("data-i"),10); sel=(sel===i)?-1:i; picking=false; draw(); }
     else if(a==="draw") act("draw");
     else if(a==="buy"){ if(confirm("Dùng 1000 Cành Trúc để bốc thêm 1 thẻ?")) act("buy"); }
+    else if(a==="spin"){ if(confirm("Dùng 1000 Cành Trúc để quay Vòng Quay Ngũ Hành?")) act("spin"); }
     else if(a==="use"&&SEAL_BLOCK[bag[sel]]&&isSealed(ctx()&&ctx().username)){ msg=ERR.sealed; draw(); }
     else if(a==="use"){ if(MATE[bag[sel]]){ picking=true; draw(); } else if(bag[sel]==="doi_van"){ if(confirm("Đổi Vận Bài sẽ BỎ HẾT các thẻ khác trong túi và thay bằng thẻ mới bốc ngẫu nhiên (số thẻ giữ nguyên, không chọn được). Tiếp tục?")) act("use"); } else act("use"); }
     else if(a==="steal"){ var mt=$("tb-mate"); if(mt&&mt.value) act("use",mt.value); else { msg=ERR.missing_target; draw(); } }
@@ -15125,6 +15268,7 @@ window.addEventListener("DOMContentLoaded", () => {
       var u=p&&(p.username||(p.name===state.studentName?state.username:null)), t=sealExp(u);
       if(t) h+=' <span class="tb-seal-tag" title="Đang bị phong ấn: không dùng được thẻ công kích và không bật được thẻ phòng thủ mới. Đây là cơ hội để tấn công!">🔒 Bị phong ấn · còn '+sealLeft(t)+'</span>';
     }catch(e){}
+    try{ if(p&&Array.isArray(p.badges)&&p.badges.indexOf("ngoc_boi_ngu_hanh")>=0) h+=' <span class="tb-jade-tag" title="Sở hữu Ngọc Bội Ngũ Hành: túi thẻ có 5 ô">🔮 Ngũ Hành</span>'; }catch(e){}
     return h;
   };
   setInterval(function(){ try{ if(ctx()&&(lbActive()||($("view-thebai")&&$("view-thebai").classList.contains("active")))) refreshSeals(); }catch(e){} },20000);
