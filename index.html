@@ -14828,6 +14828,8 @@ window.addEventListener("DOMContentLoaded", () => {
   #view-thebai .tb-item{ border:2px solid var(--paper-darker,#ddd); border-radius:14px; padding:10px; font-size:12px; }
   #view-thebai .tb-seal{ margin:10px 0; padding:10px 14px; border-radius:14px; background:#FFEBEE; color:#5B0F0F; border:2px solid #E53935; font-size:13px; font-weight:700; }
   .tb-seal-tag{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:#FFEBEE; border:1.5px solid #E53935; color:#B71C1C; font-size:11px; font-weight:800; vertical-align:middle; }
+  #view-thebai .tb-wanted{ margin:10px 0; padding:10px 14px; border-radius:14px; background:#FFF3E0; color:#4E2A00; border:2px solid #FB8C00; font-size:13px; font-weight:700; }
+  .tb-wanted-tag{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:#FFF3E0; border:1.5px solid #E65100; color:#BF360C; font-size:11px; font-weight:800; vertical-align:middle; }
   @media (max-width:480px){ #view-thebai .tb-c,#view-thebai .tb-slot{ width:calc(50% - 10px); } }
   @media (min-width:768px){ #view-thebai .tb-c,#view-thebai .tb-slot{ width:140px; } #view-thebai .tb-cn{ font-size:14px; } }
   #view-thebai .tb-busy-bar{ margin:10px 0; padding:8px 14px; border-radius:14px; background:#ECEFF1; color:#263238; border:2px solid #90A4AE; font-size:13px; font-weight:700; text-align:center; }
@@ -14899,7 +14901,10 @@ window.addEventListener("DOMContentLoaded", () => {
     phong_an:{k:"atk",icon:"🔒",name:"Phong Ấn Thẻ",type:"⚔️ Công kích",desc:"Chọn 1 bạn cùng lớp: trong 12h bạn ấy không dùng được thẻ công kích và không bật được thẻ phòng thủ mới (phòng thủ đã bật từ trước vẫn còn tác dụng). Bạn bị phong ấn sẽ hiện ghi chú trên Bảng Xếp Hạng. Kết Giới chặn được (bị tiêu), Ẩn Thân Phù làm bạn ấy không chọn được, Gương và Suối Nguồn không áp dụng."},
     an_dau:{k:"spc",icon:"🕵️",name:"Ẩn Dấu Phù",type:"🎲 Đặc biệt",desc:"Trong 24h, bất kỳ thẻ nào bạn dùng cũng vẫn hiện ở Bảng Tin lớp nhưng dưới tên \"Người Ẩn Danh\", không ai biết là bạn. Không ảnh hưởng hiệu quả của thẻ."},
     thien_ly_nhan:{k:"spc",icon:"👁️",name:"Thiên Lý Nhãn",type:"🎲 Đặc biệt",desc:"Chọn 1 bạn cùng lớp để nhìn trộm: biết bạn ấy hiện có đang bật thẻ phòng thủ (Kết Giới, Suối Nguồn, Gương Thần) hay không, nhưng không biết là loại nào. Chỉ mình bạn thấy kết quả, bảng thông báo không hiện gì. Không chọn được bạn đang Ẩn Thân."},
-    pha_gioi_chuy:{k:"atk",icon:"💥",name:"Phá Giới Chùy",type:"⚔️ Công kích",desc:"Chọn 1 bạn cùng lớp: nếu bạn ấy đang bật thẻ phòng thủ (Kết Giới, Suối Nguồn, Gương Thần) thì thẻ đó bị phá vỡ ngay, không ai mất XP/Trúc. Nếu bạn ấy không có phòng thủ thì cú đập trượt và thẻ vẫn bị tiêu, nên hãy đoán đúng người (dùng Thiên Lý Nhãn để dò trước). Bảng thông báo chỉ hiện bạn vung chùy lên ai, không nói trúng hay trượt. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được."}
+    pha_gioi_chuy:{k:"atk",icon:"💥",name:"Phá Giới Chùy",type:"⚔️ Công kích",desc:"Chọn 1 bạn cùng lớp: nếu bạn ấy đang bật thẻ phòng thủ (Kết Giới, Suối Nguồn, Gương Thần) thì thẻ đó bị phá vỡ ngay, không ai mất XP/Trúc. Nếu bạn ấy không có phòng thủ thì cú đập trượt và thẻ vẫn bị tiêu, nên hãy đoán đúng người (dùng Thiên Lý Nhãn để dò trước). Bảng thông báo chỉ hiện bạn vung chùy lên ai, không nói trúng hay trượt. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được. Nếu bạn ấy đang bị Truy Nã thì bạn còn nhận tiền thưởng (xem thẻ Truy Nã Lệnh)."},
+    truy_na:{k:"spc",icon:"📜",name:"Truy Nã Lệnh",type:"🎲 Đặc biệt",desc:"Chọn 1 bạn bất kỳ trong lớp: trong 24h bạn ấy bị dán ghi chú truy nã trên Bảng Xếp Hạng. Ai dùng Phá Giới Chùy lên bạn ấy (trúng hay trượt đều tính) sẽ nhận 300 🎋 từ hệ thống, sau đó ghi chú truy nã biến mất và thẻ hết hiệu lực. Người treo thưởng không được tự nhận tiền thưởng của mình. Không chọn được bạn đang Ẩn Thân hoặc đang bị truy nã sẵn."},
+    phuc_thu:{k:"atk",icon:"🔥",name:"Phục Thù Lệnh",type:"⚔️ Công kích",desc:"Chỉ dùng được khi trong 24h qua bạn đã bị mất Trúc vì thẻ Thần Thâu hoặc Kiếp Phú. Chọn đúng kẻ đã ra tay: bạn lấy lại 120% số Trúc đã mất. Kẻ đó bị trừ Trúc trong túi; nếu túi không đủ (đã cho gấu ăn hết) thì phần thiếu bị trừ thành XP (1 Trúc = 10 XP). Chọn nhầm người thì thẻ biến mất và không có tác dụng. Không bị Kết Giới, Gương, Suối Nguồn cản. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được."},
+    ban_sao:{k:"spc",icon:"🪞",name:"Bản Sao Ảo Ảnh",type:"🎲 Đặc biệt",desc:"Dùng lại đúng hiệu ứng của thẻ gần nhất bạn đã dùng (không tính thẻ phòng thủ, Ẩn Dấu Phù và chính thẻ này; thẻ phòng thủ dùng xen giữa không làm mất thẻ cần sao chép). Nếu thẻ đó cần chọn bạn, bạn chọn mục tiêu mới hoặc dùng lại mục tiêu cũ. Chưa có thẻ nào để sao chép, hoặc bản sao bị chặn (đang bị phong ấn, mục tiêu ẩn thân…) thì báo lỗi và KHÔNG tiêu thẻ."}
   };
   var ERR = {bad_auth:"Phiên đăng nhập không hợp lệ, hãy đăng xuất rồi đăng nhập lại.",unknown_card:"Thẻ này không tồn tại hoặc bản trang chưa cập nhật, hãy tải lại trang.",not_found:"Không tìm thấy tài khoản.",already_drawn:"Hôm nay bạn đã bốc thẻ miễn phí rồi.",no_card:"Không tìm thấy thẻ này trong túi.",ward_active:"Bạn đang có 1 thẻ phòng thủ còn hiệu lực.",
     not_in_class:"Bạn không thuộc lớp này, hãy chọn lại lớp rồi thử lại.",cannot_target_self:"Không thể tự đánh mình.",nothing_to_take:"Bạn đó chưa đủ XP/Trúc để lấy.",
@@ -14907,7 +14912,7 @@ window.addEventListener("DOMContentLoaded", () => {
     free_draw_available:"Bạn vẫn còn lượt bốc miễn phí hôm nay.",max_draws:"Hôm nay bạn đã bốc tối đa 2 lần.",
     bag_full:"Túi đã đầy. Hãy dùng hoặc bỏ 1 thẻ để bốc thêm.",already_owned:"Bạn đã sở hữu Ngọc Bội Ngũ Hành rồi.",not_enough_bamboo:"Không đủ 1000 Cành Trúc để bốc thêm.",
     missing_target:"Hãy chọn 1 bạn làm mục tiêu.",target_not_in_class:"Bạn này không thuộc lớp của bạn.",target_is_teacher:"Không thể chọn giáo viên.",
-    target_hidden:"Bạn này đang ẩn thân, không chọn được.",no_rob_target:"Chưa có bạn nào để cướp (chưa ai có Trúc hoặc đều đang ẩn thân).",target_bag_empty:"Túi của bạn này đang trống.",stealth_active:"Bạn đang ẩn thân rồi.",no_other_cards:"Túi không còn thẻ nào khác để đổi vận.",trace_active:"Bạn đang ẩn dấu rồi.",sealed:"Bạn đang bị phong ấn: không dùng được thẻ công kích và không bật được thẻ phòng thủ mới.",already_sealed:"Bạn này đã đang bị phong ấn rồi."};
+    target_hidden:"Bạn này đang ẩn thân, không chọn được.",no_rob_target:"Chưa có bạn nào để cướp (chưa ai có Trúc hoặc đều đang ẩn thân).",target_bag_empty:"Túi của bạn này đang trống.",stealth_active:"Bạn đang ẩn thân rồi.",no_other_cards:"Túi không còn thẻ nào khác để đổi vận.",trace_active:"Bạn đang ẩn dấu rồi.",sealed:"Bạn đang bị phong ấn: không dùng được thẻ công kích và không bật được thẻ phòng thủ mới.",already_sealed:"Bạn này đã đang bị phong ấn rồi.",already_wanted:"Bạn này đang bị truy nã rồi.",no_recent_attack:"Trong 24h qua bạn chưa bị ai lấy Trúc bằng thẻ Thần Thâu hoặc Kiếp Phú (hoặc đã trả thù xong), chưa dùng được Phục Thù Lệnh.",no_last_card:"Bạn chưa dùng thẻ nào có thể sao chép (thẻ phòng thủ, Ẩn Dấu Phù và Bản Sao không tính).",copy_failed:"Không sao chép được lúc này, thẻ chưa bị tiêu. Hãy thử lại sau."};
   try{
     if(typeof SUPABASE_ACTIONS_!=="undefined"){
       SUPABASE_ACTIONS_.card_get_state={fn:"card_get_state_p",params:{username:"p_username",password:"p_password",className:"p_class"}};
@@ -14927,7 +14932,10 @@ window.addEventListener("DOMContentLoaded", () => {
     phong_an:{note:"Chọn 1 bạn để phong ấn trong 12h:",btn:"🔒 Phong ấn!",cls:"btn-bad",atk:true},
     dong_tam:{note:"Chọn 1 bạn để kết nghĩa (cả hai cùng +500 Trúc):",btn:"🤝 Kết nghĩa!",cls:"btn-ok",atk:false},
     thien_ly_nhan:{note:"Chọn 1 bạn để nhìn trộm xem có đang bật thẻ phòng thủ không:",btn:"👁️ Nhìn trộm!",cls:"btn-ok",atk:true},
-    pha_gioi_chuy:{note:"Chọn 1 bạn để phá thẻ phòng thủ (trượt nếu bạn ấy không có phòng thủ):",btn:"💥 Phá!",cls:"btn-bad",atk:true}
+    pha_gioi_chuy:{note:"Chọn 1 bạn để phá thẻ phòng thủ (trượt nếu bạn ấy không có phòng thủ):",btn:"💥 Phá!",cls:"btn-bad",atk:true},
+    truy_na:{note:"Chọn 1 bạn để treo thưởng truy nã trong 24h:",btn:"📜 Truy nã!",cls:"btn-bad",atk:true},
+    phuc_thu:{note:"Chọn ĐÚNG kẻ đã lấy Trúc của bạn trong 24h qua (chọn nhầm thì thẻ biến mất):",btn:"🔥 Phục thù!",cls:"btn-bad",atk:true},
+    ban_sao:{note:"Chọn mục tiêu cho bản sao (nếu thẻ được sao chép cần chọn bạn). Chọn \"Dùng lại mục tiêu cũ\" nếu muốn giữ mục tiêu lần trước hoặc thẻ không cần mục tiêu:",btn:"🪞 Sao chép!",cls:"btn-ok",atk:false}
   };
   var drawnId=null, st=null, sel=-1, picking=false, msg="", busy=false, newCard=-1, spinning=false;
   function getBag(){ return ((st&&st.bag)||[]).filter(function(x){return CARDS[x];}); }
@@ -14940,7 +14948,7 @@ window.addEventListener("DOMContentLoaded", () => {
     try{ var tr=await callServer("card_get_trace",{username:username,password:pw(username)}); return (tr&&tr.ok&&tr.traceExpires)||null; }catch(e){ return null; }
   }
   /* Phong Ấn Thẻ: danh sách bạn đang bị phong ấn trong lớp (hiện ghi chú trên Bảng Xếp Hạng) */
-  var seals=[], SEAL_BLOCK={thien_thach:1,than_thau:1,kiep_phu:1,ban_tay_vang:1,phong_an:1,ket_gioi:1,suoi_nguon:1,guong:1,an_than:1,pha_gioi_chuy:1};
+  var seals=[], SEAL_BLOCK={thien_thach:1,than_thau:1,kiep_phu:1,ban_tay_vang:1,phong_an:1,ket_gioi:1,suoi_nguon:1,guong:1,an_than:1,pha_gioi_chuy:1,phuc_thu:1};
   function sealExp(u){
     if(!u) return 0; u=String(u).toLowerCase();
     for(var i=0;i<seals.length;i++){
@@ -14949,6 +14957,16 @@ window.addEventListener("DOMContentLoaded", () => {
     return 0;
   }
   function isSealed(u){ return sealExp(u)>0; }
+  /* Truy Nã Lệnh: danh sách bạn đang bị truy nã trong lớp (lấy chung 1 lần gọi với card_get_seals) */
+  var wanted=[], wantedBounty=300;
+  function wantedExp(u){
+    if(!u) return 0; u=String(u).toLowerCase();
+    for(var i=0;i<wanted.length;i++){
+      if(String(wanted[i].username).toLowerCase()===u){ var t=new Date(wanted[i].wantedExpires).getTime(); return t>Date.now()?t:0; }
+    }
+    return 0;
+  }
+  function isWanted(u){ return wantedExp(u)>0; }
   function sealLeft(ms){ var m=Math.max(1,Math.ceil((ms-Date.now())/60000)); return m>=60 ? Math.floor(m/60)+"h"+(m%60?(m%60)+"p":"") : m+"p"; }
   function lbActive(){ var v=$("view-leaderboard"); return !!(v&&v.classList.contains("active")); }
   async function refreshSeals(){
@@ -14956,8 +14974,8 @@ window.addEventListener("DOMContentLoaded", () => {
     try{
       var r=await callServer("card_get_seals",{className:s.currentClassName});
       if(r&&r.ok){
-        var nx=r.seals||[], changed=(JSON.stringify(nx)!==JSON.stringify(seals));
-        seals=nx;
+        var nx=r.seals||[], nw=r.wanted||[], changed=(JSON.stringify(nx)!==JSON.stringify(seals))||(JSON.stringify(nw)!==JSON.stringify(wanted));
+        seals=nx; wanted=nw; if(typeof r.bounty==="number") wantedBounty=r.bounty;
         if(changed){ try{ if(lbActive()&&typeof renderLeaderboardContent==="function") renderLeaderboardContent(); }catch(e){} }
       }
     }catch(e){}
@@ -15088,6 +15106,10 @@ window.addEventListener("DOMContentLoaded", () => {
     if(_se){
       h+='<div class="tb-seal">🔒 Bạn đang bị phong ấn (hết hạn '+esc(new Date(_se).toLocaleString("vi-VN"))+'): không dùng được thẻ công kích và không bật được thẻ phòng thủ mới. Phòng thủ đã bật từ trước vẫn còn tác dụng.</div>';
     }
+    var _wa=wantedExp(ctx()&&ctx().username);
+    if(_wa){
+      h+='<div class="tb-wanted">📜 Bạn đang bị truy nã (hết hạn '+esc(new Date(_wa).toLocaleString("vi-VN"))+'): ai dùng Phá Giới Chùy lên bạn sẽ nhận '+wantedBounty+' 🎋 tiền thưởng từ hệ thống. Ẩn Thân Phù giúp bạn không bị chọn làm mục tiêu.</div>';
+    }
     h+='<div class="tb-bag">';
     for(var i=0;i<max;i++) h+= bag[i] ? cardHtml(bag[i],i) : '<div class="tb-slot">＋</div>';
     if(!st.jade) h+='<div class="tb-slot tb-locked" title="Quay Vòng Quay Ngũ Hành để có Ngọc Bội"><div class="tb-lock-ico">🔒</div><div class="tb-lock-txt">Cần ngọc bội ngũ hành để mở</div></div>';
@@ -15097,8 +15119,8 @@ window.addEventListener("DOMContentLoaded", () => {
       h+='<div class="tb-detail"><div class="tb-dn">'+k.icon+' '+esc(k.name)+'</div><div class="tb-desc">'+esc(k.desc)+'</div>';
       if(MATE[bag[sel]] && picking){
         var mc=MATE[bag[sel]];
-        h+='<div class="tb-note">'+mc.note+'</div><div class="tb-row"><select id="tb-mate" style="max-width:100%;padding:6px;"><option value="">— Chọn bạn —</option>';
-        (st.mates||[]).forEach(function(m){ var hid=mc.atk&&m.hidden, sl=(bag[sel]==="phong_an")&&isSealed(m.username); h+='<option value="'+esc(m.username)+'"'+((hid||sl)?' disabled':'')+'>'+esc(m.displayName)+(hid?' 🌫️ (ẩn thân)':'')+(sl?' 🔒 (đã bị phong ấn)':'')+'</option>'; });
+        h+='<div class="tb-note">'+mc.note+'</div><div class="tb-row"><select id="tb-mate" style="max-width:100%;padding:6px;">'+(bag[sel]==="ban_sao"?'<option value="__last__">🔁 Dùng lại mục tiêu cũ (hoặc thẻ không cần mục tiêu)</option>':'<option value="">— Chọn bạn —</option>')+'';
+        (st.mates||[]).forEach(function(m){ var hid=mc.atk&&m.hidden, sl=(bag[sel]==="phong_an")&&isSealed(m.username), wn=(bag[sel]==="truy_na")&&isWanted(m.username); h+='<option value="'+esc(m.username)+'"'+((hid||sl||wn)?' disabled':'')+'>'+esc(m.displayName)+(hid?' 🌫️ (ẩn thân)':'')+(sl?' 🔒 (đã bị phong ấn)':'')+(wn?' 📜 (đang bị truy nã)':'')+'</option>'; });
         h+='</select><button class="btn '+mc.cls+'" data-tb="steal">'+mc.btn+'</button><button class="btn btn-outline" data-tb="cancel">Hủy</button></div>';
       } else h+='<div class="tb-row"><button class="btn btn-ok" data-tb="use">✨ Dùng thẻ</button><button class="btn btn-outline" data-tb="drop">🗑️ Bỏ thẻ</button></div>';
       h+='</div>';
@@ -15116,7 +15138,9 @@ window.addEventListener("DOMContentLoaded", () => {
   function report(r){
     var t=r.target||"";
     if(r.card==="thien_ly_nhan") return r.hasWard ? "👁️ "+t+" ĐANG bật 1 thẻ phòng thủ (không biết là loại nào). Kết quả chỉ đúng tại lúc này." : "👁️ "+t+" hiện KHÔNG bật thẻ phòng thủ nào. Kết quả chỉ đúng tại lúc này.";
-    if(r.card==="pha_gioi_chuy") return r.outcome==="broken" ? "💥 Trúng! Thẻ phòng thủ của "+t+" đã bị phá vỡ." : "💨 Trượt rồi: "+t+" không có thẻ phòng thủ nào đang bật.";
+    if(r.card==="truy_na") return "📜 Đã treo thưởng truy nã "+t+" trong 24h: ai dùng Phá Giới Chùy lên bạn ấy sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống.";
+    if(r.card==="phuc_thu") return r.outcome==="wrong" ? "❌ "+t+" không phải kẻ đã lấy Trúc của bạn trong 24h qua. Thẻ Phục Thù đã biến mất." : "🔥 Phục thù "+t+" thành công: bạn lấy lại +"+r.gain+" Trúc. "+t+" bị trừ "+r.loss+" Trúc"+(r.xpLoss>0 ? " và "+r.xpLoss+" XP (vì đã cho gấu ăn)" : "")+".";
+    if(r.card==="pha_gioi_chuy") return (r.outcome==="broken" ? "💥 Trúng! Thẻ phòng thủ của "+t+" đã bị phá vỡ." : "💨 Trượt rồi: "+t+" không có thẻ phòng thủ nào đang bật.")+(r.bounty ? " 📜 "+t+" đang bị truy nã: bạn nhận +"+r.bounty+" 🎋 tiền thưởng từ hệ thống!" : "");
     if(r.card==="kiep_phu"){
       switch(r.outcome){
         case "hit": return "🏴‍☠️ Cướp của "+t+" "+r.loss+" Trúc ("+r.pct+"%): bạn nhận +"+r.gain+" Trúc.";
@@ -15153,10 +15177,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     return "Xong!";
   }
-  function announce(r,cid){
+  function announce(r,cid,viaCopy){
     try{
       if(typeof addActivityLog!=="function") return;
-      var logCard=function(t){ if(typeof addCardFeedLog==="function") addCardFeedLog(t); else addActivityLog(t); };
+      var logCard=function(t){ if(viaCopy) t="🪞 Bản Sao Ảo Ảnh · "+t; if(typeof addCardFeedLog==="function") addCardFeedLog(t); else addActivityLog(t); };
       var s=ctx(), c=CARDS[cid]; if(!s||!c) return;
       if(cid==="an_dau") return; // bật Ẩn Dấu Phù thì không báo gì; các thẻ dùng sau đó vẫn báo nhưng ẩn danh
       var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username), t=esc(r.target||""), txt;
@@ -15172,7 +15196,9 @@ window.addEventListener("DOMContentLoaded", () => {
       }
       if(cid==="phong_an"){ logCard(r.outcome==="blocked" ? "🔒 "+me+" dùng Phong Ấn lên "+t+" nhưng bị Kết Giới Hộ Thân chặn đứng! 🛡️" : "🔒 "+me+" dùng thẻ Phong Ấn lên "+t+": 12h không dùng được thẻ công kích và không bật được phòng thủ mới!"); return; }
       if(cid==="thien_ly_nhan") return; // nhìn trộm: không báo gì lên Bảng Tin
-      if(cid==="pha_gioi_chuy"){ logCard("💥 "+me+" vừa vung Phá Giới Chùy lên "+t+"!"); return; } // không nói trúng hay trượt
+      if(cid==="truy_na"){ logCard("📜 "+me+" treo thưởng truy nã "+t+" trong 24h! Ai dùng Phá Giới Chùy lên "+t+" sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống."); return; }
+      if(cid==="phuc_thu"){ logCard(r.outcome==="wrong" ? "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+" nhưng đoán nhầm kẻ thù, thẻ tan biến!" : "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+": lấy lại "+r.gain+" Trúc, "+t+" bị trừ "+r.loss+" Trúc"+(r.xpLoss>0 ? " và "+r.xpLoss+" XP" : "")+"!"); return; }
+      if(cid==="pha_gioi_chuy"){ logCard("💥 "+me+" vừa vung Phá Giới Chùy lên "+t+"!"); if(r.bounty) logCard("📜 "+me+" bắt được "+t+" (đang bị truy nã) và nhận "+r.bounty+" 🎋 tiền thưởng!"); return; } // không nói trúng hay trượt
       if(cid==="an_than"){ logCard("🌫️ "+me+" vừa dùng thẻ Ẩn Thân Phù, 24h không ai chọn được!"); return; }
       if(cid==="dong_tam"){ logCard("🤝 "+me+" dùng thẻ Đồng Tâm Kết Nghĩa với "+t+": cả hai cùng nhận +"+r.amount+" Cành Trúc!"); return; }
       if(cid==="doi_van"){ logCard("🔮 "+me+" dùng thẻ Đổi Vận Bài, bốc lại cả túi bài!"); return; }
@@ -15255,7 +15281,7 @@ window.addEventListener("DOMContentLoaded", () => {
         drawnId=r.card; picking=false;
         if(kind==="buy") await refreshMine();
       } else if(kind==="drop"){ msg="Đã bỏ thẻ "+CARDS[cid].name+"."; sel=-1; }
-      else { msg=report(r); announce(r,cid); picking=false; sel=-1; await refreshMine(); await refreshSeals(); }
+      else { var _cp=(cid==="ban_sao"&&r.copied&&r.card&&CARDS[r.card]); msg=(_cp?"🪞 Bản Sao Ảo Ảnh → "+CARDS[r.card].name+": ":"")+report(r); announce(r,_cp?r.card:cid,!!_cp); picking=false; sel=-1; await refreshMine(); await refreshSeals(); }
     }catch(e){ msg="Có lỗi, thử lại sau."; }
     busy=false; spinning=false; load(true);
   }
@@ -15281,6 +15307,10 @@ window.addEventListener("DOMContentLoaded", () => {
     try{
       var u=p&&(p.username||(p.name===state.studentName?state.username:null)), t=sealExp(u);
       if(t) h+=' <span class="tb-seal-tag" title="Đang bị phong ấn: không dùng được thẻ công kích và không bật được thẻ phòng thủ mới. Đây là cơ hội để tấn công!">🔒 Bị phong ấn · còn '+sealLeft(t)+'</span>';
+    }catch(e){}
+    try{
+      var u2=p&&(p.username||(p.name===state.studentName?state.username:null)), tw=wantedExp(u2);
+      if(tw) h+=' <span class="tb-wanted-tag" title="Đang bị truy nã: ai dùng Phá Giới Chùy lên bạn này sẽ nhận tiền thưởng từ hệ thống.">📜 Truy nã · '+wantedBounty+'🎋 · còn '+sealLeft(tw)+'</span>';
     }catch(e){}
     try{ if(p&&Array.isArray(p.badges)&&p.badges.indexOf("ngoc_boi_ngu_hanh")>=0) h+=' <span class="tb-jade-tag" title="Sở hữu Ngọc Bội Ngũ Hành: túi thẻ có 5 ô">🔮 Ngũ Hành</span>'; }catch(e){}
     return h;
