@@ -3968,7 +3968,10 @@ function callServer(action, data = {}, _isRetry = false) {
     : () => callServerOnce_(action, data);
 
   return runner().then(res => { _egressRecord_(action, res); return res; }).catch(err => {
-    if (!_isRetry) {
+    /* FIX: save_progress KHÔNG idempotent (server cộng dồn delta so với baseline). Nếu lượt
+       đầu thực ra đã tới server nhưng phản hồi bị mất, tự thử lại sẽ áp delta lần 2 (đúng
+       lỗi "mất/nhân đôi Trúc"). Không retry tự động; lượt lưu kế tiếp sẽ gửi lại bản mới. */
+    if (!_isRetry && action !== "save_progress") {
       console.warn("callServer(" + action + ") thất bại, đang tự thử lại lần 2...", err);
       return new Promise(resolve => setTimeout(resolve, 800))
         .then(() => callServer(action, data, true));
@@ -4110,7 +4113,28 @@ function captureServerBaseline_() {
 /* Thực hiện đúng 1 lượt gửi save_progress lên server (dùng chung cho cả
    nhánh debounce bình thường LẪN nhánh "gửi ngay không chờ" bên dưới).
    Tách riêng ra để 2 nhánh không lặp lại logic hoà giải baseline. */
+/* FIX: chỉ cho phép 1 request save_progress bay tại một thời điểm. Nếu 2 request chồng nhau
+   thì cả hai cùng mang baseline cũ -> server áp delta 2 lần (vd: trừ cược 970 bị trừ đôi, mất
+   luôn tiền thưởng). Request đến sau được xếp hàng, chạy khi request trước đã có phản hồi
+   (và đã cập nhật baseline). Có timeout 20s để không bao giờ kẹt hàng đợi. */
+let _saveInFlight_ = null;
+let _saveQueued_ = false;
 function doPushProgressNow_() {
+  if (_saveInFlight_) {
+    _saveQueued_ = true;
+    markSavePending();
+    return _saveInFlight_;
+  }
+  const core = doPushProgressCore_();
+  const guard = Promise.race([core, new Promise(r => setTimeout(r, 20000))]);
+  const tracked = guard.catch(() => {}).then(() => {
+    if (_saveInFlight_ === tracked) _saveInFlight_ = null;
+    if (_saveQueued_) { _saveQueued_ = false; doPushProgressNow_(); }
+  });
+  _saveInFlight_ = tracked;
+  return tracked;
+}
+function doPushProgressCore_() {
   markSavePending();
   /* FIX (02/10 — Trúc "báo lỗ 4 nhưng thực tế mất 24"): trước đây khi server
      trả lời save_progress, code GHI ĐÈ thẳng bambooPouch/totalXp/badgeCharmBonus
