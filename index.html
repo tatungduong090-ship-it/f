@@ -3816,6 +3816,7 @@ function applyProgressToState(p) {
 
 function switchToUserProgress(username) {
   if (!username) return;
+  try { resetServerBaselineIfUserChanged_(username); } catch (e) {}
   if (!state.studentProgress || typeof state.studentProgress !== "object") state.studentProgress = {};
 
   if (state.studentProgress[username]) {
@@ -4095,7 +4096,30 @@ let _serverBaselineDecorations = null;
 let _serverBaselineXp = null;
 let _serverBaselineBadgeCharm = null;
 let _serverBaselineBadges = null;
+/* FIX (iPad đẩy số Trúc CŨ đè lên server): baseline chỉ nằm trong RAM nên mỗi lần mở lại app/tab
+   (nhất là iPad Safari hay nạp lại trang) nó = null cho tới khi get_progress thành công. Nếu trong
+   lúc đó có lượt save_progress nào bay đi (saveState() ngay sau khi đồng bộ lỗi/chậm > 1.5s...),
+   server thiếu baseline nên rơi về nhánh greatest(server, local) -> số Trúc CŨ (cao hơn vì học sinh
+   đã tiêu Trúc trên máy khác) THẮNG và ghi đè số Trúc thật. Nay: (1) nhớ baseline thuộc tài khoản nào
+   (_serverBaselineUser_), (2) chỉ cho phép đẩy tiến trình khi đã có baseline đúng tài khoản — nếu chưa
+   thì KÉO bản mới nhất từ server về thay vì đẩy bản cũ lên. */
+let _serverBaselineUser_ = null;
+function hasTrustedServerBaseline_() {
+  return _serverBaselinePouch !== null && _serverBaselineUser_ === String(state.username || "").toLowerCase();
+}
+function resetServerBaselineIfUserChanged_(username) {
+  const u = String(username || "").toLowerCase();
+  if (_serverBaselineUser_ !== u) {
+    _serverBaselinePouch = null;
+    _serverBaselineDecorations = null;
+    _serverBaselineXp = null;
+    _serverBaselineBadgeCharm = null;
+    _serverBaselineBadges = null;
+    _serverBaselineUser_ = null;
+  }
+}
 function captureServerBaseline_() {
+  _serverBaselineUser_ = String(state.username || "").toLowerCase();
   const g = state.gamification || {};
   _serverBaselinePouch = typeof g.bambooPouch === "number" ? g.bambooPouch : 0;
   _serverBaselineDecorations = Array.isArray(g.decorations) ? g.decorations.slice() : [];
@@ -4136,6 +4160,23 @@ function doPushProgressNow_() {
 }
 function doPushProgressCore_() {
   markSavePending();
+  /* FIX: chưa có baseline đáng tin của tài khoản này (vừa mở app, đồng bộ đầu tiên lỗi/chậm...) ->
+     TUYỆT ĐỐI không đẩy bản cục bộ (có thể là bản cũ từ lần dùng trước) lên server. Kéo bản mới nhất
+     từ server về (syncProgressFromServer tự chốt baseline khi thành công); các lượt lưu sau đó mới
+     đi theo cơ chế cộng dồn chênh lệch như bình thường. */
+  if (!hasTrustedServerBaseline_()) {
+    const _guardStartedAt_ = _progressSyncTimerSetAt;
+    return syncProgressFromServer().then(r => {
+      if (hasTrustedServerBaseline_()) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+        try { if (typeof updateGamificationUI === "function") updateGamificationUI(); } catch (e) {}
+      }
+      return r;
+    }).catch(() => {}).finally(() => {
+      if (_progressSyncTimerSetAt !== null && _guardStartedAt_ !== null && _progressSyncTimerSetAt > _guardStartedAt_) return;
+      clearSavePending();
+    });
+  }
   /* FIX (02/10 — Trúc "báo lỗ 4 nhưng thực tế mất 24"): trước đây khi server
      trả lời save_progress, code GHI ĐÈ thẳng bambooPouch/totalXp/badgeCharmBonus
      cục bộ bằng số server trả về, dù trong lúc request còn đang bay học sinh
