@@ -15563,7 +15563,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
   async function doTicketNh(){
-    if(!confirm("Dùng Vé Ngũ Hành để quay Vòng Quay Ngũ Hành miễn phí (20% ra Ngọc Bội, trượt nhận 800-2000 XP)?")) return;
+    if(!confirm("Dùng Vé Ngũ Hành để quay Vòng Quay Ngũ Hành miễn phí (5% ra Ngọc Bội, trượt nhận 800-2000 XP)?")) return;
     await run(async function(){
       var r=await call("star_tk_nh");
       if(!r||!r.ok){ msg=errText(r); return; }
@@ -15637,6 +15637,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
       S.stars[star]=cnt(star)+1;
+      feed("🛒 "+meName()+" mua sao "+STARS[star].i+" "+STARS[star].n+" của "+esc(r.seller)+" ở Chợ sao với giá "+fmt(r.price)+" 🎋");
       msg="🛒 Đã mua "+STARS[star].i+" "+STARS[star].n+" của "+esc(r.seller)+" với giá "+fmt(r.price)+" 🎋.";
       await refreshPouch();
     });
