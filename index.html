@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- LỊCH SỬ SỬA (07/10, lần 22) — đi cùng supabase_patch_muc21_ngu_ong_ket_gioi.sql (chi tiết ở LỊCH SỬ TRIỂN KHAI đầu file supabase_schema_the_bai_FULL_v22_ngu_ong_ket_gioi.sql):
+     (A) Kết Giới Hộ Thân KHÔNG còn chặn/gỡ Phong Tỏa Ngân Khố; chỉ Thanh Tẩy Phù gỡ được. Đã sửa mô tả thẻ (CARDS.phong_toa, ket_gioi, thanh_tay) và các thông báo bị phong tỏa.
+     (B) Ngư Ông Đắc Lợi: trần tách riêng 3000 Trúc / 10000 XP, nhiều người cùng bật thì chia đều. Đã sửa CARDS.ngu_ong, banner "tb-ward" (st.fisherLeftPouch / st.fisherLeftXp,
+         mặc định 3000/10000 nếu server chưa trả) và thông báo bật thẻ. Nếu banner luôn hiện 3000/10000 => SQL mục 21 chưa chạy trên Supabase.
+     Các câu "Kết Giới ... chặn đứng" còn lại là của Thiên Thạch / Thần Thâu / Kiếp Phú / Phong Ấn / Bàn Tay Vàng — đúng, không phải sót. -->
 <!-- FIX: chống trình duyệt lưu cache trang HTML này, để mọi thiết bị
      luôn tải bản mới nhất thay vì bản cũ đã lưu trong bộ nhớ đệm. -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -15326,7 +15331,7 @@ window.addEventListener("DOMContentLoaded", () => {
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   var CARDS = {
     thien_thach:{k:"atk",icon:"☄️",name:"Thiên Thạch Diệt Thế",type:"⚔️ Công kích",desc:"Chọn 1 bạn ngẫu nhiên trong Top 5 XP: bạn ấy mất 5% XP, bạn nhận một nửa số XP đó, phần còn lại biến mất."},
-    ket_gioi:{k:"def",icon:"🛡️",name:"Kết Giới Hộ Thân",type:"🛡️ Kháng",desc:"Chặn 1 đòn công kích trong 24h. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ. Bật Kết Giới cũng gỡ ngay Phong Tỏa Ngân Khố đang đè lên bạn."},
+    ket_gioi:{k:"def",icon:"🛡️",name:"Kết Giới Hộ Thân",type:"🛡️ Kháng",desc:"Chặn 1 đòn công kích trong 24h. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ."},
     suoi_nguon:{k:"def",icon:"💧",name:"Suối Nguồn Sinh Mệnh",type:"🛡️ Kháng",desc:"Bật trong 24h (mỗi lúc chỉ có 1 thẻ phòng thủ). Đòn công kích đầu tiên nhắm vào bạn (Thiên Thạch, Thần Thâu, Kiếp Phú): bạn không mất XP/Trúc nào (được hoàn đủ), nhưng người tung vẫn nhận một nửa số lẽ ra lấy được. Không có tác dụng với Bàn Tay Vàng. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ."},
     guong:{k:"cnt",icon:"🪞",name:"Gương Thần Phản Chiếu",type:"🔄 Phản công",desc:"Bật trong 24h (mỗi lúc chỉ có 1 thẻ phòng thủ). Đòn công kích đầu tiên nhắm vào bạn (Thiên Thạch, Thần Thâu, Kiếp Phú) bị bật ngược: bạn không mất gì, người tung mất đúng số XP/Trúc lẽ ra bạn mất (tối đa bằng số họ đang có) và không ai nhận số đó. Không phản được Bàn Tay Vàng. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ."},
     phuc_lanh:{k:"spc",icon:"🍀",name:"Phúc Lành Giáng Xuống",type:"🎲 Đặc biệt",desc:"Nhận 10% số Trúc bằng tổng số Trúc của 3 bạn ngẫu nhiên trong Top 5 bạn có nhiều Trúc nhất lớp (trừ bạn), các bạn đó không bị trừ."},
@@ -15348,9 +15353,9 @@ window.addEventListener("DOMContentLoaded", () => {
     am_duong:{k:"spc",icon:"☯️",name:"Âm Dương Đổ Vận",type:"🎲 Đặc biệt",desc:"Tung đồng xu: 50% nhận +15% số Trúc đang có (tối đa 3000), 50% mất 8% số Trúc đang có (tối đa 1500). Cần túi có ít nhất 100 Trúc. Liều hay không là do bạn!"},
     thien_co:{k:"spc",icon:"📖",name:"Thiên Cơ Tam Quyển",type:"🎲 Đặc biệt",desc:"Mở ra 3 thẻ ngẫu nhiên khác nhau, bạn chọn 1 thẻ để đổi lấy chính thẻ này (số thẻ trong túi không đổi). Danh sách 3 thẻ được lưu lại: tải lại trang vẫn thấy đúng 3 thẻ đó, không rút lại được. Không rút ra chính Thiên Cơ. Bảng thông báo chỉ hiện bạn đã đổi lấy 1 thẻ mới, không nói là thẻ gì."},
     huyet_te:{k:"spc",icon:"🩸",name:"Huyết Tế",type:"🎲 Đặc biệt",desc:"Hy sinh 4% tổng XP của bạn (tối thiểu 100 XP, tối đa 5.000 XP, cần tổng XP từ 500) để nhận ngay 1 thẻ Thần Thâu và 1 thẻ công kích ngẫu nhiên vào túi. Có thể làm tụt Level. Túi cần trống 2 ô sau khi dùng. Mỗi ngày dùng được 1 lần. Bảng Tin chỉ báo ẩn danh “Có người vừa hiến tế XP...”."},
-    phong_toa:{k:"atk",icon:"🧊",name:"Phong Tỏa Ngân Khố",type:"⚔️ Công kích",desc:"Chọn 1 bạn trong lớp: trong 12h bạn ấy không tiêu được Trúc vào việc gì (không mua đồ, không cho gấu ăn, không cược minigame, không bốc thêm...) nhưng không bị mất Trúc. Kết Giới chặn được. Bạn bị phong tỏa có thể dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay."},
+    phong_toa:{k:"atk",icon:"🧊",name:"Phong Tỏa Ngân Khố",type:"⚔️ Công kích",desc:"Chọn 1 bạn trong lớp: trong 12h bạn ấy không tiêu được Trúc vào việc gì (không mua đồ, không cho gấu ăn, không cược minigame, không bốc thêm...) nhưng không bị mất Trúc. Kết Giới, Suối Nguồn, Gương Thần đều không chặn được. Bạn bị phong tỏa có thể dùng Thanh Tẩy Phù để gỡ ngay."},
     dong_quy:{k:"cnt",icon:"☠️",name:"Đồng Quy Vu Tận",type:"🔄 Phản công",desc:"Bật trong 24h (không chiếm ô thẻ phòng thủ). Ai dùng thẻ công kích nhắm vào bạn thì người đó mất 10% XP, bạn mất 3% XP, kể cả khi đòn bị chặn. Có thể làm tụt Level cả hai. Bảng Tin chỉ báo “Có người vừa kích hoạt một thẻ phản kích...”. Không bật được khi đang bị Phong Ấn."},
-    ngu_ong:{k:"spc",icon:"🎣",name:"Ngư Ông Đắc Lợi",type:"🎲 Đặc biệt",desc:"Trong 24h, mỗi lần thẻ công kích trong lớp làm “biến mất” một phần Trúc/XP (Thiên Thạch, Thần Thâu, Gương bật ngược, Đại Hồng Thủy...), 50% phần biến mất đó chảy về túi bạn, tối đa 1500 cho cả lần bật thẻ. Bảng Tin báo tên người hưởng lợi mỗi lần được cộng. Lúc bật thẻ không báo gì."},
+    ngu_ong:{k:"spc",icon:"🎣",name:"Ngư Ông Đắc Lợi",type:"🎲 Đặc biệt",desc:"Trong 24h, mỗi lần thẻ công kích trong lớp làm “biến mất” một phần Trúc/XP (Thiên Thạch, Thần Thâu, Gương bật ngược, Đại Hồng Thủy...), 50% phần biến mất đó chảy về những bạn đang bật Ngư Ông (nhiều bạn cùng bật thì chia đều đầu người). Mỗi lần bật thẻ nhận tối đa 3000 Trúc và 10000 XP (tính riêng). Bảng Tin báo tên người hưởng lợi mỗi lần được cộng. Lúc bật thẻ không báo gì."},
     hong_thuy:{k:"atk",icon:"🌊",name:"Đại Hồng Thủy",type:"⚔️ Công kích",desc:"Rất hiếm (~1%). Cả lớp (trừ bạn) mất 4% Trúc, bạn nhận 25% tổng phần mất. Ai đang bật thẻ phòng thủ thì được miễn nhưng thẻ phòng thủ đó bị tiêu. Ẩn Thân không cứu được. Bảng Tin báo rõ tên bạn (trừ khi đang bật Ẩn Dấu Phù). Không dùng được khi đang bị Phong Ấn."},
   };
   var ERR = {bad_auth:"Phiên đăng nhập không hợp lệ, hãy đăng xuất rồi đăng nhập lại.",unknown_card:"Thẻ này không tồn tại hoặc bản trang chưa cập nhật, hãy tải lại trang.",not_found:"Không tìm thấy tài khoản.",already_drawn:"Hôm nay bạn đã bốc thẻ miễn phí rồi.",no_card:"Không tìm thấy thẻ này trong túi.",ward_active:"Bạn đang có 1 thẻ phòng thủ còn hiệu lực.",
@@ -15367,7 +15372,7 @@ window.addEventListener("DOMContentLoaded", () => {
   ERR.xp_too_low="Cần tổng XP từ 500 trở lên để hiến tế. Thẻ chưa bị tiêu.";
   ERR.bag_not_enough_space="Túi cần trống 2 ô (sau khi dùng Huyết Tế) để nhận 2 thẻ. Hãy dùng hoặc bỏ bớt thẻ. Thẻ chưa bị tiêu, XP chưa bị trừ.";
   ERR.already_sacrificed_today="Hôm nay bạn đã hiến tế rồi, mai hãy dùng tiếp. Thẻ chưa bị tiêu.";
-  ERR.treasury_frozen="Ngân Khố của bạn đang bị Phong Tỏa: không tiêu được Trúc. Dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ, hoặc chờ hết 12h.";
+  ERR.treasury_frozen="Ngân Khố của bạn đang bị Phong Tỏa: không tiêu được Trúc. Dùng Thanh Tẩy Phù để gỡ, hoặc chờ hết 12h.";
   ERR.already_frozen="Bạn này đang bị phong tỏa Ngân Khố rồi. Thẻ chưa bị tiêu.";
   ERR.counter_active="Bạn đang bật Đồng Quy Vu Tận rồi. Thẻ chưa bị tiêu.";
   ERR.fisher_active="Bạn đang bật Ngư Ông Đắc Lợi rồi. Thẻ chưa bị tiêu.";
@@ -15450,7 +15455,7 @@ window.addEventListener("DOMContentLoaded", () => {
   window.tbFrozenBlock=function(){
     try{
       var s=ctx(); if(!s) return false; var t=frozenExp(s.username); if(!t) return false;
-      alert("🧊 Ngân Khố của bạn đang bị Phong Tỏa (còn "+sealLeft(t)+"): bạn không tiêu được Trúc vào việc gì, nhưng Trúc vẫn không mất. Dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay.");
+      alert("🧊 Ngân Khố của bạn đang bị Phong Tỏa (còn "+sealLeft(t)+"): bạn không tiêu được Trúc vào việc gì, nhưng Trúc vẫn không mất. Dùng Thanh Tẩy Phù để gỡ ngay.");
       return true;
     }catch(e){ return false; }
   };
@@ -15590,11 +15595,11 @@ window.addEventListener("DOMContentLoaded", () => {
       h+='<div class="tb-ward">☠️ Đồng Quy Vu Tận đang bật (hết hạn '+esc(new Date(st.counterExpires).toLocaleString("vi-VN"))+'): ai tấn công bạn mất 10% XP, bạn mất 3% XP.</div>';
     }
     if(st.fisherExpires){
-      h+='<div class="tb-ward">🎣 Ngư Ông Đắc Lợi đang bật (hết hạn '+esc(new Date(st.fisherExpires).toLocaleString("vi-VN"))+'): còn nhận được tối đa '+(st.fisherLeft==null?1500:st.fisherLeft)+'.</div>';
+      h+='<div class="tb-ward">🎣 Ngư Ông Đắc Lợi đang bật (hết hạn '+esc(new Date(st.fisherExpires).toLocaleString("vi-VN"))+'): còn nhận được tối đa '+(st.fisherLeftPouch==null?3000:st.fisherLeftPouch)+' Trúc và '+(st.fisherLeftXp==null?10000:st.fisherLeftXp)+' XP.</div>';
     }
     var _fz=frozenExp(ctx()&&ctx().username);
     if(_fz){
-      h+='<div class="tb-seal">🧊 Ngân Khố của bạn đang bị phong tỏa (hết hạn '+esc(new Date(_fz).toLocaleString("vi-VN"))+'): không tiêu được Trúc, nhưng Trúc không mất. Dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay.</div>';
+      h+='<div class="tb-seal">🧊 Ngân Khố của bạn đang bị phong tỏa (hết hạn '+esc(new Date(_fz).toLocaleString("vi-VN"))+'): không tiêu được Trúc, nhưng Trúc không mất. Dùng Thanh Tẩy Phù để gỡ ngay.</div>';
     }
     if(traceOn()){
       h+='<div class="tb-ward">🕵️ Đang ẩn dấu (hết hạn '+esc(new Date(st.traceExpires).toLocaleString("vi-VN"))+'): thẻ bạn dùng vẫn hiện ở thông báo nhưng dưới tên Người Ẩn Danh.</div>';
@@ -15650,9 +15655,9 @@ window.addEventListener("DOMContentLoaded", () => {
   function report(r){ return report1(r)+tailReport(r); }
   function report1(r){
     var t=r.target||"";
-    if(r.card==="phong_toa") return r.outcome==="blocked" ? "🛡️ "+t+" có Kết Giới, Phong Tỏa Ngân Khố bị chặn đứng!" : "🧊 Đã phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc (nhưng không mất Trúc).";
+    if(r.card==="phong_toa") return "🧊 Đã phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc (nhưng không mất Trúc).";
     if(r.card==="dong_quy") return "☠️ Đã bật Đồng Quy Vu Tận trong 24h: ai tấn công bạn sẽ mất 10% XP (bạn mất 3% XP).";
-    if(r.card==="ngu_ong") return "🎣 Đã giăng cần câu 24h: bạn nhận 50% phần Trúc/XP biến mất trong các đòn tấn công của lớp (tối đa 1500).";
+    if(r.card==="ngu_ong") return "🎣 Đã giăng cần câu 24h: bạn nhận 50% phần Trúc/XP biến mất trong các đòn tấn công của lớp (chia đều nếu nhiều bạn cùng bật; tối đa 3000 Trúc và 10000 XP).";
     if(r.card==="hong_thuy") return "🌊 Đại Hồng Thủy! "+r.hit+" bạn mất tổng "+r.loss+" Trúc, "+r.immune+" bạn được phòng thủ cứu. Bạn nhận +"+r.gain+" Trúc.";
     if(r.card==="huyet_te"){ var _h=(r.cards||[]).map(function(x){ var c=CARDS[x]; return c?c.icon+" "+c.name:x; }).join(" + "); return "🩸 Hiến tế "+r.cost+" XP thành công! Bạn nhận vào túi: "+_h+"."; }
     if(r.card==="thanh_tay") return "🌸 Đã dùng Thanh Tẩy Phù."+(r.wasSealed?" Phong Ấn đã được gỡ.":"")+(r.wasWanted?" Truy Nã đã được gỡ.":"")+" Trong 12h tới không ai phong ấn hay truy nã được bạn.";
@@ -15734,7 +15739,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
       if(cid==="phong_an"){ logCard(r.outcome==="blocked" ? "🔒 "+me+" dùng Phong Ấn lên "+t+" nhưng bị Kết Giới Hộ Thân chặn đứng! 🛡️" : "🔒 "+me+" dùng thẻ Phong Ấn lên "+t+": 12h không dùng được thẻ công kích và không bật được phòng thủ mới!"); return; }
       if(cid==="thien_ly_nhan") return; // nhìn trộm: không báo gì lên Bảng Tin
-      if(cid==="phong_toa"){ logCard(r.outcome==="blocked" ? "🧊 "+me+" dùng Phong Tỏa Ngân Khố lên "+t+" nhưng bị Kết Giới Hộ Thân chặn đứng! 🛡️" : "🧊 "+me+" phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc!"); return; }
+      if(cid==="phong_toa"){ logCard("🧊 "+me+" phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc!"); return; }
       if(cid==="truy_na"){ logCard("📜 "+me+" treo thưởng truy nã "+t+" trong 24h! Ai dùng Phá Giới Chùy lên "+t+" sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống."); return; }
       if(cid==="phuc_thu"){ logCard(r.outcome==="wrong" ? "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+" nhưng đoán nhầm kẻ thù, thẻ tan biến!" : "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+": lấy lại "+r.gain+" Trúc, "+t+" bị trừ "+r.loss+" Trúc"+(r.xpLoss>0 ? " và "+r.xpLoss+" XP" : "")+"!"); return; }
       if(cid==="pha_gioi_chuy"){ logCard("💥 "+me+" vừa vung Phá Giới Chùy lên "+t+"!"); if(r.bounty) logCard("📜 "+me+" bắt được "+t+" (đang bị truy nã) và nhận "+r.bounty+" 🎋 tiền thưởng!"); return; } // không nói trúng hay trượt
