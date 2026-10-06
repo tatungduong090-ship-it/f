@@ -150,7 +150,7 @@
   .class-item-box:hover{ border-color:var(--jade); background:var(--accent-light); transform:translateY(-2px); box-shadow:var(--shadow-md); }
 
   /* Modals */
-  #class-pass-modal, #dictation-pass-modal, #levelup-modal, #shop-modal, #steal-modal, #gift-modal, #transform-modal, #reincarnation-modal, #tribulation-modal, #wheel-modal, #fishing-modal, #lantern-modal, #kite-modal, #fortune-modal, #pot-modal{
+  #class-pass-modal, #dictation-pass-modal, #levelup-modal, #shop-modal, #steal-modal, #gift-modal, #transform-modal, #reincarnation-modal, #tribulation-modal, #ascension-modal, #wheel-modal, #fishing-modal, #lantern-modal, #kite-modal, #fortune-modal, #pot-modal{
     position:fixed; inset:0; background:rgba(15,28,22,0.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:10005; display:none; align-items:center; justify-content:center; padding:20px;
   }
   .pass-modal-card{ background:var(--card-bg); border:1px solid var(--paper-darker); border-radius:var(--radius-lg); padding:26px; max-width:420px; width:100%; text-align:center; box-shadow:var(--shadow-lg); position:relative; animation:modalPop 0.22s var(--ease); }
@@ -1273,6 +1273,40 @@
   .lb-row-pending-reincarnation::after{
     content:none !important; display:none !important; animation:none !important;
   }
+
+  /* ===== PHI THĂNG (cổng danh hiệu sau Lv100) ===== */
+  #ascension-modal .pass-modal-card{ box-shadow:0 0 28px 8px rgba(255,224,130,0.35); }
+  .lb-row-pending-ascension{ position:relative; overflow:hidden; border-color:#FFD54F !important; background:linear-gradient(135deg,#FFF8E1,#FFECB3) !important; box-shadow:0 0 14px 4px rgba(255,213,79,0.55) !important; }
+  .lb-row-pending-ascension::before{ content:"🌠"; position:absolute; top:2px; right:8px; font-size:18px; z-index:2; pointer-events:none; animation:ascTwinkle 2.2s ease-in-out infinite; }
+  .lb-row-ascended{ position:relative; overflow:hidden; border-color:#FFD54F !important; background:linear-gradient(135deg,#1B1240,#3B2A78 55%,#5B3FA8) !important; box-shadow:0 0 18px 6px rgba(255,213,79,0.55), 0 0 36px 10px rgba(124,77,255,0.35) !important; }
+  .lb-row-ascended strong, .lb-row-ascended .lb-pending-status-text, .lb-row-ascended .lb-pending-xp-text{ color:#FFF3C4 !important; }
+  .lb-row-ascended .lb-pending-truc-text{ color:#B9F6CA !important; }
+  .lb-row-ascended::after{ content:""; position:absolute; top:0; left:-60%; width:35%; height:100%; background:linear-gradient(120deg,transparent,rgba(255,236,179,0.55),transparent); animation:ascSheen 3.4s ease-in-out infinite; pointer-events:none; }
+  .lb-asc-badge{ display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:800; color:#3B2A00; background:linear-gradient(90deg,#FFE082,#FFD54F,#FFF8E1); border:1.5px solid #FFB300; box-shadow:0 0 10px 2px rgba(255,213,79,0.8); animation:ascBadgePulse 2s ease-in-out infinite; vertical-align:middle; }
+  @keyframes ascSheen{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
+  @keyframes ascTwinkle{ 0%,100%{ opacity:.45; transform:scale(.9); } 50%{ opacity:1; transform:scale(1.2); } }
+  @keyframes ascBadgePulse{ 0%,100%{ box-shadow:0 0 8px 1px rgba(255,213,79,0.7); } 50%{ box-shadow:0 0 16px 5px rgba(255,213,79,1); } }
+  /* Màn hình nghi thức Phi Thăng */
+  .asc-ceremony{ position:fixed; inset:0; z-index:10020; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; overflow:hidden; color:#FFF8E1; background:radial-gradient(ellipse at 50% 75%,#3A2A7A 0%,#140B38 55%,#05030F 100%); }
+  .asc-ceremony .asc-flash{ position:absolute; inset:0; background:#fff; opacity:0; animation:ascFlash 1.8s ease-out .3s 1; pointer-events:none; }
+  .asc-ceremony .asc-rays{ position:absolute; width:140vmax; height:140vmax; left:50%; top:46%; margin:-70vmax 0 0 -70vmax; background:repeating-conic-gradient(from 0deg,rgba(255,224,130,0.16) 0deg 6deg,transparent 6deg 18deg); animation:ascSpin 28s linear infinite; pointer-events:none; -webkit-mask-image:radial-gradient(circle,#000 0%,transparent 62%); mask-image:radial-gradient(circle,#000 0%,transparent 62%); }
+  .asc-ceremony .asc-ring{ position:relative; width:170px; height:170px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:4px solid #FFE082; box-shadow:0 0 40px 12px rgba(255,224,130,0.65), inset 0 0 40px rgba(255,224,130,0.45); animation:ascRingPulse 2.6s ease-in-out infinite; }
+  .asc-ceremony .asc-panda{ font-size:78px; animation:ascRise 3.2s cubic-bezier(.2,.8,.2,1) both; }
+  .asc-ceremony .asc-level{ position:relative; margin-top:22px; font-family:var(--serif); font-size:40px; font-weight:900; letter-spacing:1px; color:#FFE082; text-shadow:0 0 18px rgba(255,224,130,0.9); animation:ascFadeIn 1.4s ease-out 1.2s both; }
+  .asc-ceremony .asc-title{ position:relative; margin-top:6px; font-size:22px; font-weight:800; animation:ascFadeIn 1.4s ease-out 1.7s both; }
+  .asc-ceremony .asc-sub{ position:relative; margin-top:10px; max-width:420px; font-size:14px; font-weight:600; line-height:1.55; color:#E6DCFF; animation:ascFadeIn 1.4s ease-out 2.2s both; }
+  .asc-ceremony .asc-close{ position:relative; margin-top:22px; animation:ascFadeIn 1s ease-out 2.8s both; }
+  .asc-ceremony .asc-spark{ position:absolute; bottom:-30px; font-size:18px; opacity:0; animation:ascFloat linear infinite; pointer-events:none; }
+  @keyframes ascFlash{ 0%{ opacity:0; } 8%{ opacity:.95; } 100%{ opacity:0; } }
+  @keyframes ascSpin{ to{ transform:rotate(360deg); } }
+  @keyframes ascRingPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.07); } }
+  @keyframes ascRise{ 0%{ transform:translateY(90px) scale(.6); opacity:0; filter:blur(6px); } 60%{ opacity:1; filter:blur(0); } 100%{ transform:translateY(0) scale(1); opacity:1; } }
+  @keyframes ascFadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  @keyframes ascFloat{ 0%{ transform:translateY(0) scale(.6); opacity:0; } 15%{ opacity:.95; } 100%{ transform:translateY(-105vh) scale(1.2); opacity:0; } }
+  @media (prefers-reduced-motion: reduce){
+    .asc-ceremony *, .lb-row-ascended::after, .lb-row-pending-ascension::before, .lb-asc-badge{ animation:none !important; }
+    .asc-ceremony .asc-level, .asc-ceremony .asc-title, .asc-ceremony .asc-sub, .asc-ceremony .asc-close, .asc-ceremony .asc-panda{ opacity:1 !important; }
+  }
 </style>
 <!-- ==================================================================
      GIAO DIỆN THEO THIẾT BỊ: ĐIỆN THOẠI / IPAD / MÁY TÍNH
@@ -1673,6 +1707,28 @@
   </div>
 </div>
 
+<!-- PHI THĂNG MODAL (cổng danh hiệu sau Lv100: 125, 150, 175... mỗi 25 Level, 20000 Trúc cố định mỗi cổng). Trong lúc chờ KHÔNG cho ăn Trúc (giống Luân Hồi/Độ Kiếp). -->
+<div id="ascension-modal">
+  <div class="pass-modal-card" style="max-width:520px; text-align:left; border-color:#FFD54F; background:linear-gradient(135deg,#1B1240,#3B2A78);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:2px dashed #FFD54F; padding-bottom:10px;">
+      <h3 style="font-family:var(--serif); color:#FFE082; margin:0;">🌠 Cổng Phi Thăng</h3>
+      <button class="btn btn-outline" id="close-ascension-modal-btn" style="padding:4px 10px; font-size:12px; color:#FFF3C4; border-color:#FFD54F;">✕ Đóng</button>
+    </div>
+    <div id="ascension-note" style="background:rgba(255,213,79,0.14); border:2px solid #FFD54F; border-radius:14px; padding:12px; margin-bottom:14px; font-size:13px; color:#FFF3C4; font-weight:700; line-height:1.5;">
+      📌 Gấu Trúc của bạn đã đủ XP để lên Level tiếp theo, nhưng đây là một "Cổng Phi Thăng"! Cần tích đủ 20000 🎋 Cành Trúc rồi bấm Phi Thăng 🌠 mới được thăng cấp. Trong lúc chờ, KHÔNG thể cho ăn Trúc để tăng XP được.
+    </div>
+    <div style="background:rgba(255,255,255,0.06); border:2px solid #FFD54F; border-radius:14px; padding:12px 14px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; margin-bottom:8px; color:#FFF3C4;">
+        <span>🎒 Túi Trúc hiện có:</span>
+        <strong style="color:#FFE082; font-size:16px;" id="ascension-bamboo-balance">0 🎋</strong>
+      </div>
+      <div class="timer-wrap" style="height:16px; margin:0;"><div class="timer-bar" id="ascension-progress-bar" style="width:0%; background:linear-gradient(90deg,#FFB300,#FFE082,#FFFFFF);"></div></div>
+      <div style="text-align:right; font-size:12px; font-weight:800; color:#FFE082; margin-top:4px;" id="ascension-progress-text">0/20000 🎋</div>
+    </div>
+    <button class="btn btn-primary" id="buy-ascension-btn" style="width:100%; font-size:14px; padding:12px; border-radius:14px; background:linear-gradient(90deg,#B26A00,#FFB300,#FFE082); color:#2B1B00; border-color:#8A5200; box-shadow:0 3px 0 #8A5200;">🌠 Phi Thăng Ngay (20000 🎋)</button>
+  </div>
+</div>
+
 <!-- VÒNG QUAY LỄ HỘI MODAL (trò chơi may rủi, cân bằng động, xem hàm getActiveWheelWeights) -->
 <div id="wheel-modal">
   <div class="pass-modal-card" style="max-width:480px; text-align:center;">
@@ -1937,6 +1993,13 @@
           <div style="font-weight:800; color:#FFEE58; font-size:13px; margin-bottom:6px;" id="ph-tribulation-text">⚡ Gặp Kiếp Nạn! Cần Độ Kiếp để lên Level tiếp!</div>
           <div class="timer-wrap" style="height:14px; margin:0 0 8px;"><div class="timer-bar" id="ph-tribulation-bar" style="width:0%; background:linear-gradient(90deg,#7C4DFF,#00E5FF,#FFEE58);"></div></div>
           <button class="btn btn-primary" id="open-tribulation-btn" style="font-size:12px; padding:8px 14px; border-radius:12px; background:linear-gradient(90deg,#4A148C,#7C4DFF,#00E5FF,#FFEE58); border-color:#4A148C; box-shadow:0 3px 0 #4A148C;">⚡ Độ Kiếp Ngay (1200 🎋)</button>
+        </div>
+
+        <!-- "Cổng Phi Thăng" Banner — hiện khi đủ XP lên Level tiếp (sau Lv100) nhưng chưa Phi Thăng. Nút Cho Ăn bị khóa trong lúc chờ (xem updateGamificationUI). -->
+        <div id="ph-ascension-banner" style="display:none; position:relative; z-index:3; margin-bottom:12px; background:linear-gradient(135deg,#1B1240,#3B2A78); border:2px solid #FFD54F; border-radius:14px; padding:10px 14px; text-align:center; max-width:460px; width:100%; box-shadow:0 0 14px 4px rgba(255,213,79,0.45);">
+          <div style="font-weight:800; color:#FFE082; font-size:13px; margin-bottom:6px;" id="ph-ascension-text">🌠 Cần Phi Thăng để lên Level tiếp!</div>
+          <div class="timer-wrap" style="height:14px; margin:0 0 8px;"><div class="timer-bar" id="ph-ascension-bar" style="width:0%; background:linear-gradient(90deg,#FFB300,#FFE082,#FFFFFF);"></div></div>
+          <button class="btn btn-primary" id="open-ascension-btn" style="font-size:12px; padding:8px 14px; border-radius:12px; background:linear-gradient(90deg,#B26A00,#FFB300,#FFE082); color:#2B1B00; border-color:#8A5200; box-shadow:0 3px 0 #8A5200;">🌠 Phi Thăng Ngay (20000 🎋)</button>
         </div>
 
         <!-- "Thú Truyền Thuyết" Gate Banner — hiện khi đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết. Nút Cho Ăn bị khóa hẳn (xem updateGamificationUI). -->
@@ -3007,7 +3070,7 @@ const BADGE_GROUPS = [
     title: "Đại Sư Tốt Nghiệp",
     icon: "🎓",
     metricLabel: "Level Gấu Trúc",
-    metric: g => calcLevelDetails(g.totalXp || 0, getTotalCharm(g), g.reincarnationCount || 0, g.tribulationCount || 0).level,
+    metric: g => calcLevelDetails(g.totalXp || 0, getTotalCharm(g), g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0).level,
     tiers: [
       { tier: 1, threshold: 10, xp: 0, charm: 20,  name: "Đại Sư Tốt Nghiệp · Cấp 1" },
       { tier: 2, threshold: 20, xp: 0, charm: 50,  name: "Đại Sư Tốt Nghiệp · Cấp 2" },
@@ -3136,7 +3199,8 @@ function getReincarnationCostForGate(gateLevel) {
 }
 /* true nếu `lv` là 1 mốc "Ải Luân Hồi" (40, 50, 60...) */
 function isReincarnationGateLevel(lv) {
-  return lv >= REINCARNATION_START_LEVEL && (lv - REINCARNATION_START_LEVEL) % REINCARNATION_STEP === 0;
+  /* Luân Hồi CHỈ tồn tại đến hết Lv100 (ải thứ 7); sau Lv100 chuyển sang cổng Phi Thăng. */
+  return lv >= REINCARNATION_START_LEVEL && lv <= LEGACY_GATES_MAX_LEVEL && (lv - REINCARNATION_START_LEVEL) % REINCARNATION_STEP === 0;
 }
 /* Thứ tự của ải (40 = ải thứ 1, 50 = ải thứ 2...) — cũng chính là số lần
    Luân Hồi TỐI THIỂU cần có để được đi qua mốc Level này. */
@@ -3171,13 +3235,52 @@ function getTribulationCostForGate(gateLevel) {
 }
 /* true nếu `lv` là 1 mốc "Kiếp Nạn" (70, 85, 100...) */
 function isTribulationGateLevel(lv) {
-  return lv >= TRIBULATION_START_LEVEL && (lv - TRIBULATION_START_LEVEL) % TRIBULATION_STEP === 0;
+  /* Kiếp Nạn CHỈ tồn tại đến hết Lv100 (kiếp thứ 3); sau Lv100 chuyển sang cổng Phi Thăng. */
+  return lv >= TRIBULATION_START_LEVEL && lv <= LEGACY_GATES_MAX_LEVEL && (lv - TRIBULATION_START_LEVEL) % TRIBULATION_STEP === 0;
 }
 /* Thứ tự của Kiếp (70 = Kiếp thứ 1, 85 = Kiếp thứ 2...) — cũng chính là
    số lần Độ Kiếp TỐI THIỂU cần có để được đi qua mốc Level này. */
 function tribulationGateIndex(lv) {
   return Math.floor((lv - TRIBULATION_START_LEVEL) / TRIBULATION_STEP) + 1;
 }
+
+/* ===== HỆ THỐNG "PHI THĂNG" (CỔNG DANH HIỆU SAU LV100) =====
+   Luân Hồi (7 ải) và Độ Kiếp (3 kiếp) kết thúc tại Lv100 = "Hóa Thần".
+   Sau Lv100, cứ mỗi ASCENSION_STEP (25) Level lại có 1 cổng danh hiệu:
+   125, 150, 175, 200... lặp vô hạn. Mỗi cổng tốn ASCENSION_COST (20000)
+   Cành Trúc CỐ ĐỊNH (không nhân đôi), trừ hẳn khi bấm "Phi Thăng".
+   Giống Luân Hồi/Độ Kiếp: trong lúc "Chờ Phi Thăng" KHÔNG cho Gấu Trúc ăn
+   Trúc (XP dư giữ nguyên). Cổng độc lập hoàn toàn với 2 cổng cũ (không
+   bao giờ trùng mốc vì cũ dừng ở Lv100). */
+const LEGACY_GATES_MAX_LEVEL = 100;
+const ASCENSION_START_LEVEL = 125;
+const ASCENSION_STEP = 25;
+const ASCENSION_COST = 20000;
+function getAscensionCostForGate(gateLevel) { return ASCENSION_COST; }
+/* true nếu `lv` là 1 mốc "Cổng Phi Thăng" (125, 150, 175...) */
+function isAscensionGateLevel(lv) {
+  return lv >= ASCENSION_START_LEVEL && (lv - ASCENSION_START_LEVEL) % ASCENSION_STEP === 0;
+}
+/* Thứ tự cổng (125 = cổng 1, 150 = cổng 2...) — cũng là số lần Phi Thăng
+   TỐI THIỂU cần có để được đi qua mốc Level này. */
+function ascensionGateIndex(lv) {
+  return Math.floor((lv - ASCENSION_START_LEVEL) / ASCENSION_STEP) + 1;
+}
+/* Danh hiệu theo mốc: Lv100 Hóa Thần, 125 Hóa Tiên, 150 Đại La Kim Tiên.
+   Từ Lv175 trở đi CHƯA đặt tên chính thức -> dùng tên tạm bên dưới, chỉ cần
+   sửa mảng ASCENSION_TITLES (thêm phần tử) là đổi được. */
+const ASCENSION_TITLES = [
+  { title: "🌠 Hóa Thần",         outfit: "🌠👑", status: "Phi Thăng thành công, hào quang vàng kim bao quanh" },
+  { title: "🦋 Hóa Tiên",         outfit: "🦋✨", status: "Hóa Tiên, cánh tiên rực rỡ, mây ngũ sắc dưới chân" },
+  { title: "🏯 Đại La Kim Tiên",  outfit: "🏯⚡", status: "Đại La Kim Tiên, trận pháp xoay quanh, uy chấn cả lớp" }
+];
+function getAscensionTitleInfo(lv) {
+  const idx = Math.max(0, Math.floor((lv - ASCENSION_BASE_LEVEL) / ASCENSION_STEP));
+  if (idx < ASCENSION_TITLES.length) return { ...ASCENSION_TITLES[idx], stage: idx };
+  const n = idx - ASCENSION_TITLES.length + 1;
+  return { title: `🌌 Thượng Tiên Cảnh ${n}`, outfit: "🌌👑", status: "Cảnh giới tối thượng, danh hiệu chính thức sẽ được đặt sau", stage: idx };
+}
+const ASCENSION_BASE_LEVEL = 100;
 const SPIRIT_ANIMALS = [
   /* ===== Nhóm Uy Nghiêm (Thần Thú) — 6 con gốc + 21 con mới = 27 con ===== */
   { id: "azure_dragon",  icon: "🐉", name: "Thanh Long Ngự Trúc",  category: "mighty", color: "#2979FF", desc: "Rồng xanh cổ đại, hào quang xoáy điện xanh biếc quanh Vườn Trúc." },
@@ -3639,6 +3742,12 @@ function sanitizeState(s) {
      khóa chờ Độ Kiếp (null nếu không bị khóa). */
   if (typeof g.tribulationCount !== "number") g.tribulationCount = 0;
   if (typeof g.pendingTribulation !== "number") g.pendingTribulation = null;
+  /* Hệ thống "Phi Thăng" (sau Lv100, mỗi 25 Level): ascensionCount = số lần
+     đã Phi Thăng thành công; pendingAscension = Level đang chờ Phi Thăng. */
+  if (typeof g.ascensionCount !== "number") g.ascensionCount = 0;
+  if (typeof g.pendingAscension !== "number") g.pendingAscension = null;
+  /* Thời điểm (ms) lần đầu chạm Lv100 / Phi Thăng — chỉ ghi 1 lần, null nếu chưa. */
+  if (typeof g.ascendedAt !== "number") g.ascendedAt = null;
 
   if (!g.counters || typeof g.counters !== "object") g.counters = {};
   if (typeof g.counters.quizCount !== "number") g.counters.quizCount = 0;
@@ -4811,7 +4920,10 @@ function syncPeersFromRoster() {
        của action get_class_members phía server để đồng bộ đúng cho học
        viên đã Độ Kiếp trên các thiết bị khác. */
     const tribulationCount = s.tribulationCount || 0;
-    const lDetails = calcLevelDetails(s.totalXp || 0, charm, reincarnationCount, tribulationCount);
+    /* Phi Thăng (sau Lv100): backend get_class_members cũng phải trả về
+       "ascensionCount"/"pendingAscension"; mặc định 0 nếu chưa có. */
+    const ascensionCount = s.ascensionCount || 0;
+    const lDetails = calcLevelDetails(s.totalXp || 0, charm, reincarnationCount, tribulationCount, ascensionCount);
     const lMeta = getLevelMetadata(lDetails.level);
 
     let p = g.peers.find(x => x.username === s.username);
@@ -4836,6 +4948,8 @@ function syncPeersFromRoster() {
     p.pendingReincarnation = lDetails.reincarnationLocked ? lDetails.pendingReincarnationLevel : null;
     p.tribulationCount = tribulationCount;
     p.pendingTribulation = lDetails.tribulationLocked ? lDetails.pendingTribulationLevel : null;
+    p.ascensionCount = ascensionCount;
+    p.pendingAscension = lDetails.ascensionLocked ? lDetails.pendingAscensionLevel : null;
   });
 
   /* Bỏ các peer không còn tồn tại trên server (đã bị giáo viên xóa) */
@@ -6286,7 +6400,7 @@ function getXpForLevel(lv) {
    totalCharm (mặc định Infinity) = không áp dụng cổng, dùng cho những
    chỗ chỉ cần tính Level thuần theo XP (ví dụ hiển thị nhanh, không có
    sẵn dữ liệu Mị Lực). */
-function calcLevelDetails(totalXp, totalCharm = Infinity, reincarnationCount = Infinity, tribulationCount = Infinity) {
+function calcLevelDetails(totalXp, totalCharm = Infinity, reincarnationCount = Infinity, tribulationCount = Infinity, ascensionCount = Infinity) {
   let lv = 1;
   let rem = totalXp;
   let charmLocked = false;
@@ -6295,6 +6409,8 @@ function calcLevelDetails(totalXp, totalCharm = Infinity, reincarnationCount = I
   let pendingReincarnationLevel = 0;
   let tribulationLocked = false;
   let pendingTribulationLevel = 0;
+  let ascensionLocked = false;
+  let pendingAscensionLevel = 0;
   while (true) {
     let req = getXpForLevel(lv);
     if (rem < req) break;
@@ -6321,6 +6437,13 @@ function calcLevelDetails(totalXp, totalCharm = Infinity, reincarnationCount = I
       pendingTribulationLevel = lv + 1;
       break;
     }
+    if (isAscensionGateLevel(lv + 1) && ascensionCount < ascensionGateIndex(lv + 1)) {
+      /* Đủ XP + Mị Lực nhưng chạm "Cổng Phi Thăng" (sau Lv100, mỗi 25 Level):
+         dừng lại, GIỮ NGUYÊN XP dư, chờ tích đủ 20000 Trúc bấm Phi Thăng. */
+      ascensionLocked = true;
+      pendingAscensionLevel = lv + 1;
+      break;
+    }
     rem -= req;
     lv++;
   }
@@ -6334,7 +6457,9 @@ function calcLevelDetails(totalXp, totalCharm = Infinity, reincarnationCount = I
     reincarnationLocked,
     pendingReincarnationLevel,
     tribulationLocked,
-    pendingTribulationLevel
+    pendingTribulationLevel,
+    ascensionLocked,
+    pendingAscensionLevel
   };
 }
 
@@ -6368,6 +6493,10 @@ function getRankLabel(tier) {
 
 function getLevelMetadata(lv) {
   const { tier, levelInTier } = getRankInfo(lv);
+  if (lv >= ASCENSION_BASE_LEVEL) {
+    const a = getAscensionTitleInfo(lv);
+    return { title: a.title, outfit: a.outfit, status: a.status, tier, levelInTier, ascended: true, ascensionStage: a.stage };
+  }
   const base = getBaseLevelMetadata(levelInTier);
   if (tier <= 1) return { ...base, tier, levelInTier };
   const stars = "⭐".repeat(Math.min(tier - 1, 5));
@@ -6390,7 +6519,7 @@ function updateGamificationUI() {
   refreshLightspeedBadges();
 
   const totalCharm = getTotalCharm(g);
-  const lDetails = calcLevelDetails(g.totalXp, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const lDetails = calcLevelDetails(g.totalXp, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   const lMeta = getLevelMetadata(lDetails.level);
   const isMaxLevel = lDetails.level >= SPIRIT_ANIMAL_REQUIRED_LEVEL;
   const mySpirit = isMaxLevel ? getSpiritAnimalById(g.spiritAnimal) : null;
@@ -6403,6 +6532,9 @@ function updateGamificationUI() {
   g.pendingReincarnation = lDetails.reincarnationLocked ? lDetails.pendingReincarnationLevel : null;
   /* Tương tự, chốt lại trạng thái "Chờ Độ Kiếp" để hiển thị trên Bảng Xếp Hạng. */
   g.pendingTribulation = lDetails.tribulationLocked ? lDetails.pendingTribulationLevel : null;
+  /* Chốt lại trạng thái "Chờ Phi Thăng" (sau Lv100) để hiển thị trên Bảng Xếp Hạng. */
+  g.pendingAscension = lDetails.ascensionLocked ? lDetails.pendingAscensionLevel : null;
+  if (lDetails.level >= ASCENSION_BASE_LEVEL && typeof g.ascendedAt !== "number") g.ascendedAt = Date.now();
 
   if (state.studentName && Array.isArray(g.peers)) {
     let me = g.peers.find(p => p.name === state.studentName);
@@ -6420,7 +6552,9 @@ function updateGamificationUI() {
         reincarnationCount: g.reincarnationCount || 0,
         pendingReincarnation: g.pendingReincarnation,
         tribulationCount: g.tribulationCount || 0,
-        pendingTribulation: g.pendingTribulation
+        pendingTribulation: g.pendingTribulation,
+        ascensionCount: g.ascensionCount || 0,
+        pendingAscension: g.pendingAscension
       };
       g.peers.push(me);
     } else {
@@ -6435,6 +6569,8 @@ function updateGamificationUI() {
       me.pendingReincarnation = g.pendingReincarnation;
       me.tribulationCount = g.tribulationCount || 0;
       me.pendingTribulation = g.pendingTribulation;
+      me.ascensionCount = g.ascensionCount || 0;
+      me.pendingAscension = g.pendingAscension;
     }
   }
 
@@ -6444,7 +6580,9 @@ function updateGamificationUI() {
   const pct = Math.min(100, Math.round((lDetails.currentLevelXp / lDetails.requiredXpForNext) * 100));
   const ghXpValEl = document.getElementById("gh-xp-val");
   if (ghXpValEl) {
-    ghXpValEl.textContent = lDetails.tribulationLocked
+    ghXpValEl.textContent = lDetails.ascensionLocked
+      ? `🌠 Chờ Phi Thăng (LV${lDetails.pendingAscensionLevel})`
+      : lDetails.tribulationLocked
       ? `⚡ Chờ Độ Kiếp (LV${lDetails.pendingTribulationLevel})`
       : lDetails.reincarnationLocked
       ? `⏳ Chờ Luân Hồi (LV${lDetails.pendingReincarnationLevel})`
@@ -6455,7 +6593,9 @@ function updateGamificationUI() {
   const ghXpBar = document.getElementById("gh-xp-bar");
   if (ghXpBar) {
     ghXpBar.style.width = pct + "%";
-    ghXpBar.style.background = lDetails.tribulationLocked
+    ghXpBar.style.background = lDetails.ascensionLocked
+      ? "linear-gradient(90deg,#FFB300,#FFE082,#FFFFFF)"
+      : lDetails.tribulationLocked
       ? "linear-gradient(90deg,#4A148C,#7C4DFF,#00E5FF)"
       : lDetails.reincarnationLocked
       ? "linear-gradient(90deg,#C62828,#E53935)"
@@ -6470,20 +6610,24 @@ function updateGamificationUI() {
   document.getElementById("ph-bamboo-count").textContent = `${g.bambooPouch} Cành 🎋`;
   const phXpTextEl = document.getElementById("ph-xp-text");
   if (phXpTextEl) {
-    phXpTextEl.textContent = lDetails.tribulationLocked
+    phXpTextEl.textContent = lDetails.ascensionLocked
+      ? `XP đã đầy — 🌠 chờ Phi Thăng để lên Level ${lDetails.pendingAscensionLevel}!`
+      : lDetails.tribulationLocked
       ? `XP đã đầy — ⚡ chờ Độ Kiếp để lên Level ${lDetails.pendingTribulationLevel}!`
       : lDetails.reincarnationLocked
       ? `XP đã đầy — ⏳ chờ mua Luân Hồi Đan ⚗️ để lên Level ${lDetails.pendingReincarnationLevel}!`
       : lDetails.charmLocked
       ? `XP đã đầy — 🔒 cần thêm ${lDetails.charmNeeded - totalCharm} 💖 Mị Lực để lên Level ${lDetails.level + 1}!`
       : `${lDetails.currentLevelXp} / ${lDetails.requiredXpForNext} XP`;
-    phXpTextEl.style.color = lDetails.tribulationLocked ? "#7C4DFF" : lDetails.reincarnationLocked ? "#C62828" : lDetails.charmLocked ? "#D81B60" : "";
-    phXpTextEl.style.fontWeight = (lDetails.tribulationLocked || lDetails.reincarnationLocked || lDetails.charmLocked) ? "800" : "";
+    phXpTextEl.style.color = lDetails.ascensionLocked ? "#B26A00" : lDetails.tribulationLocked ? "#7C4DFF" : lDetails.reincarnationLocked ? "#C62828" : lDetails.charmLocked ? "#D81B60" : "";
+    phXpTextEl.style.fontWeight = (lDetails.ascensionLocked || lDetails.tribulationLocked || lDetails.reincarnationLocked || lDetails.charmLocked) ? "800" : "";
   }
   const phXpBarInner = document.getElementById("ph-xp-bar-inner");
   if (phXpBarInner) {
     phXpBarInner.style.width = pct + "%";
-    phXpBarInner.style.background = lDetails.tribulationLocked
+    phXpBarInner.style.background = lDetails.ascensionLocked
+      ? "linear-gradient(90deg,#FFB300,#FFE082,#FFFFFF)"
+      : lDetails.tribulationLocked
       ? "linear-gradient(90deg,#4A148C,#7C4DFF,#00E5FF)"
       : lDetails.reincarnationLocked
       ? "linear-gradient(90deg,#C62828,#E53935)"
@@ -6520,6 +6664,25 @@ function updateGamificationUI() {
     }
   }
 
+  /* Banner + nút "🌠 Phi Thăng Ngay" khi chạm Cổng Phi Thăng (sau Lv100).
+     Trong lúc chờ nút cho ăn bị khóa (feedBlocked bên dưới có tính ascensionLocked). */
+  const ascBanner = document.getElementById("ph-ascension-banner");
+  const ascTextEl = document.getElementById("ph-ascension-text");
+  const ascBarEl = document.getElementById("ph-ascension-bar");
+  const ascBtnEl = document.getElementById("open-ascension-btn");
+  if (ascBanner) {
+    if (lDetails.ascensionLocked) {
+      ascBanner.style.display = "block";
+      const ascCost = getAscensionCostForGate(lDetails.pendingAscensionLevel);
+      const ascPct = Math.min(100, Math.round((g.bambooPouch / ascCost) * 100));
+      if (ascTextEl) ascTextEl.textContent = `🌠 Cần Phi Thăng để lên Level ${lDetails.pendingAscensionLevel}! Đã tích ${g.bambooPouch}/${ascCost} 🎋`;
+      if (ascBarEl) ascBarEl.style.width = ascPct + "%";
+      if (ascBtnEl) ascBtnEl.textContent = `🌠 Phi Thăng Ngay (${ascCost} 🎋)`;
+    } else {
+      ascBanner.style.display = "none";
+    }
+  }
+
   /* Banner + nút "✨ Hóa Hình Truyền Thuyết" khi đã Level 65 nhưng chưa
      sở hữu Linh Thú Truyền Thuyết */
   const legendBanner = document.getElementById("ph-legendary-gate-banner");
@@ -6530,7 +6693,7 @@ function updateGamificationUI() {
   /* Trong lúc "Chờ Luân Hồi" HOẶC "Chờ Độ Kiếp" HOẶC "Chưa có Thú Truyền
      Thuyết" (từ Level 65), KHÔNG cho phép cho ăn Trúc — vô hiệu hóa các
      nút cho ăn. */
-  const feedBlocked = !!(lDetails.reincarnationLocked || lDetails.tribulationLocked || legendaryGateLocked);
+  const feedBlocked = !!(lDetails.reincarnationLocked || lDetails.tribulationLocked || lDetails.ascensionLocked || legendaryGateLocked);
   ["ph-feed-one-btn", "ph-feed-all-btn", "ph-feed-custom-btn", "ph-feed-custom-input"].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -6746,7 +6909,7 @@ function buyShopItem(item) {
 function openTransformModal() {
   const g = state.gamification;
   if (!g) return;
-  const lDetails = calcLevelDetails(g.totalXp || 0, getTotalCharm(g), g.reincarnationCount || 0, g.tribulationCount || 0);
+  const lDetails = calcLevelDetails(g.totalXp || 0, getTotalCharm(g), g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   if (lDetails.level < SPIRIT_ANIMAL_REQUIRED_LEVEL) {
     return alert(`Chỉ Gấu Trúc đạt Level ${SPIRIT_ANIMAL_REQUIRED_LEVEL} mới có thể Hóa Hình Linh Thú! Cố gắng tích thêm XP nhé 🎋`);
   }
@@ -6767,7 +6930,7 @@ function renderTransformModal() {
   const isFirstTime = !current;
   const myBamboo = state.gamification?.bambooPouch || 0;
   const myTotalCharm = getTotalCharm(state.gamification || {});
-  const myLevel = calcLevelDetails(state.gamification?.totalXp || 0, myTotalCharm, state.gamification?.reincarnationCount || 0, state.gamification?.tribulationCount || 0).level;
+  const myLevel = calcLevelDetails(state.gamification?.totalXp || 0, myTotalCharm, state.gamification?.reincarnationCount || 0, state.gamification?.tribulationCount || 0, state.gamification?.ascensionCount || 0).level;
   const meetsLegendaryLevel = myLevel >= SPIRIT_ANIMAL_LEGENDARY_REQUIRED_LEVEL;
 
   const costNoteEl = document.getElementById("transform-cost-note");
@@ -6829,7 +6992,7 @@ function selectSpiritAnimal(animalId) {
 
   if (animal.category === "legendary") {
     const totalCharm = getTotalCharm(g);
-    const myLevel = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0).level;
+    const myLevel = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0).level;
     if (myLevel < SPIRIT_ANIMAL_LEGENDARY_REQUIRED_LEVEL) {
       return alert(`Chỉ Gấu Trúc đạt Level ${SPIRIT_ANIMAL_LEGENDARY_REQUIRED_LEVEL} mới được mua/đổi sang Linh Thú Truyền Thuyết ✨! Bạn hiện đang ở Level ${myLevel}, hãy cố gắng tích thêm XP nhé 🎋`);
     }
@@ -6857,7 +7020,7 @@ function openReincarnationModal() {
   const g = state.gamification;
   if (!g) return;
   const totalCharm = getTotalCharm(g);
-  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   if (!lDetails.reincarnationLocked) {
     return alert("Gấu Trúc của bạn hiện không bị khóa Luân Hồi — cứ tiếp tục tích XP nhé! 🎋");
   }
@@ -6871,7 +7034,7 @@ function renderReincarnationModal() {
   const g = state.gamification;
   if (!g) return;
   const totalCharm = getTotalCharm(g);
-  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   const pendingLevel = lDetails.reincarnationLocked ? lDetails.pendingReincarnationLevel : g.pendingReincarnation;
   const gateCost = getReincarnationCostForGate(pendingLevel || REINCARNATION_START_LEVEL);
 
@@ -6879,7 +7042,7 @@ function renderReincarnationModal() {
   if (noteEl) {
     noteEl.innerHTML = pendingLevel
       ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong>, nhưng đây là một "Ải Luân Hồi"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi mua <strong>Luân Hồi Đan ⚗️</strong> mới được thăng cấp. Lưu ý: các bạn học khác vẫn có thể CƯỚP TRÚC của bạn trong lúc gom góp, nên hãy nhanh tay!`
-      : `📌 Đây là "Ải Luân Hồi" — cứ mỗi ${REINCARNATION_STEP} Level sau Level ${REINCARNATION_START_LEVEL}, Gấu Trúc cần tốn Cành Trúc mua Luân Hồi Đan ⚗️ mới được thăng cấp tiếp. Ải đầu (LV${REINCARNATION_START_LEVEL}) tốn ${REINCARNATION_COST} 🎋, và mỗi Ải sau đó lại <strong>tăng gấp đôi</strong> (LV${REINCARNATION_START_LEVEL + REINCARNATION_STEP}: ${REINCARNATION_COST * 2} 🎋, LV${REINCARNATION_START_LEVEL + REINCARNATION_STEP * 2}: ${REINCARNATION_COST * 4} 🎋...).`;
+      : `📌 Đây là "Ải Luân Hồi" — cứ mỗi ${REINCARNATION_STEP} Level sau Level ${REINCARNATION_START_LEVEL} (đến hết Level ${LEGACY_GATES_MAX_LEVEL}), Gấu Trúc cần tốn Cành Trúc mua Luân Hồi Đan ⚗️ mới được thăng cấp tiếp. Ải đầu (LV${REINCARNATION_START_LEVEL}) tốn ${REINCARNATION_COST} 🎋, và mỗi Ải sau đó lại <strong>tăng gấp đôi</strong> (LV${REINCARNATION_START_LEVEL + REINCARNATION_STEP}: ${REINCARNATION_COST * 2} 🎋, LV${REINCARNATION_START_LEVEL + REINCARNATION_STEP * 2}: ${REINCARNATION_COST * 4} 🎋...).`;
   }
 
   const balEl = document.getElementById("reincarnation-bamboo-balance");
@@ -6940,7 +7103,7 @@ async function buyReincarnationElixir() {
   const g = state.gamification;
   if (!g) return;
   const totalCharm = getTotalCharm(g);
-  const beforeDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const beforeDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   if (!beforeDetails.reincarnationLocked) {
     return alert("Bạn hiện không bị khóa Luân Hồi, không cần mua Đan lúc này!");
   }
@@ -6952,7 +7115,7 @@ async function buyReincarnationElixir() {
   g.bambooPouch -= gateCost;
   g.reincarnationCount = (g.reincarnationCount || 0) + 1;
 
-  const newDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount, g.tribulationCount);
+  const newDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount, g.tribulationCount, g.ascensionCount || 0);
   const lMeta = getLevelMetadata(newDetails.level);
   g.pendingReincarnation = newDetails.reincarnationLocked ? newDetails.pendingReincarnationLevel : null;
 
@@ -6997,7 +7160,7 @@ function openTribulationModal() {
   const g = state.gamification;
   if (!g) return;
   const totalCharm = getTotalCharm(g);
-  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   if (!lDetails.tribulationLocked) {
     return alert("Gấu Trúc của bạn hiện không gặp Kiếp Nạn nào — cứ tiếp tục tích XP nhé! 🎋");
   }
@@ -7011,7 +7174,7 @@ function renderTribulationModal() {
   const g = state.gamification;
   if (!g) return;
   const totalCharm = getTotalCharm(g);
-  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   const pendingLevel = lDetails.tribulationLocked ? lDetails.pendingTribulationLevel : g.pendingTribulation;
   const gateCost = getTribulationCostForGate(pendingLevel || TRIBULATION_START_LEVEL);
 
@@ -7019,7 +7182,7 @@ function renderTribulationModal() {
   if (noteEl) {
     noteEl.innerHTML = pendingLevel
       ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong>, nhưng đây là một "Kiếp Nạn"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi bấm <strong>Độ Kiếp ⚡</strong> mới được thăng cấp. Lưu ý: trong lúc chờ Độ Kiếp, bạn KHÔNG THỂ cho Gấu Trúc ăn thêm Trúc để tăng XP — và các bạn học khác vẫn có thể CƯỚP TRÚC của bạn, nên hãy nhanh tay tích đủ!`
-      : `📌 Đây là "Kiếp Nạn" — cứ mỗi ${TRIBULATION_STEP} Level sau Level ${TRIBULATION_START_LEVEL}, Gấu Trúc cần tốn Cành Trúc Độ Kiếp ⚡ mới được thăng cấp tiếp. Kiếp đầu (LV${TRIBULATION_START_LEVEL}) tốn ${TRIBULATION_BASE_COST} 🎋, và mỗi Kiếp sau đó lại <strong>tăng gấp đôi</strong> (LV${TRIBULATION_START_LEVEL + TRIBULATION_STEP}: ${TRIBULATION_BASE_COST * 2} 🎋, LV${TRIBULATION_START_LEVEL + TRIBULATION_STEP * 2}: ${TRIBULATION_BASE_COST * 4} 🎋...). Trong lúc "Chờ Độ Kiếp", KHÔNG thể cho ăn Trúc để tăng XP được.`;
+      : `📌 Đây là "Kiếp Nạn" — cứ mỗi ${TRIBULATION_STEP} Level sau Level ${TRIBULATION_START_LEVEL} (đến hết Level ${LEGACY_GATES_MAX_LEVEL}), Gấu Trúc cần tốn Cành Trúc Độ Kiếp ⚡ mới được thăng cấp tiếp. Kiếp đầu (LV${TRIBULATION_START_LEVEL}) tốn ${TRIBULATION_BASE_COST} 🎋, và mỗi Kiếp sau đó lại <strong>tăng gấp đôi</strong> (LV${TRIBULATION_START_LEVEL + TRIBULATION_STEP}: ${TRIBULATION_BASE_COST * 2} 🎋, LV${TRIBULATION_START_LEVEL + TRIBULATION_STEP * 2}: ${TRIBULATION_BASE_COST * 4} 🎋...). Trong lúc "Chờ Độ Kiếp", KHÔNG thể cho ăn Trúc để tăng XP được.`;
   }
 
   const balEl = document.getElementById("tribulation-bamboo-balance");
@@ -7054,7 +7217,7 @@ async function buyTribulation() {
   const g = state.gamification;
   if (!g) return;
   const totalCharm = getTotalCharm(g);
-  const beforeDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0);
+  const beforeDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
   if (!beforeDetails.tribulationLocked) {
     return alert("Bạn hiện không gặp Kiếp Nạn, không cần Độ Kiếp lúc này!");
   }
@@ -7066,7 +7229,7 @@ async function buyTribulation() {
   g.bambooPouch -= gateCost;
   g.tribulationCount = (g.tribulationCount || 0) + 1;
 
-  const newDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount);
+  const newDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount, g.ascensionCount || 0);
   const lMeta = getLevelMetadata(newDetails.level);
   g.pendingTribulation = newDetails.tribulationLocked ? newDetails.pendingTribulationLevel : null;
 
@@ -7096,6 +7259,142 @@ async function buyTribulation() {
   /* FIX (đôi lúc Độ Kiếp xong không thấy trừ Trúc): gửi save_progress
      NGAY thay vì chờ debounce 1.5s, xem giải thích chi tiết ở
      pushProgressToServerNow(). */
+  saveStateImmediate();
+  updateGamificationUI();
+  playSound("correct");
+}
+
+/* =========================================================
+   HỆ THỐNG "PHI THĂNG" (cổng danh hiệu sau Lv100: 125, 150, 175...)
+   Dựng theo cùng khuôn openXModal/renderXModal/buyX như Luân Hồi/Độ Kiếp,
+   nhưng: phí CỐ ĐỊNH 20000 Trúc/cổng; trong lúc chờ KHÔNG cho ăn Trúc (xem
+   feedPanda/updateGamificationUI: có chặn ascensionLocked, giống Luân Hồi/Độ Kiếp).
+   ========================================================= */
+function openAscensionModal() {
+  const g = state.gamification;
+  if (!g) return;
+  const totalCharm = getTotalCharm(g);
+  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
+  if (!lDetails.ascensionLocked) {
+    return alert("Gấu Trúc của bạn hiện không chạm Cổng Phi Thăng nào — cứ tiếp tục tích XP nhé! 🎋");
+  }
+  const modal = document.getElementById("ascension-modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  renderAscensionModal();
+}
+
+function renderAscensionModal() {
+  const g = state.gamification;
+  if (!g) return;
+  const totalCharm = getTotalCharm(g);
+  const lDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
+  const pendingLevel = lDetails.ascensionLocked ? lDetails.pendingAscensionLevel : g.pendingAscension;
+  const gateCost = getAscensionCostForGate(pendingLevel || ASCENSION_START_LEVEL);
+
+  const noteEl = document.getElementById("ascension-note");
+  if (noteEl) {
+    noteEl.innerHTML = pendingLevel
+      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong> (${getAscensionTitleInfo(pendingLevel).title}), nhưng đây là một "Cổng Phi Thăng"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi bấm <strong>Phi Thăng 🌠</strong> mới được thăng cấp. Trong lúc chờ Phi Thăng, bạn KHÔNG THỂ cho Gấu Trúc ăn thêm Trúc để tăng XP (XP dư vẫn được giữ nguyên) — và các bạn học khác vẫn có thể CƯỚP TRÚC của bạn, nên hãy nhanh tay tích đủ!`
+      : `📌 Đây là "Cổng Phi Thăng" — cứ mỗi ${ASCENSION_STEP} Level sau Level ${ASCENSION_BASE_LEVEL} (LV${ASCENSION_START_LEVEL}, ${ASCENSION_START_LEVEL + ASCENSION_STEP}, ${ASCENSION_START_LEVEL + ASCENSION_STEP * 2}...), Gấu Trúc cần tốn <strong>${ASCENSION_COST} 🎋</strong> Cành Trúc (cố định mỗi cổng) mới được thăng danh hiệu tiếp theo. Trong lúc "Chờ Phi Thăng", KHÔNG thể cho ăn Trúc để tăng XP được.`;
+  }
+
+  const balEl = document.getElementById("ascension-bamboo-balance");
+  if (balEl) balEl.textContent = `${g.bambooPouch || 0} 🎋`;
+
+  const pct = Math.min(100, Math.round(((g.bambooPouch || 0) / gateCost) * 100));
+  const barEl = document.getElementById("ascension-progress-bar");
+  if (barEl) barEl.style.width = pct + "%";
+  const progTextEl = document.getElementById("ascension-progress-text");
+  if (progTextEl) progTextEl.textContent = `${Math.min(g.bambooPouch || 0, gateCost)}/${gateCost} 🎋`;
+
+  const buyBtn = document.getElementById("buy-ascension-btn");
+  if (buyBtn) {
+    const canAfford = (g.bambooPouch || 0) >= gateCost;
+    buyBtn.disabled = !canAfford;
+    buyBtn.textContent = canAfford
+      ? `🌠 Phi Thăng Ngay (${gateCost} 🎋)`
+      : `🌠 Cần thêm ${gateCost - (g.bambooPouch || 0)} 🎋 nữa`;
+  }
+}
+
+/* Màn hình nghi thức toàn màn hình: dùng cho (1) lần đầu chạm Lv100 "Hóa Thần"
+   và (2) mỗi lần Phi Thăng thành công qua cổng 125, 150... */
+function showAscensionCeremony(opts) {
+  const old = document.getElementById("asc-ceremony");
+  if (old) old.remove();
+  const el = document.createElement("div");
+  el.id = "asc-ceremony";
+  el.className = "asc-ceremony";
+  el.setAttribute("role", "dialog");
+  el.setAttribute("aria-label", opts.heading || "Phi Thăng");
+  const sparkIcons = ["✨", "⭐", "🌟", "💫"];
+  let sparks = "";
+  for (let i = 0; i < 22; i++) {
+    const left = Math.round(Math.random() * 96);
+    const dur = (5 + Math.random() * 5).toFixed(1);
+    const delay = (Math.random() * 6).toFixed(1);
+    sparks += `<span class="asc-spark" style="left:${left}%; animation-duration:${dur}s; animation-delay:${delay}s;">${sparkIcons[i % sparkIcons.length]}</span>`;
+  }
+  el.innerHTML = `
+    <div class="asc-rays"></div>
+    ${sparks}
+    <div class="asc-flash"></div>
+    <div style="position:relative; font-size:15px; font-weight:800; letter-spacing:1px; color:#FFE082; margin-bottom:18px;">${opts.heading || "PHI THĂNG THÀNH CÔNG"}</div>
+    <div class="asc-ring"><div class="asc-panda">${opts.icon || "🐼"}</div></div>
+    <div class="asc-level">LEVEL ${opts.level}</div>
+    <div class="asc-title">${opts.title}</div>
+    <div class="asc-sub">${opts.subtitle || ""}</div>
+    <button class="btn btn-primary asc-close" id="asc-ceremony-close-btn" style="padding:10px 26px; font-size:14px; border-radius:14px; background:linear-gradient(90deg,#B26A00,#FFB300,#FFE082); color:#2B1B00; border-color:#8A5200; box-shadow:0 3px 0 #8A5200;">Tiếp tục hành trình</button>
+  `;
+  document.body.appendChild(el);
+  const closeBtn = el.querySelector("#asc-ceremony-close-btn");
+  const close = () => { el.remove(); };
+  if (closeBtn) { closeBtn.addEventListener("click", close); closeBtn.focus(); }
+  try { playSound("correct"); } catch (e) {}
+}
+
+async function buyAscension() {
+  const buyBtn = document.getElementById("buy-ascension-btn");
+  if (buyBtn) buyBtn.disabled = true;
+  /* Cùng lưới an toàn với Luân Hồi/Độ Kiếp: đồng bộ lại số Trúc từ server
+     trước khi trừ, vì Phi Thăng là hành động tốn Trúc rất lớn, không hoàn tác. */
+  await refreshBambooBeforeCriticalSpend_();
+  if (buyBtn) buyBtn.disabled = false;
+  renderAscensionModal();
+
+  const g = state.gamification;
+  if (!g) return;
+  const totalCharm = getTotalCharm(g);
+  const beforeDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0);
+  if (!beforeDetails.ascensionLocked) {
+    return alert("Bạn hiện không chạm Cổng Phi Thăng, không cần Phi Thăng lúc này!");
+  }
+  const gateCost = getAscensionCostForGate(beforeDetails.pendingAscensionLevel);
+  if ((g.bambooPouch || 0) < gateCost) {
+    return alert(`Bạn chưa đủ Trúc! Cần ${gateCost} 🎋 nhưng chỉ có ${g.bambooPouch || 0} 🎋. Hãy làm thêm bài tập để tích Trúc nhé 🎋`);
+  }
+
+  g.bambooPouch -= gateCost;
+  g.ascensionCount = (g.ascensionCount || 0) + 1;
+
+  const newDetails = calcLevelDetails(g.totalXp || 0, totalCharm, g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount);
+  const lMeta = getLevelMetadata(newDetails.level);
+  g.pendingAscension = newDetails.ascensionLocked ? newDetails.pendingAscensionLevel : null;
+
+  addActivityLog(`🌠 Gấu Trúc của ${state.studentName} vừa PHI THĂNG THÀNH CÔNG (lần thứ ${g.ascensionCount}), chính thức bước sang Level ${newDetails.level} (${lMeta.title})! Thiên môn rộng mở, cả lớp cùng chiêm ngưỡng! 🌠🐼✨`);
+
+  const ascModal = document.getElementById("ascension-modal");
+  if (ascModal) ascModal.style.display = "none";
+  showAscensionCeremony({
+    heading: "🌠 PHI THĂNG THÀNH CÔNG 🌠",
+    icon: lMeta.outfit || "🌠🐼",
+    level: newDetails.level,
+    title: lMeta.title,
+    subtitle: `Lần Phi Thăng thứ ${g.ascensionCount} · ${lMeta.status}`
+  });
+
+  /* Gửi save_progress NGAY (không chờ debounce) để Trúc bị trừ được ghi lên server. */
   saveStateImmediate();
   updateGamificationUI();
   playSound("correct");
@@ -9254,7 +9553,7 @@ function renderStealModal() {
     const me = peers.find(p => p.username === state.username);
     if (me) {
       me.bambooPouch = g.bambooPouch;
-      me.level = calcLevelDetails(g.totalXp, getTotalCharm(g), g.reincarnationCount || 0, g.tribulationCount || 0).level;
+      me.level = calcLevelDetails(g.totalXp, getTotalCharm(g), g.reincarnationCount || 0, g.tribulationCount || 0, g.ascensionCount || 0).level;
     }
   }
 
@@ -9419,7 +9718,8 @@ function feedPanda(amount) {
   const myCharm = getTotalCharm(g);
   const reincarnationCount = g.reincarnationCount || 0;
   const tribulationCount = g.tribulationCount || 0;
-  const currentLevel = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount).level;
+  const ascensionCount = g.ascensionCount || 0;
+  const currentLevel = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount, ascensionCount).level;
   if (currentLevel >= SPIRIT_ANIMAL_REQUIRED_LEVEL && !g.spiritAnimal) {
     alert(`Gấu Trúc đã đạt Level ${SPIRIT_ANIMAL_REQUIRED_LEVEL}! Hãy Hóa Hình Linh Thú trước khi tiếp tục cho ăn Trúc để lên Level nhé 🌟`);
     openTransformModal();
@@ -9432,7 +9732,14 @@ function feedPanda(amount) {
     openTransformModal();
     return;
   }
-  const preFeedDetails = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount);
+  const preFeedDetails = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount, ascensionCount);
+  if (preFeedDetails.ascensionLocked) {
+    /* Đang "Chờ Phi Thăng": KHÔNG cho ăn Trúc nữa (giống Luân Hồi/Độ Kiếp), phải
+       tích đủ Trúc và Phi Thăng thành công mới được cho Gấu Trúc ăn tiếp. */
+    alert(`🌠 Gấu Trúc của bạn đang chờ PHI THĂNG để lên Level ${preFeedDetails.pendingAscensionLevel}!\n\nHãy tích đủ ${getAscensionCostForGate(preFeedDetails.pendingAscensionLevel)} 🎋 Cành Trúc rồi bấm Phi Thăng 🌠 trước khi cho ăn tiếp nhé — trong lúc chờ, KHÔNG thể cho ăn Trúc để tăng XP được.`);
+    openAscensionModal();
+    return;
+  }
   if (preFeedDetails.tribulationLocked) {
     /* Đang "Chờ Độ Kiếp": KHÔNG cho ăn Trúc nữa (chặn hẳn, khác với Ải
        Luân Hồi bên dưới vẫn còn XP dư), bắt buộc phải Độ Kiếp thành công
@@ -9449,12 +9756,12 @@ function feedPanda(amount) {
     return;
   }
   const toFeed = Math.min(amount, g.bambooPouch);
-  const oldDetails = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount);
+  const oldDetails = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount, ascensionCount);
 
   g.bambooPouch -= toFeed;
   g.totalXp += (toFeed * 10);
 
-  const newDetails = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount);
+  const newDetails = calcLevelDetails(g.totalXp, myCharm, reincarnationCount, tribulationCount, ascensionCount);
 
   const pEmoji = document.getElementById("ph-panda-emoji");
   if (pEmoji) {
@@ -9491,11 +9798,33 @@ function feedPanda(amount) {
         bonusEl.style.display = "none";
       }
     }
+    /* Lần ĐẦU chạm Lv100 (xong Luân Hồi lần 7 + Độ Kiếp lần 3) = nghi thức
+       Phi Thăng "Hóa Thần": dùng màn hình nghi thức riêng thay cho modal lên Level thường. */
+    const crossedAscendBase = oldDetails.level < ASCENSION_BASE_LEVEL && newDetails.level >= ASCENSION_BASE_LEVEL;
     const modal = document.getElementById("levelup-modal");
-    if (modal) modal.style.display = "flex";
-    addActivityLog(rankedUp
+    if (modal && !crossedAscendBase) modal.style.display = "flex";
+    if (crossedAscendBase) {
+      if (typeof g.ascendedAt !== "number") g.ascendedAt = Date.now();
+      setTimeout(() => showAscensionCeremony({
+        heading: "🌠 PHI THĂNG THÀNH CÔNG 🌠",
+        icon: lMeta.outfit || "🌠🐼",
+        level: newDetails.level,
+        title: lMeta.title,
+        subtitle: `Đã vượt qua 7 Ải Luân Hồi và 3 Kiếp Nạn — ${lMeta.status}`
+      }), 150);
+      addActivityLog(`🌠 Gấu Trúc của ${state.studentName} vừa PHI THĂNG, đạt Level ${newDetails.level} (${lMeta.title})! Thiên môn rộng mở, cả lớp cùng chiêm ngưỡng! 🌠🐼✨`);
+    }
+    if (!crossedAscendBase) addActivityLog(rankedUp
       ? `🌌 Gấu của ${state.studentName} vừa CHUYỂN SINH lên Bậc ${newRank.tier} tại Level ${newDetails.level} (${lMeta.title})! Cả lớp cùng chúc mừng! ✨`
       : `🎉 Gấu của ${state.studentName} vừa thăng cấp lên Level ${newDetails.level} (${lMeta.title})! ✨`);
+  } else if (newDetails.ascensionLocked && !oldDetails.ascensionLocked) {
+    /* Vừa CHẠM Cổng Phi Thăng: đủ XP lên Level tiếp nhưng chưa Phi Thăng — báo ngay,
+       từ giờ nút cho ăn bị khóa cho tới khi Phi Thăng thành công. */
+    addOrMergeFeedLog(toFeed, toFeed * 10);
+    setTimeout(() => {
+      alert(`🌠 Gấu Trúc của bạn đã ĐỦ XP để lên Level ${newDetails.pendingAscensionLevel}, nhưng đây là một CỔNG PHI THĂNG!\n\nCần tích đủ ${getAscensionCostForGate(newDetails.pendingAscensionLevel)} 🎋 Cành Trúc rồi bấm Phi Thăng 🌠. Trong lúc chờ, KHÔNG thể cho ăn Trúc để tăng XP được.`);
+      openAscensionModal();
+    }, 150);
   } else if (newDetails.tribulationLocked && !oldDetails.tribulationLocked) {
     /* Vừa mới CHẠM NGƯỠNG Kiếp Nạn: XP đã đủ để lên Level tiếp nhưng
        chưa Độ Kiếp — báo ngay cho học sinh biết, và từ giờ nút cho ăn sẽ
@@ -12123,6 +12452,15 @@ function renderTribulationBadgeHtml(count) {
   return `<span class="lb-trib-wrap"><span class="lb-trib-halo"></span><span class="lb-tribulation-badge" title="Đã Độ Kiếp ${count} lần"><span class="lb-trib-icon">⚡</span> Độ Kiếp x${count}</span></span>`;
 }
 
+/* Badge "🌠 Phi Thăng" cạnh tên trên Bảng Xếp Hạng cho học viên đã đạt Lv100
+   (Hóa Thần) trở lên; nếu đã qua các Cổng Phi Thăng thì hiện thêm "xN". */
+function renderAscensionBadgeHtml(level, count) {
+  if (!level || level < ASCENSION_BASE_LEVEL) return "";
+  const info = getAscensionTitleInfo(level);
+  const times = count && count > 0 ? ` x${count}` : "";
+  return `<span class="lb-asc-badge" title="${info.title} — đã Phi Thăng${times ? ' ' + count + ' lần qua cổng' : ''}">🌠 Phi Thăng${times}</span>`;
+}
+
 /* ===== Hào Quang Uy Nghiêm theo Level =====
    Từ Level 30 trở đi, cứ mỗi 10 Level (30, 40, 50...) tăng thêm 1 cấp
    hào quang, xoay vòng qua 8 cấp màu (giống hệ màu Huy Hiệu). Vượt quá
@@ -12167,7 +12505,7 @@ function renderLeaderboardContent() {
        đó. Nhân bản nông từng object để cô lập hoàn toàn. */
     const peers = (state.gamification?.peers || []).map(p => ({ ...p }));
     const myCharmLb = getTotalCharm(state.gamification);
-    const lDetails = calcLevelDetails(state.gamification?.totalXp || 0, myCharmLb, state.gamification?.reincarnationCount || 0, state.gamification?.tribulationCount || 0);
+    const lDetails = calcLevelDetails(state.gamification?.totalXp || 0, myCharmLb, state.gamification?.reincarnationCount || 0, state.gamification?.tribulationCount || 0, state.gamification?.ascensionCount || 0);
     const currentLMeta = getLevelMetadata(lDetails.level);
     
     if (state.studentName) {
@@ -12185,6 +12523,8 @@ function renderLeaderboardContent() {
         me.pendingReincarnation = lDetails.reincarnationLocked ? lDetails.pendingReincarnationLevel : null;
         me.tribulationCount = state.gamification?.tribulationCount || 0;
         me.pendingTribulation = lDetails.tribulationLocked ? lDetails.pendingTribulationLevel : null;
+        me.ascensionCount = state.gamification?.ascensionCount || 0;
+        me.pendingAscension = lDetails.ascensionLocked ? lDetails.pendingAscensionLevel : null;
       } else {
         peers.push({
           name: state.studentName,
@@ -12199,7 +12539,9 @@ function renderLeaderboardContent() {
           reincarnationCount: state.gamification?.reincarnationCount || 0,
           pendingReincarnation: lDetails.reincarnationLocked ? lDetails.pendingReincarnationLevel : null,
           tribulationCount: state.gamification?.tribulationCount || 0,
-          pendingTribulation: lDetails.tribulationLocked ? lDetails.pendingTribulationLevel : null
+          pendingTribulation: lDetails.tribulationLocked ? lDetails.pendingTribulationLevel : null,
+          ascensionCount: state.gamification?.ascensionCount || 0,
+          pendingAscension: lDetails.ascensionLocked ? lDetails.pendingAscensionLevel : null
         });
       }
     }
@@ -12215,6 +12557,8 @@ function renderLeaderboardContent() {
       const animal = isTransformed ? getSpiritAnimalById(p.spiritAnimal) : null;
       const isPendingReincarnation = !!p.pendingReincarnation;
       const isPendingTribulation = !!p.pendingTribulation;
+      const isPendingAscension = !!p.pendingAscension;
+      const isAscended = (p.level || 0) >= ASCENSION_BASE_LEVEL;
       const hasTribulation = (p.tribulationCount || 0) >= 1;
       /* Từ Level 65: bắt buộc phải đang hóa hình Linh Thú TRUYỀN THUYẾT ✨
          mới được cho ăn tiếp — dùng luôn p.level/p.spiritAnimal đã có sẵn. */
@@ -12228,12 +12572,14 @@ function renderLeaderboardContent() {
          cả lớp biết bạn đó đang "tích của" và có thể... nhòm ngó 👀.
          Ưu tiên hiện "Chờ Độ Kiếp" trước vì đây là cổng khóa MẠNH hơn
          (chặn hẳn cho ăn), dù về lý thuyết 2 cổng có thể trùng mốc Level. */
-      const levelStatusHtml = isPendingTribulation
+      const levelStatusHtml = isPendingAscension
+        ? `🌠 Chờ Phi Thăng (LV${p.pendingAscension}) · 🎋 ${p.bambooPouch || 0}/${getAscensionCostForGate(p.pendingAscension)}`
+        : isPendingTribulation
         ? `⚡ Chờ Độ Kiếp (LV${p.pendingTribulation}) · 🎋 ${p.bambooPouch || 0}/${getTribulationCostForGate(p.pendingTribulation)}`
         : isPendingReincarnation
         ? `⏳ Chờ Luân Hồi (LV${p.pendingReincarnation}) · 🎋 ${p.bambooPouch || 0}/${getReincarnationCostForGate(p.pendingReincarnation)}`
         : `Level ${p.level}`;
-      const rowExtraClass = isPendingTribulation ? 'lb-row-pending-tribulation' : hasTribulation ? 'lb-row-tribulation' : isPendingReincarnation ? 'lb-row-pending-reincarnation' : '';
+      const rowExtraClass = isAscended ? (isPendingAscension ? 'lb-row-ascended lb-row-pending-ascension' : 'lb-row-ascended') : isPendingTribulation ? 'lb-row-pending-tribulation' : hasTribulation ? 'lb-row-tribulation' : isPendingReincarnation ? 'lb-row-pending-reincarnation' : '';
       html += `
         <div style="position:relative;">
           ${blazeTag}
@@ -12241,7 +12587,7 @@ function renderLeaderboardContent() {
             <div style="display:flex; align-items:center; gap:12px;">
               <span style="font-size:24px;" class="${medalClass}">${animal ? animal.icon : medal}</span>
               <div>
-                <strong style="color:var(--seal-dark); font-size:15px;">#${idx + 1} ${p.name}${typeof renderDebtTagHtml_ === "function" ? renderDebtTagHtml_(p) : ""} ${isMe ? ' (Bạn)' : ''}${renderBadgeChipsHtml(p.badges)}${renderLightspeedBadgeHtml(p.badges)}${renderLevelAuraTagHtml(p.level)}${animal ? renderTransformBadgeHtml(p.spiritAnimal) : ''}${renderReincarnationBadgeHtml(p.reincarnationCount)}${renderTribulationBadgeHtml(p.tribulationCount)}</strong>
+                <strong style="color:var(--seal-dark); font-size:15px;">#${idx + 1} ${p.name}${typeof renderDebtTagHtml_ === "function" ? renderDebtTagHtml_(p) : ""} ${isMe ? ' (Bạn)' : ''}${renderBadgeChipsHtml(p.badges)}${renderLightspeedBadgeHtml(p.badges)}${renderLevelAuraTagHtml(p.level)}${animal ? renderTransformBadgeHtml(p.spiritAnimal) : ''}${renderReincarnationBadgeHtml(p.reincarnationCount)}${renderTribulationBadgeHtml(p.tribulationCount)}${renderAscensionBadgeHtml(p.level, p.ascensionCount)}</strong>
                 <div class="lb-pending-status-text" style="font-size:12px; color:${isPendingTribulation ? '#FFEE58' : isPendingReincarnation ? '#C62828' : 'var(--ink-soft)'}; font-weight:${(isPendingTribulation || isPendingReincarnation) ? '800' : '400'};">Trạng thái: ${p.outfit} · ${levelStatusHtml}${p.charmLocked ? ` <span style="color:#D81B60; font-weight:800;" title="Đủ XP nhưng thiếu Mị Lực để lên Level tiếp">🔒 cần thêm 💖</span>` : ''}${isLegendaryGateLocked ? ` <span class="lb-legendary-lock-tag" style="font-weight:800;" title="Đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết">✨🔒 cần Thú Truyền Thuyết</span>` : ''}</div>
               </div>
             </div>
@@ -12333,11 +12679,11 @@ function renderLeaderboardContent() {
       html += `
         <div style="position:relative;">
           ${blazeTag}
-          <div style="background:var(--paper); border:2px solid var(--paper-darker); border-radius:16px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;" class="${animal ? (animal.category === 'legendary' ? 'lb-row-legendary-transformed' : 'lb-row-transformed') : ''} ${hasTribulation ? 'lb-row-tribulation' : ''} ${levelAuraClass} ${rankClass}">
+          <div style="background:var(--paper); border:2px solid var(--paper-darker); border-radius:16px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;" class="${animal ? (animal.category === 'legendary' ? 'lb-row-legendary-transformed' : 'lb-row-transformed') : ''} ${(p.level || 0) >= ASCENSION_BASE_LEVEL ? 'lb-row-ascended' : hasTribulation ? 'lb-row-tribulation' : ''} ${levelAuraClass} ${rankClass}">
             <div style="display:flex; align-items:center; gap:12px;">
               <span style="font-size:24px;" class="${medalClass}">${animal ? animal.icon : medal}</span>
               <div>
-                <strong style="color:var(--seal-dark); font-size:15px;">#${idx + 1} ${p.name}${typeof renderDebtTagHtml_ === "function" ? renderDebtTagHtml_(p) : ""} ${isMe ? ' (Bạn)' : ''}${renderBadgeChipsHtml(p.badges)}${renderLightspeedBadgeHtml(p.badges)}${renderLevelAuraTagHtml(p.level)}${animal ? renderTransformBadgeHtml(p.spiritAnimal) : ''}${renderReincarnationBadgeHtml(p.reincarnationCount)}${renderTribulationBadgeHtml(p.tribulationCount)}</strong>
+                <strong style="color:var(--seal-dark); font-size:15px;">#${idx + 1} ${p.name}${typeof renderDebtTagHtml_ === "function" ? renderDebtTagHtml_(p) : ""} ${isMe ? ' (Bạn)' : ''}${renderBadgeChipsHtml(p.badges)}${renderLightspeedBadgeHtml(p.badges)}${renderLevelAuraTagHtml(p.level)}${animal ? renderTransformBadgeHtml(p.spiritAnimal) : ''}${renderReincarnationBadgeHtml(p.reincarnationCount)}${renderTribulationBadgeHtml(p.tribulationCount)}${renderAscensionBadgeHtml(p.level, p.ascensionCount)}</strong>
                 <div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">Đạo cụ: ${decoIcons}${isLegendaryGateLocked ? ` <span class="lb-legendary-lock-tag" style="font-weight:800;" title="Đã Level 65 nhưng chưa hóa hình Linh Thú Truyền Thuyết">✨🔒 cần Thú Truyền Thuyết</span>` : ''}</div>
               </div>
             </div>
@@ -13701,7 +14047,7 @@ async function generateLeaderboardSummary() {
 
     const enriched = students.map(s => {
       const charm = calcPandaCharm(s.decorations || []) + (s.badgeCharmBonus || 0);
-      const lDetails = calcLevelDetails(s.totalXp || 0, charm, s.reincarnationCount || 0, s.tribulationCount || 0);
+      const lDetails = calcLevelDetails(s.totalXp || 0, charm, s.reincarnationCount || 0, s.tribulationCount || 0, s.ascensionCount || 0);
       const timedBadge = getHighestTimedBadgeInfo(s.unlockedBadges || []);
       return {
         name: s.displayName || s.username,
@@ -14554,6 +14900,17 @@ window.addEventListener("DOMContentLoaded", () => {
     buyTribulation();
   });
 
+  document.getElementById("open-ascension-btn")?.addEventListener("click", () => {
+    openAscensionModal();
+  });
+  document.getElementById("close-ascension-modal-btn")?.addEventListener("click", () => {
+    const m = document.getElementById("ascension-modal");
+    if (m) m.style.display = "none";
+  });
+  document.getElementById("buy-ascension-btn")?.addEventListener("click", () => {
+    buyAscension();
+  });
+
   document.getElementById("open-legendary-gate-btn")?.addEventListener("click", () => {
     openTransformModal();
   });
@@ -14604,7 +14961,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   /* Close modals on background overlay click */
-  ["gift-modal", "shop-modal", "steal-modal", "levelup-modal", "class-pass-modal", "dictation-pass-modal", "transform-modal", "reincarnation-modal", "tribulation-modal", "wheel-modal", "fishing-modal", "lantern-modal", "kite-modal", "fortune-modal", "pot-modal"].forEach(id => {
+  ["gift-modal", "shop-modal", "steal-modal", "levelup-modal", "class-pass-modal", "dictation-pass-modal", "transform-modal", "reincarnation-modal", "tribulation-modal", "ascension-modal", "wheel-modal", "fishing-modal", "lantern-modal", "kite-modal", "fortune-modal", "pot-modal"].forEach(id => {
     const modalEl = document.getElementById(id);
     if (modalEl) {
       modalEl.addEventListener("click", (e) => {
