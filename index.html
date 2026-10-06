@@ -15351,7 +15351,7 @@ window.addEventListener("DOMContentLoaded", () => {
     phong_toa:{k:"atk",icon:"🧊",name:"Phong Tỏa Ngân Khố",type:"⚔️ Công kích",desc:"Chọn 1 bạn trong lớp: trong 12h bạn ấy không tiêu được Trúc vào việc gì (không mua đồ, không cho gấu ăn, không cược minigame, không bốc thêm...) nhưng không bị mất Trúc. Kết Giới chặn được. Bạn bị phong tỏa có thể dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay."},
     dong_quy:{k:"cnt",icon:"☠️",name:"Đồng Quy Vu Tận",type:"🔄 Phản công",desc:"Bật trong 24h (không chiếm ô thẻ phòng thủ). Ai dùng thẻ công kích nhắm vào bạn thì người đó mất 10% XP, bạn mất 3% XP, kể cả khi đòn bị chặn. Có thể làm tụt Level cả hai. Bảng Tin chỉ báo “Có người vừa kích hoạt một thẻ phản kích...”. Không bật được khi đang bị Phong Ấn."},
     ngu_ong:{k:"spc",icon:"🎣",name:"Ngư Ông Đắc Lợi",type:"🎲 Đặc biệt",desc:"Trong 24h, mỗi lần thẻ công kích trong lớp làm “biến mất” một phần Trúc/XP (Thiên Thạch, Thần Thâu, Gương bật ngược, Đại Hồng Thủy...), 50% phần biến mất đó chảy về túi bạn, tối đa 1500 cho cả lần bật thẻ. Bảng Tin báo tên người hưởng lợi mỗi lần được cộng. Lúc bật thẻ không báo gì."},
-    hong_thuy:{k:"atk",icon:"🌊",name:"Đại Hồng Thủy",type:"⚔️ Công kích",desc:"Rất hiếm (~1%). Cả lớp (trừ bạn) mất 4% Trúc, bạn nhận 25% tổng phần mất. Ai đang bật thẻ phòng thủ thì được miễn nhưng thẻ phòng thủ đó bị tiêu. Ẩn Thân không cứu được. Bảng Tin báo ẩn danh. Không dùng được khi đang bị Phong Ấn."},
+    hong_thuy:{k:"atk",icon:"🌊",name:"Đại Hồng Thủy",type:"⚔️ Công kích",desc:"Rất hiếm (~1%). Cả lớp (trừ bạn) mất 4% Trúc, bạn nhận 25% tổng phần mất. Ai đang bật thẻ phòng thủ thì được miễn nhưng thẻ phòng thủ đó bị tiêu. Ẩn Thân không cứu được. Bảng Tin báo rõ tên bạn (trừ khi đang bật Ẩn Dấu Phù). Không dùng được khi đang bị Phong Ấn."},
   };
   var ERR = {bad_auth:"Phiên đăng nhập không hợp lệ, hãy đăng xuất rồi đăng nhập lại.",unknown_card:"Thẻ này không tồn tại hoặc bản trang chưa cập nhật, hãy tải lại trang.",not_found:"Không tìm thấy tài khoản.",already_drawn:"Hôm nay bạn đã bốc thẻ miễn phí rồi.",no_card:"Không tìm thấy thẻ này trong túi.",ward_active:"Bạn đang có 1 thẻ phòng thủ còn hiệu lực.",
     not_in_class:"Bạn không thuộc lớp này, hãy chọn lại lớp rồi thử lại.",cannot_target_self:"Không thể tự đánh mình.",nothing_to_take:"Bạn đó chưa đủ XP/Trúc để lấy.",
@@ -15715,7 +15715,7 @@ window.addEventListener("DOMContentLoaded", () => {
       var s=ctx(), c=CARDS[cid]; if(!s||!c) return;
       if(cid==="an_dau") return; // bật Ẩn Dấu Phù thì không báo gì; các thẻ dùng sau đó vẫn báo nhưng ẩn danh
       if(cid==="huyet_te"){ logCard("🩸 Có người vừa hiến tế XP để triệu hồi vũ khí..."); return; } // luôn ẩn danh, không nêu tên
-      if(cid==="hong_thuy"){ logCard("🌊 Đại Hồng Thủy ập xuống cả lớp! Ai là thủ phạm đây..."); return; } // luôn ẩn danh
+      if(cid==="hong_thuy"){ logCard("🌊 "+(traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username))+" tung Đại Hồng Thủy ập xuống cả lớp!"); return; } // hiện rõ tên người dùng, trừ khi đang ẩn dấu
       if(cid==="dong_quy"){ logCard("☠️ Có người vừa kích hoạt một thẻ phản kích..."); return; } // ẩn danh, không nói thẻ gì
       if(cid==="ngu_ong") return; // bật thẻ không báo gì; mỗi lần hưởng lợi sẽ báo riêng
       var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username), t=esc(r.target||""), txt;
