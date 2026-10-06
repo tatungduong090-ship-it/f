@@ -6887,6 +6887,7 @@ function renderShopModal() {
 }
 
 function buyShopItem(item) {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   const g = state.gamification;
   if (!g) return;
   if (g.bambooPouch < item.price) {
@@ -6982,6 +6983,7 @@ function renderTransformModal() {
 }
 
 function selectSpiritAnimal(animalId) {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   const g = state.gamification;
   if (!g) return;
   const animal = getSpiritAnimalById(animalId);
@@ -7094,6 +7096,7 @@ async function refreshBambooBeforeCriticalSpend_() {
 }
 
 async function buyReincarnationElixir() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   const buyBtn = document.getElementById("buy-reincarnation-btn");
   if (buyBtn) buyBtn.disabled = true;
   await refreshBambooBeforeCriticalSpend_();
@@ -7205,6 +7208,7 @@ function renderTribulationModal() {
 }
 
 async function buyTribulation() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   const buyBtn = document.getElementById("buy-tribulation-btn");
   if (buyBtn) buyBtn.disabled = true;
   /* Xem giải thích chi tiết ở refreshBambooBeforeCriticalSpend_() /
@@ -7355,6 +7359,7 @@ function showAscensionCeremony(opts) {
 }
 
 async function buyAscension() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   const buyBtn = document.getElementById("buy-ascension-btn");
   if (buyBtn) buyBtn.disabled = true;
   /* Cùng lưới an toàn với Luân Hồi/Độ Kiếp: đồng bộ lại số Trúc từ server
@@ -7815,6 +7820,7 @@ let _fishingCasting = false;
 let _fishingStake = FISH_CAST_COST;
 
 function castFishingLine() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   if (_fishingCasting) return;
   checkResetFishingDaily();
   const g = state.gamification;
@@ -8083,6 +8089,7 @@ let _lanternReleasing = false;
 let _lanternStake = LANTERN_COST;
 
 function releaseLantern() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   if (_lanternReleasing) return;
   checkResetLanternDaily();
   const g = state.gamification;
@@ -8325,6 +8332,7 @@ let _kiteStake = KITE_COST;
 let _kiteQuestionWord = null;
 
 function castKiteLine() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   if (_kiteCasting) return;
   checkResetKiteDaily();
   const g = state.gamification;
@@ -8615,6 +8623,7 @@ let _fortuneDrawing = false;
 let _fortuneStake = FORTUNE_COST;
 
 function drawFortuneSlip() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   if (_fortuneDrawing) return;
   checkResetFortuneDaily();
   const g = state.gamification;
@@ -8870,6 +8879,7 @@ let _potSmashing = false;
 let _potStake = POT_COST;
 
 function smashPot(potBtn) {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   if (_potSmashing) return;
   checkResetPotDaily();
   const g = state.gamification;
@@ -9184,6 +9194,7 @@ let _wheelSpinning = false;
 let _wheelStake = WHEEL_SPIN_COST;
 
 function spinLuckyWheel() {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   if (_wheelSpinning) return;
   checkResetWheelDaily();
   const g = state.gamification;
@@ -9709,6 +9720,7 @@ function awardBadge(badgeId) {
 }
 
 function feedPanda(amount) {
+  if (window.tbFrozenBlock && window.tbFrozenBlock()) return;
   const g = state.gamification;
   if (!g) return;
   if (amount <= 0 || g.bambooPouch <= 0) {
@@ -15134,6 +15146,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
   async function pay(amount){
+    if(window.tbFrozenBlock&&window.tbFrozenBlock()) return;
     if(paying) return;
     var g = state.gamification, u = state.username, n = myDebt();
     if(!g || !u || n<=0) return;
@@ -15313,7 +15326,7 @@ window.addEventListener("DOMContentLoaded", () => {
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   var CARDS = {
     thien_thach:{k:"atk",icon:"☄️",name:"Thiên Thạch Diệt Thế",type:"⚔️ Công kích",desc:"Chọn 1 bạn ngẫu nhiên trong Top 5 XP: bạn ấy mất 5% XP, bạn nhận một nửa số XP đó, phần còn lại biến mất."},
-    ket_gioi:{k:"def",icon:"🛡️",name:"Kết Giới Hộ Thân",type:"🛡️ Kháng",desc:"Chặn 1 đòn công kích trong 24h. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ."},
+    ket_gioi:{k:"def",icon:"🛡️",name:"Kết Giới Hộ Thân",type:"🛡️ Kháng",desc:"Chặn 1 đòn công kích trong 24h. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ. Bật Kết Giới cũng gỡ ngay Phong Tỏa Ngân Khố đang đè lên bạn."},
     suoi_nguon:{k:"def",icon:"💧",name:"Suối Nguồn Sinh Mệnh",type:"🛡️ Kháng",desc:"Bật trong 24h (mỗi lúc chỉ có 1 thẻ phòng thủ). Đòn công kích đầu tiên nhắm vào bạn (Thiên Thạch, Thần Thâu, Kiếp Phú): bạn không mất XP/Trúc nào (được hoàn đủ), nhưng người tung vẫn nhận một nửa số lẽ ra lấy được. Không có tác dụng với Bàn Tay Vàng. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ."},
     guong:{k:"cnt",icon:"🪞",name:"Gương Thần Phản Chiếu",type:"🔄 Phản công",desc:"Bật trong 24h (mỗi lúc chỉ có 1 thẻ phòng thủ). Đòn công kích đầu tiên nhắm vào bạn (Thiên Thạch, Thần Thâu, Kiếp Phú) bị bật ngược: bạn không mất gì, người tung mất đúng số XP/Trúc lẽ ra bạn mất (tối đa bằng số họ đang có) và không ai nhận số đó. Không phản được Bàn Tay Vàng. Khi bật thẻ này, bảng thông báo chỉ hiện “Có người vừa kích hoạt một thẻ bảo vệ...” (không ghi tên bạn, không nói là thẻ gì), nên không ai biết bạn đang có thẻ phòng thủ."},
     phuc_lanh:{k:"spc",icon:"🍀",name:"Phúc Lành Giáng Xuống",type:"🎲 Đặc biệt",desc:"Nhận 10% số Trúc bằng tổng số Trúc của 3 bạn ngẫu nhiên trong Top 5 bạn có nhiều Trúc nhất lớp (trừ bạn), các bạn đó không bị trừ."},
@@ -15331,9 +15344,14 @@ window.addEventListener("DOMContentLoaded", () => {
     truy_na:{k:"spc",icon:"📜",name:"Truy Nã Lệnh",type:"🎲 Đặc biệt",desc:"Chọn 1 bạn bất kỳ trong lớp: trong 24h bạn ấy bị dán ghi chú truy nã trên Bảng Xếp Hạng. Ai dùng Phá Giới Chùy lên bạn ấy (trúng hay trượt đều tính) sẽ nhận 300 🎋 từ hệ thống, sau đó ghi chú truy nã biến mất và thẻ hết hiệu lực. Người treo thưởng không được tự nhận tiền thưởng của mình. Không chọn được bạn đang Ẩn Thân hoặc đang bị truy nã sẵn."},
     phuc_thu:{k:"atk",icon:"🔥",name:"Phục Thù Lệnh",type:"⚔️ Công kích",desc:"Chỉ dùng được khi trong 24h qua bạn đã bị mất Trúc vì thẻ Thần Thâu hoặc Kiếp Phú. Chọn đúng kẻ đã ra tay: bạn lấy lại 120% số Trúc đã mất. Kẻ đó bị trừ Trúc trong túi; nếu túi không đủ (đã cho gấu ăn hết) thì phần thiếu bị trừ thành XP (1 Trúc = 10 XP). Chọn nhầm người thì thẻ biến mất và không có tác dụng. Không bị Kết Giới, Gương, Suối Nguồn cản. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được."},
     ban_sao:{k:"spc",icon:"🪞",name:"Bản Sao Ảo Ảnh",type:"🎲 Đặc biệt",desc:"Dùng lại đúng hiệu ứng của thẻ gần nhất bạn đã dùng (không tính thẻ phòng thủ, Ẩn Dấu Phù và chính thẻ này; thẻ phòng thủ dùng xen giữa không làm mất thẻ cần sao chép). Nếu thẻ đó cần chọn bạn, bạn chọn mục tiêu mới hoặc dùng lại mục tiêu cũ. Chưa có thẻ nào để sao chép, hoặc bản sao bị chặn (đang bị phong ấn, mục tiêu ẩn thân…) thì báo lỗi và KHÔNG tiêu thẻ."},
-    thanh_tay:{k:"def",icon:"🌸",name:"Thanh Tẩy Phù",type:"🛡️ Kháng",desc:"Gỡ ngay Phong Ấn và Truy Nã đang có trên người bạn, rồi miễn nhiễm cả hai hiệu ứng này trong 12h (không ai phong ấn hay truy nã được bạn). Dùng được cả khi đang bị phong ấn. Không chiếm ô thẻ phòng thủ nên dùng chung được với Kết Giới, Suối Nguồn, Gương Thần. Đang miễn nhiễm thì không dùng thêm được."},
+    thanh_tay:{k:"def",icon:"🌸",name:"Thanh Tẩy Phù",type:"🛡️ Kháng",desc:"Gỡ ngay Phong Ấn và Truy Nã đang có trên người bạn, rồi miễn nhiễm cả hai hiệu ứng này trong 12h (không ai phong ấn hay truy nã được bạn). Dùng được cả khi đang bị phong ấn. Không chiếm ô thẻ phòng thủ nên dùng chung được với Kết Giới, Suối Nguồn, Gương Thần. Đang miễn nhiễm thì không dùng thêm được. Cũng gỡ ngay Phong Tỏa Ngân Khố đang đè lên bạn và miễn nhiễm hiệu ứng này trong 12h."},
     am_duong:{k:"spc",icon:"☯️",name:"Âm Dương Đổ Vận",type:"🎲 Đặc biệt",desc:"Tung đồng xu: 50% nhận +15% số Trúc đang có (tối đa 3000), 50% mất 8% số Trúc đang có (tối đa 1500). Cần túi có ít nhất 100 Trúc. Liều hay không là do bạn!"},
-    thien_co:{k:"spc",icon:"📖",name:"Thiên Cơ Tam Quyển",type:"🎲 Đặc biệt",desc:"Mở ra 3 thẻ ngẫu nhiên khác nhau, bạn chọn 1 thẻ để đổi lấy chính thẻ này (số thẻ trong túi không đổi). Danh sách 3 thẻ được lưu lại: tải lại trang vẫn thấy đúng 3 thẻ đó, không rút lại được. Không rút ra chính Thiên Cơ. Bảng thông báo chỉ hiện bạn đã đổi lấy 1 thẻ mới, không nói là thẻ gì."}
+    thien_co:{k:"spc",icon:"📖",name:"Thiên Cơ Tam Quyển",type:"🎲 Đặc biệt",desc:"Mở ra 3 thẻ ngẫu nhiên khác nhau, bạn chọn 1 thẻ để đổi lấy chính thẻ này (số thẻ trong túi không đổi). Danh sách 3 thẻ được lưu lại: tải lại trang vẫn thấy đúng 3 thẻ đó, không rút lại được. Không rút ra chính Thiên Cơ. Bảng thông báo chỉ hiện bạn đã đổi lấy 1 thẻ mới, không nói là thẻ gì."},
+    huyet_te:{k:"spc",icon:"🩸",name:"Huyết Tế",type:"🎲 Đặc biệt",desc:"Hy sinh 4% tổng XP của bạn (tối thiểu 100 XP, tối đa 5.000 XP, cần tổng XP từ 500) để nhận ngay 1 thẻ Thần Thâu và 1 thẻ công kích ngẫu nhiên vào túi. Có thể làm tụt Level. Túi cần trống 2 ô sau khi dùng. Mỗi ngày dùng được 1 lần. Bảng Tin chỉ báo ẩn danh “Có người vừa hiến tế XP...”."},
+    phong_toa:{k:"atk",icon:"🧊",name:"Phong Tỏa Ngân Khố",type:"⚔️ Công kích",desc:"Chọn 1 bạn trong lớp: trong 12h bạn ấy không tiêu được Trúc vào việc gì (không mua đồ, không cho gấu ăn, không cược minigame, không bốc thêm...) nhưng không bị mất Trúc. Kết Giới chặn được. Bạn bị phong tỏa có thể dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay."},
+    dong_quy:{k:"cnt",icon:"☠️",name:"Đồng Quy Vu Tận",type:"🔄 Phản công",desc:"Bật trong 24h (không chiếm ô thẻ phòng thủ). Ai dùng thẻ công kích nhắm vào bạn thì người đó mất 10% XP, bạn mất 3% XP, kể cả khi đòn bị chặn. Có thể làm tụt Level cả hai. Bảng Tin chỉ báo “Có người vừa kích hoạt một thẻ phản kích...”. Không bật được khi đang bị Phong Ấn."},
+    ngu_ong:{k:"spc",icon:"🎣",name:"Ngư Ông Đắc Lợi",type:"🎲 Đặc biệt",desc:"Trong 24h, mỗi lần thẻ công kích trong lớp làm “biến mất” một phần Trúc/XP (Thiên Thạch, Thần Thâu, Gương bật ngược, Đại Hồng Thủy...), 50% phần biến mất đó chảy về túi bạn, tối đa 1500 cho cả lần bật thẻ. Bảng Tin báo tên người hưởng lợi mỗi lần được cộng. Lúc bật thẻ không báo gì."},
+    hong_thuy:{k:"atk",icon:"🌊",name:"Đại Hồng Thủy",type:"⚔️ Công kích",desc:"Rất hiếm (~1%). Cả lớp (trừ bạn) mất 4% Trúc, bạn nhận 25% tổng phần mất. Ai đang bật thẻ phòng thủ thì được miễn nhưng thẻ phòng thủ đó bị tiêu. Ẩn Thân không cứu được. Bảng Tin báo ẩn danh. Không dùng được khi đang bị Phong Ấn."},
   };
   var ERR = {bad_auth:"Phiên đăng nhập không hợp lệ, hãy đăng xuất rồi đăng nhập lại.",unknown_card:"Thẻ này không tồn tại hoặc bản trang chưa cập nhật, hãy tải lại trang.",not_found:"Không tìm thấy tài khoản.",already_drawn:"Hôm nay bạn đã bốc thẻ miễn phí rồi.",no_card:"Không tìm thấy thẻ này trong túi.",ward_active:"Bạn đang có 1 thẻ phòng thủ còn hiệu lực.",
     not_in_class:"Bạn không thuộc lớp này, hãy chọn lại lớp rồi thử lại.",cannot_target_self:"Không thể tự đánh mình.",nothing_to_take:"Bạn đó chưa đủ XP/Trúc để lấy.",
@@ -15342,10 +15360,18 @@ window.addEventListener("DOMContentLoaded", () => {
     bag_full:"Túi đã đầy. Hãy dùng hoặc bỏ 1 thẻ để bốc thêm.",already_owned:"Bạn đã sở hữu Ngọc Bội Ngũ Hành rồi.",not_enough_bamboo:"Không đủ 1000 Cành Trúc để bốc thêm.",
     missing_target:"Hãy chọn 1 bạn làm mục tiêu.",target_not_in_class:"Bạn này không thuộc lớp của bạn.",target_is_teacher:"Không thể chọn giáo viên.",
     target_hidden:"Bạn này đang ẩn thân, không chọn được.",no_rob_target:"Chưa có bạn nào để cướp (chưa ai có Trúc hoặc đều đang ẩn thân).",target_bag_empty:"Túi của bạn này đang trống.",stealth_active:"Bạn đang ẩn thân rồi.",no_other_cards:"Túi không còn thẻ nào khác để đổi vận.",trace_active:"Bạn đang ẩn dấu rồi.",sealed:"Bạn đang bị phong ấn: không dùng được thẻ công kích và không bật được thẻ phòng thủ mới.",already_sealed:"Bạn này đã đang bị phong ấn rồi.",already_wanted:"Bạn này đang bị truy nã rồi.",no_recent_attack:"Trong 24h qua bạn chưa bị ai lấy Trúc bằng thẻ Thần Thâu hoặc Kiếp Phú (hoặc đã trả thù xong), chưa dùng được Phục Thù Lệnh.",no_last_card:"Bạn chưa dùng thẻ nào có thể sao chép (thẻ phòng thủ, Ẩn Dấu Phù và Bản Sao không tính).",copy_failed:"Không sao chép được lúc này, thẻ chưa bị tiêu. Hãy thử lại sau."};
-  ERR.target_purified="Bạn này vừa dùng Thanh Tẩy Phù nên đang miễn nhiễm Phong Ấn và Truy Nã. Thẻ của bạn chưa bị tiêu.";
+  ERR.target_purified="Bạn này vừa dùng Thanh Tẩy Phù nên đang miễn nhiễm Phong Ấn, Truy Nã và Phong Tỏa Ngân Khố. Thẻ của bạn chưa bị tiêu.";
   ERR.purify_active="Bạn đang miễn nhiễm từ Thanh Tẩy Phù rồi, chưa cần dùng thêm.";
   ERR.bad_choice="Lựa chọn không hợp lệ hoặc danh sách thẻ đã thay đổi, hãy bấm Dùng thẻ lại để xem danh sách.";
   ERR.pouch_too_low="Cần ít nhất 100 Cành Trúc trong túi để tung Âm Dương Đổ Vận. Thẻ chưa bị tiêu.";
+  ERR.xp_too_low="Cần tổng XP từ 500 trở lên để hiến tế. Thẻ chưa bị tiêu.";
+  ERR.bag_not_enough_space="Túi cần trống 2 ô (sau khi dùng Huyết Tế) để nhận 2 thẻ. Hãy dùng hoặc bỏ bớt thẻ. Thẻ chưa bị tiêu, XP chưa bị trừ.";
+  ERR.already_sacrificed_today="Hôm nay bạn đã hiến tế rồi, mai hãy dùng tiếp. Thẻ chưa bị tiêu.";
+  ERR.treasury_frozen="Ngân Khố của bạn đang bị Phong Tỏa: không tiêu được Trúc. Dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ, hoặc chờ hết 12h.";
+  ERR.already_frozen="Bạn này đang bị phong tỏa Ngân Khố rồi. Thẻ chưa bị tiêu.";
+  ERR.counter_active="Bạn đang bật Đồng Quy Vu Tận rồi. Thẻ chưa bị tiêu.";
+  ERR.fisher_active="Bạn đang bật Ngư Ông Đắc Lợi rồi. Thẻ chưa bị tiêu.";
+  ERR.nobody_to_flood="Chưa ai trong lớp có Trúc để cuốn đi hoặc đang bật phòng thủ. Thẻ chưa bị tiêu.";
   try{
     if(typeof SUPABASE_ACTIONS_!=="undefined"){
       SUPABASE_ACTIONS_.card_get_state={fn:"card_get_state_p",params:{username:"p_username",password:"p_password",className:"p_class"}};
@@ -15366,11 +15392,21 @@ window.addEventListener("DOMContentLoaded", () => {
     dong_tam:{note:"Chọn 1 bạn để kết nghĩa (cả hai cùng +500 Trúc):",btn:"🤝 Kết nghĩa!",cls:"btn-ok",atk:false},
     thien_ly_nhan:{note:"Chọn 1 bạn để nhìn trộm xem có đang bật thẻ phòng thủ không:",btn:"👁️ Nhìn trộm!",cls:"btn-ok",atk:true},
     pha_gioi_chuy:{note:"Chọn 1 bạn để phá thẻ phòng thủ (trượt nếu bạn ấy không có phòng thủ):",btn:"💥 Phá!",cls:"btn-bad",atk:true},
+    phong_toa:{note:"Chọn 1 bạn để phong tỏa Ngân Khố trong 12h (bạn ấy không tiêu được Trúc):",btn:"🧊 Phong tỏa!",cls:"btn-bad",atk:true},
     truy_na:{note:"Chọn 1 bạn để treo thưởng truy nã trong 24h:",btn:"📜 Truy nã!",cls:"btn-bad",atk:true},
     phuc_thu:{note:"Chọn ĐÚNG kẻ đã lấy Trúc của bạn trong 24h qua (chọn nhầm thì thẻ biến mất):",btn:"🔥 Phục thù!",cls:"btn-bad",atk:true},
     ban_sao:{note:"Chọn mục tiêu cho bản sao (nếu thẻ được sao chép cần chọn bạn). Chọn \"Dùng lại mục tiêu cũ\" nếu muốn giữ mục tiêu lần trước hoặc thẻ không cần mục tiêu:",btn:"🪞 Sao chép!",cls:"btn-ok",atk:false}
   };
   var drawnId=null, st=null, sel=-1, picking=false, msg="", busy=false, newCard=-1, spinning=false, offerList=null;
+  /* Huyết Tế: tính trước mức hy sinh và Level dự kiến để hiện trong hộp xác nhận (chỉ ước tính phía client, server mới là nơi trừ thật) */
+  function bloodPreview(){
+    try{
+      var g=(state&&state.gamification)||{}, xp=g.totalXp||0, cost=Math.min(Math.max(Math.floor(xp*0.04),100),5000), ch=getTotalCharm(g);
+      var l0=calcLevelDetails(xp,ch,g.reincarnationCount||0,g.tribulationCount||0,g.ascensionCount||0).level;
+      var l1=calcLevelDetails(Math.max(0,xp-cost),ch,g.reincarnationCount||0,g.tribulationCount||0,g.ascensionCount||0).level;
+      return {xp:xp,cost:cost,l0:l0,l1:l1};
+    }catch(e){ return null; }
+  }
   function getBag(){ return ((st&&st.bag)||[]).filter(function(x){return CARDS[x];}); }
   function pw(u){ try{ var a=getLocalAccounts(), k=String(u||"").toLowerCase(), x=a[k]||a[u]; return (x&&x.password)||null; }catch(e){ return null; } }
   function ctx(){ try{ return (state && state.username && state.currentClassName) ? state : null; }catch(e){ return null; } }
@@ -15381,7 +15417,7 @@ window.addEventListener("DOMContentLoaded", () => {
     try{ var tr=await callServer("card_get_trace",{username:username,password:pw(username)}); return (tr&&tr.ok&&tr.traceExpires)||null; }catch(e){ return null; }
   }
   /* Phong Ấn Thẻ: danh sách bạn đang bị phong ấn trong lớp (hiện ghi chú trên Bảng Xếp Hạng) */
-  var seals=[], SEAL_BLOCK={thien_thach:1,than_thau:1,kiep_phu:1,ban_tay_vang:1,phong_an:1,ket_gioi:1,suoi_nguon:1,guong:1,an_than:1,pha_gioi_chuy:1,phuc_thu:1};
+  var seals=[], SEAL_BLOCK={thien_thach:1,than_thau:1,kiep_phu:1,ban_tay_vang:1,phong_an:1,ket_gioi:1,suoi_nguon:1,guong:1,an_than:1,pha_gioi_chuy:1,phuc_thu:1,phong_toa:1,hong_thuy:1,dong_quy:1};
   function sealExp(u){
     if(!u) return 0; u=String(u).toLowerCase();
     for(var i=0;i<seals.length;i++){
@@ -15400,6 +15436,24 @@ window.addEventListener("DOMContentLoaded", () => {
     return 0;
   }
   function isWanted(u){ return wantedExp(u)>0; }
+  /* Phong Tỏa Ngân Khố: danh sách bạn đang bị đóng băng Trúc (lấy chung 1 lần gọi với card_get_seals) */
+  var frozen=[];
+  function frozenExp(u){
+    if(!u) return 0; u=String(u).toLowerCase();
+    for(var i=0;i<frozen.length;i++){
+      if(String(frozen[i].username).toLowerCase()===u){ var t=new Date(frozen[i].frozenExpires).getTime(); return t>Date.now()?t:0; }
+    }
+    return 0;
+  }
+  function isFrozen(u){ return frozenExp(u)>0; }
+  /* Gọi từ mọi chỗ tiêu Trúc ở client: trả true (và báo) nếu Ngân Khố của mình đang bị phong tỏa */
+  window.tbFrozenBlock=function(){
+    try{
+      var s=ctx(); if(!s) return false; var t=frozenExp(s.username); if(!t) return false;
+      alert("🧊 Ngân Khố của bạn đang bị Phong Tỏa (còn "+sealLeft(t)+"): bạn không tiêu được Trúc vào việc gì, nhưng Trúc vẫn không mất. Dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay.");
+      return true;
+    }catch(e){ return false; }
+  };
   function sealLeft(ms){ var m=Math.max(1,Math.ceil((ms-Date.now())/60000)); return m>=60 ? Math.floor(m/60)+"h"+(m%60?(m%60)+"p":"") : m+"p"; }
   function lbActive(){ var v=$("view-leaderboard"); return !!(v&&v.classList.contains("active")); }
   async function refreshSeals(){
@@ -15407,8 +15461,8 @@ window.addEventListener("DOMContentLoaded", () => {
     try{
       var r=await callServer("card_get_seals",{className:s.currentClassName});
       if(r&&r.ok){
-        var nx=r.seals||[], nw=r.wanted||[], changed=(JSON.stringify(nx)!==JSON.stringify(seals))||(JSON.stringify(nw)!==JSON.stringify(wanted));
-        seals=nx; wanted=nw; if(typeof r.bounty==="number") wantedBounty=r.bounty;
+        var nx=r.seals||[], nw=r.wanted||[], nf=r.frozen||[], changed=(JSON.stringify(nx)!==JSON.stringify(seals))||(JSON.stringify(nw)!==JSON.stringify(wanted))||(JSON.stringify(nf)!==JSON.stringify(frozen));
+        seals=nx; wanted=nw; frozen=nf; if(typeof r.bounty==="number") wantedBounty=r.bounty;
         if(changed){ try{ if(lbActive()&&typeof renderLeaderboardContent==="function") renderLeaderboardContent(); }catch(e){} }
       }
     }catch(e){}
@@ -15532,6 +15586,16 @@ window.addEventListener("DOMContentLoaded", () => {
     if(st.stealthExpires){
       h+='<div class="tb-ward">🌫️ Đang ẩn thân (hết hạn '+esc(new Date(st.stealthExpires).toLocaleString("vi-VN"))+')</div>';
     }
+    if(st.counterExpires){
+      h+='<div class="tb-ward">☠️ Đồng Quy Vu Tận đang bật (hết hạn '+esc(new Date(st.counterExpires).toLocaleString("vi-VN"))+'): ai tấn công bạn mất 10% XP, bạn mất 3% XP.</div>';
+    }
+    if(st.fisherExpires){
+      h+='<div class="tb-ward">🎣 Ngư Ông Đắc Lợi đang bật (hết hạn '+esc(new Date(st.fisherExpires).toLocaleString("vi-VN"))+'): còn nhận được tối đa '+(st.fisherLeft==null?1500:st.fisherLeft)+'.</div>';
+    }
+    var _fz=frozenExp(ctx()&&ctx().username);
+    if(_fz){
+      h+='<div class="tb-seal">🧊 Ngân Khố của bạn đang bị phong tỏa (hết hạn '+esc(new Date(_fz).toLocaleString("vi-VN"))+'): không tiêu được Trúc, nhưng Trúc không mất. Dùng Thanh Tẩy Phù hoặc bật Kết Giới để gỡ ngay.</div>';
+    }
     if(traceOn()){
       h+='<div class="tb-ward">🕵️ Đang ẩn dấu (hết hạn '+esc(new Date(st.traceExpires).toLocaleString("vi-VN"))+'): thẻ bạn dùng vẫn hiện ở thông báo nhưng dưới tên Người Ẩn Danh.</div>';
     }
@@ -15553,7 +15617,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if(MATE[bag[sel]] && picking){
         var mc=MATE[bag[sel]];
         h+='<div class="tb-note">'+mc.note+'</div><div class="tb-row"><select id="tb-mate" style="max-width:100%;padding:6px;">'+(bag[sel]==="ban_sao"?'<option value="__last__">🔁 Dùng lại mục tiêu cũ (hoặc thẻ không cần mục tiêu)</option>':'<option value="">— Chọn bạn —</option>')+'';
-        (st.mates||[]).forEach(function(m){ var hid=mc.atk&&m.hidden, sl=(bag[sel]==="phong_an")&&isSealed(m.username), wn=(bag[sel]==="truy_na")&&isWanted(m.username); h+='<option value="'+esc(m.username)+'"'+((hid||sl||wn)?' disabled':'')+'>'+esc(m.displayName)+(hid?' 🌫️ (ẩn thân)':'')+(sl?' 🔒 (đã bị phong ấn)':'')+(wn?' 📜 (đang bị truy nã)':'')+'</option>'; });
+        (st.mates||[]).forEach(function(m){ var hid=mc.atk&&m.hidden, sl=(bag[sel]==="phong_an")&&isSealed(m.username), wn=(bag[sel]==="truy_na")&&isWanted(m.username), fz=(bag[sel]==="phong_toa")&&isFrozen(m.username); h+='<option value="'+esc(m.username)+'"'+((hid||sl||wn||fz)?' disabled':'')+'>'+esc(m.displayName)+(hid?' 🌫️ (ẩn thân)':'')+(sl?' 🔒 (đã bị phong ấn)':'')+(wn?' 📜 (đang bị truy nã)':'')+(fz?' 🧊 (đã bị phong tỏa)':'')+'</option>'; });
         h+='</select><button class="btn '+mc.cls+'" data-tb="steal">'+mc.btn+'</button><button class="btn btn-outline" data-tb="cancel">Hủy</button></div>';
       } else if(bag[sel]==="thien_co" && offerList && offerList.length){
         h+='<div class="tb-note">📖 Chọn 1 trong '+offerList.length+' thẻ dưới đây. Thiên Cơ Tam Quyển sẽ được đổi lấy thẻ bạn chọn (danh sách này được lưu, không rút lại được):</div>';
@@ -15574,8 +15638,23 @@ window.addEventListener("DOMContentLoaded", () => {
     say(h+'</div></div>');
     if(newCard>=0){ try{ var el=box().querySelector('.tb-c.tb-new'); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} newCard=-1; }
   }
-  function report(r){
+  function tailReport(r){
+    var x="";
+    try{
+      if(r&&r.wasFrozen) x+=" 🧊 Phong Tỏa Ngân Khố đã được gỡ.";
+      if(r&&r.counter) x+=" ☠️ "+r.counter.holder+" đang bật Đồng Quy Vu Tận: bạn mất "+r.counter.attackerLoss+" XP, "+r.counter.holder+" mất "+r.counter.holderLoss+" XP.";
+      if(r&&r.fisher&&r.fisher.length) x+=" 🎣 "+r.fisher.map(function(f){ return f.name+" hưởng lợi"+(f.pouch>0?" +"+f.pouch+" Trúc":"")+(f.xp>0?" +"+f.xp+" XP":""); }).join("; ")+" (Ngư Ông Đắc Lợi).";
+    }catch(e){}
+    return x;
+  }
+  function report(r){ return report1(r)+tailReport(r); }
+  function report1(r){
     var t=r.target||"";
+    if(r.card==="phong_toa") return r.outcome==="blocked" ? "🛡️ "+t+" có Kết Giới, Phong Tỏa Ngân Khố bị chặn đứng!" : "🧊 Đã phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc (nhưng không mất Trúc).";
+    if(r.card==="dong_quy") return "☠️ Đã bật Đồng Quy Vu Tận trong 24h: ai tấn công bạn sẽ mất 10% XP (bạn mất 3% XP).";
+    if(r.card==="ngu_ong") return "🎣 Đã giăng cần câu 24h: bạn nhận 50% phần Trúc/XP biến mất trong các đòn tấn công của lớp (tối đa 1500).";
+    if(r.card==="hong_thuy") return "🌊 Đại Hồng Thủy! "+r.hit+" bạn mất tổng "+r.loss+" Trúc, "+r.immune+" bạn được phòng thủ cứu. Bạn nhận +"+r.gain+" Trúc.";
+    if(r.card==="huyet_te"){ var _h=(r.cards||[]).map(function(x){ var c=CARDS[x]; return c?c.icon+" "+c.name:x; }).join(" + "); return "🩸 Hiến tế "+r.cost+" XP thành công! Bạn nhận vào túi: "+_h+"."; }
     if(r.card==="thanh_tay") return "🌸 Đã dùng Thanh Tẩy Phù."+(r.wasSealed?" Phong Ấn đã được gỡ.":"")+(r.wasWanted?" Truy Nã đã được gỡ.":"")+" Trong 12h tới không ai phong ấn hay truy nã được bạn.";
     if(r.card==="am_duong") return r.outcome==="win" ? "☯️ Đồng xu ngả về phía Dương! Bạn thắng +"+r.amount+" Cành Trúc ("+r.pct+"%)." : "☯️ Đồng xu ngả về phía Âm... Bạn mất "+r.amount+" Cành Trúc ("+r.pct+"%).";
     if(r.card==="thien_ly_nhan") return r.hasWard ? "👁️ "+t+" ĐANG bật 1 thẻ phòng thủ (không biết là loại nào). Kết quả chỉ đúng tại lúc này." : "👁️ "+t+" hiện KHÔNG bật thẻ phòng thủ nào. Kết quả chỉ đúng tại lúc này.";
@@ -15618,12 +15697,27 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     return "Xong!";
   }
-  function announce(r,cid,viaCopy){
+  function announceTail(r,viaCopy){
+    try{
+      if(typeof addActivityLog!=="function"||!r) return;
+      var logCard=function(t){ if(viaCopy) t="🪞 Bản Sao Ảo Ảnh · "+t; if(typeof addCardFeedLog==="function") addCardFeedLog(t); else addActivityLog(t); };
+      var s=ctx(); if(!s) return;
+      var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username);
+      if(r.counter) logCard("☠️ "+me+" tấn công "+esc(r.counter.holder)+" nhưng dính Đồng Quy Vu Tận: "+me+" mất "+r.counter.attackerLoss+" XP, "+esc(r.counter.holder)+" mất "+r.counter.holderLoss+" XP!");
+      if(r.fisher&&r.fisher.length) r.fisher.forEach(function(f){ logCard("🎣 "+esc(f.name)+" hưởng lợi từ Ngư Ông Đắc Lợi:"+(f.pouch>0?" +"+f.pouch+" Trúc":"")+(f.xp>0?" +"+f.xp+" XP":"")+"!"); });
+    }catch(e){}
+  }
+  function announce(r,cid,viaCopy){ announce1(r,cid,viaCopy); announceTail(r,viaCopy); }
+  function announce1(r,cid,viaCopy){
     try{
       if(typeof addActivityLog!=="function") return;
       var logCard=function(t){ if(viaCopy) t="🪞 Bản Sao Ảo Ảnh · "+t; if(typeof addCardFeedLog==="function") addCardFeedLog(t); else addActivityLog(t); };
       var s=ctx(), c=CARDS[cid]; if(!s||!c) return;
       if(cid==="an_dau") return; // bật Ẩn Dấu Phù thì không báo gì; các thẻ dùng sau đó vẫn báo nhưng ẩn danh
+      if(cid==="huyet_te"){ logCard("🩸 Có người vừa hiến tế XP để triệu hồi vũ khí..."); return; } // luôn ẩn danh, không nêu tên
+      if(cid==="hong_thuy"){ logCard("🌊 Đại Hồng Thủy ập xuống cả lớp! Ai là thủ phạm đây..."); return; } // luôn ẩn danh
+      if(cid==="dong_quy"){ logCard("☠️ Có người vừa kích hoạt một thẻ phản kích..."); return; } // ẩn danh, không nói thẻ gì
+      if(cid==="ngu_ong") return; // bật thẻ không báo gì; mỗi lần hưởng lợi sẽ báo riêng
       var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username), t=esc(r.target||""), txt;
       if(cid==="thien_co"){ if(r.outcome==="picked") logCard("📖 "+me+" dùng thẻ Thiên Cơ Tam Quyển, đổi lấy 1 thẻ mới trong túi!"); return; }
       if(cid==="thanh_tay"){ logCard("🌸 "+me+" dùng thẻ Thanh Tẩy Phù: gỡ sạch Phong Ấn và Truy Nã, miễn nhiễm 12h!"); return; }
@@ -15640,6 +15734,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
       if(cid==="phong_an"){ logCard(r.outcome==="blocked" ? "🔒 "+me+" dùng Phong Ấn lên "+t+" nhưng bị Kết Giới Hộ Thân chặn đứng! 🛡️" : "🔒 "+me+" dùng thẻ Phong Ấn lên "+t+": 12h không dùng được thẻ công kích và không bật được phòng thủ mới!"); return; }
       if(cid==="thien_ly_nhan") return; // nhìn trộm: không báo gì lên Bảng Tin
+      if(cid==="phong_toa"){ logCard(r.outcome==="blocked" ? "🧊 "+me+" dùng Phong Tỏa Ngân Khố lên "+t+" nhưng bị Kết Giới Hộ Thân chặn đứng! 🛡️" : "🧊 "+me+" phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc!"); return; }
       if(cid==="truy_na"){ logCard("📜 "+me+" treo thưởng truy nã "+t+" trong 24h! Ai dùng Phá Giới Chùy lên "+t+" sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống."); return; }
       if(cid==="phuc_thu"){ logCard(r.outcome==="wrong" ? "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+" nhưng đoán nhầm kẻ thù, thẻ tan biến!" : "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+": lấy lại "+r.gain+" Trúc, "+t+" bị trừ "+r.loss+" Trúc"+(r.xpLoss>0 ? " và "+r.xpLoss+" XP" : "")+"!"); return; }
       if(cid==="pha_gioi_chuy"){ logCard("💥 "+me+" vừa vung Phá Giới Chùy lên "+t+"!"); if(r.bounty) logCard("📜 "+me+" bắt được "+t+" (đang bị truy nã) và nhận "+r.bounty+" 🎋 tiền thưởng!"); return; } // không nói trúng hay trượt
@@ -15711,7 +15806,7 @@ window.addEventListener("DOMContentLoaded", () => {
         var _args={username:s.username,password:pw(s.username),className:s.currentClassName,card:cid,target:target||null};
         r=await callServer("card_use2",_args);
       }
-      if(!r||!r.ok){ if(cid==="thien_co") offerList=null; msg=(kind==="spin"&&r&&r.error==="not_enough_bamboo")?"Không đủ 1000 Cành Trúc để quay.":(ERR[r&&r.error]||("Lỗi: "+(r&&r.error||"không rõ"))); }
+      if(!r||!r.ok){ if(r&&r.error==="treasury_frozen"){ try{ await refreshSeals(); }catch(e){} } if(cid==="thien_co") offerList=null; msg=(kind==="spin"&&r&&r.error==="not_enough_bamboo")?"Không đủ 1000 Cành Trúc để quay.":(ERR[r&&r.error]||("Lỗi: "+(r&&r.error||"không rõ"))); }
       else if(kind==="spin"){
         if(r.outcome==="jade") msg="🔮 Chúc mừng! Vòng Quay Ngũ Hành cho bạn Ngọc Bội Ngũ Hành — ô thẻ thứ 5 đã mở! (-1000 🎋)";
         else msg="🎡 Chưa ra Ngọc Bội: bạn nhận +"+r.xp+" XP (-1000 🎋). Đã trượt "+r.pity+"/15 lần"+(r.pity>=15?" — lần quay tới CHẮC CHẮN ra Ngọc Bội!":".");
@@ -15742,6 +15837,14 @@ window.addEventListener("DOMContentLoaded", () => {
     else if(a==="use"&&SEAL_BLOCK[bag[sel]]&&isSealed(ctx()&&ctx().username)){ msg=ERR.sealed; draw(); }
     else if(a==="use"&&bag[sel]==="am_duong"&&!confirm("Âm Dương Đổ Vận: 50% nhận +15% Trúc (tối đa 3000), 50% mất 8% Trúc (tối đa 1500). Dùng thẻ?")){ /* hủy */ }
     else if(a==="use"&&bag[sel]==="thanh_tay"&&!isSealed(ctx()&&ctx().username)&&!isWanted(ctx()&&ctx().username)&&!confirm("Bạn hiện không bị Phong Ấn hay Truy Nã. Dùng bây giờ chỉ để miễn nhiễm 12h. Dùng thẻ?")){ /* hủy */ }
+    else if(a==="use"&&bag[sel]==="hong_thuy"&&!confirm("Đại Hồng Thủy: cả lớp (trừ bạn) mất 4% Trúc; ai đang bật thẻ phòng thủ thì được miễn nhưng thẻ phòng thủ đó bị tiêu. Bạn nhận 25% tổng phần mất. Không hoàn lại. Dùng thẻ?")){ /* hủy */ }
+    else if(a==="use"&&bag[sel]==="dong_quy"&&!confirm("Đồng Quy Vu Tận: trong 24h, ai tấn công bạn sẽ mất 10% XP nhưng bạn cũng mất 3% XP mỗi lần (kể cả khi đòn bị chặn), có thể làm tụt Level. Bật thẻ?")){ /* hủy */ }
+    else if(a==="use"&&bag[sel]==="huyet_te"){
+      var bp=bloodPreview();
+      if(bp&&bp.xp<500){ msg=ERR.xp_too_low; draw(); }
+      else if(bag.length-1+2>((st&&st.bagMax)||4)){ msg=ERR.bag_not_enough_space; draw(); }
+      else if(confirm("Huyết Tế: hy sinh khoảng "+(bp?bp.cost:"4% tổng")+" XP"+(bp&&bp.l1<bp.l0?" — Level sẽ tụt từ "+bp.l0+" xuống "+bp.l1:" (Level hiện tại giữ nguyên)")+" để nhận 1 Thần Thâu + 1 thẻ công kích ngẫu nhiên. Mỗi ngày dùng 1 lần, không hoàn lại. Tiếp tục?")) act("use");
+    }
     else if(a==="use"){ if(MATE[bag[sel]]){ picking=true; draw(); } else if(bag[sel]==="doi_van"){ if(confirm("Đổi Vận Bài sẽ BỎ HẾT các thẻ khác trong túi và thay bằng thẻ mới bốc ngẫu nhiên (số thẻ giữ nguyên, không chọn được). Tiếp tục?")) act("use"); } else act("use"); }
     else if(a==="tcpick"){ var tc=b.getAttribute("data-c"); if(tc&&bag[sel]==="thien_co") act("use",tc); }
     else if(a==="tccancel"){ offerList=null; draw(); }
@@ -15762,10 +15865,17 @@ window.addEventListener("DOMContentLoaded", () => {
       var u2=p&&(p.username||(p.name===state.studentName?state.username:null)), tw=wantedExp(u2);
       if(tw) h+=' <span class="tb-wanted-tag" title="Đang bị truy nã: ai dùng Phá Giới Chùy lên bạn này sẽ nhận tiền thưởng từ hệ thống.">📜 Truy nã · '+wantedBounty+'🎋 · còn '+sealLeft(tw)+'</span>';
     }catch(e){}
+    try{
+      var u3=p&&(p.username||(p.name===state.studentName?state.username:null)), tf=frozenExp(u3);
+      if(tf) h+=' <span class="tb-seal-tag" title="Ngân Khố đang bị phong tỏa: không tiêu được Trúc (Trúc vẫn không mất).">🧊 Phong tỏa · còn '+sealLeft(tf)+'</span>';
+    }catch(e){}
     try{ if(p&&Array.isArray(p.badges)&&p.badges.indexOf("ngoc_boi_ngu_hanh")>=0) h+=' <span class="tb-jade-tag" title="Sở hữu Ngọc Bội Ngũ Hành: túi thẻ có 5 ô">🔮 Ngũ Hành</span>'; }catch(e){}
     return h;
   };
   setInterval(function(){ try{ if(ctx()&&(lbActive()||($("view-thebai")&&$("view-thebai").classList.contains("active")))) refreshSeals(); }catch(e){} },20000);
+  /* Phong Tỏa Ngân Khố: cập nhật trạng thái đóng băng cả khi đang ở tab khác (nhẹ: 1 lệnh gọi / 60 giây) */
+  setInterval(function(){ try{ if(ctx()&&!(lbActive()||($("view-thebai")&&$("view-thebai").classList.contains("active")))) refreshSeals(); }catch(e){} },60000);
+  setTimeout(function(){ try{ if(ctx()) refreshSeals(); }catch(e){} },4000);
   var lbBtn=document.querySelector('nav.tabs button[data-view="leaderboard"]');
   if(lbBtn) lbBtn.addEventListener("click",function(){ refreshSeals(); });
   var nb=document.querySelector('nav.tabs button[data-view="thebai"]');
