@@ -15345,11 +15345,11 @@ window.addEventListener("DOMContentLoaded", () => {
     phong_an:{k:"atk",icon:"🔒",name:"Phong Ấn Thẻ",type:"⚔️ Công kích",desc:"Chọn 1 bạn cùng lớp: trong 12h bạn ấy không dùng được thẻ công kích và không bật được thẻ phòng thủ mới (phòng thủ đã bật từ trước vẫn còn tác dụng). Bạn bị phong ấn sẽ hiện ghi chú trên Bảng Xếp Hạng. Kết Giới chặn được (bị tiêu), Ẩn Thân Phù làm bạn ấy không chọn được, Gương và Suối Nguồn không áp dụng."},
     an_dau:{k:"spc",icon:"🕵️",name:"Ẩn Dấu Phù",type:"🎲 Đặc biệt",desc:"Trong 24h, bất kỳ thẻ nào bạn dùng cũng vẫn hiện ở Bảng Tin lớp nhưng dưới tên \"Người Ẩn Danh\", không ai biết là bạn. Không ảnh hưởng hiệu quả của thẻ."},
     thien_ly_nhan:{k:"spc",icon:"👁️",name:"Thiên Lý Nhãn",type:"🎲 Đặc biệt",desc:"Chọn 1 bạn cùng lớp để nhìn trộm: biết bạn ấy hiện có đang bật thẻ phòng thủ (Kết Giới, Suối Nguồn, Gương Thần) hay không, nhưng không biết là loại nào. Chỉ mình bạn thấy kết quả, bảng thông báo không hiện gì. Không chọn được bạn đang Ẩn Thân."},
-    pha_gioi_chuy:{k:"atk",icon:"💥",name:"Phá Giới Chùy",type:"⚔️ Công kích",desc:"Chọn 1 bạn cùng lớp: nếu bạn ấy đang bật thẻ phòng thủ (Kết Giới, Suối Nguồn, Gương Thần) thì thẻ đó bị phá vỡ ngay, không ai mất XP/Trúc. Nếu bạn ấy không có phòng thủ thì cú đập trượt và thẻ vẫn bị tiêu, nên hãy đoán đúng người (dùng Thiên Lý Nhãn để dò trước). Bảng thông báo chỉ hiện bạn vung chùy lên ai, không nói trúng hay trượt. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được. Nếu bạn ấy đang bị Truy Nã thì bạn còn nhận tiền thưởng (xem thẻ Truy Nã Lệnh)."},
-    truy_na:{k:"spc",icon:"📜",name:"Truy Nã Lệnh",type:"🎲 Đặc biệt",desc:"Chọn 1 bạn bất kỳ trong lớp: trong 24h bạn ấy bị dán ghi chú truy nã trên Bảng Xếp Hạng. Ai dùng Phá Giới Chùy lên bạn ấy (trúng hay trượt đều tính) sẽ nhận 300 🎋 từ hệ thống, sau đó ghi chú truy nã biến mất và thẻ hết hiệu lực. Người treo thưởng không được tự nhận tiền thưởng của mình. Không chọn được bạn đang Ẩn Thân hoặc đang bị truy nã sẵn."},
+    pha_gioi_chuy:{k:"atk",icon:"💥",name:"Phá Giới Chùy",type:"⚔️ Công kích",desc:"Chọn 1 bạn cùng lớp: nếu bạn ấy đang bật thẻ phòng thủ (Kết Giới, Suối Nguồn, Gương Thần) thì thẻ đó bị phá vỡ ngay, không ai mất XP/Trúc. Nếu bạn ấy không có phòng thủ thì cú đập trượt và thẻ vẫn bị tiêu, nên hãy đoán đúng người (dùng Thiên Lý Nhãn để dò trước). Bảng thông báo chỉ hiện bạn vung chùy lên ai, không nói trúng hay trượt. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được. Nếu bạn ấy đang bị Truy Nã thì bạn còn nhận tiền thưởng (xem thẻ Truy Nã Lệnh; các thẻ công kích có chọn mục tiêu khác cũng nhận thưởng)."},
+    truy_na:{k:"spc",icon:"📜",name:"Truy Nã Lệnh",type:"🎲 Đặc biệt",desc:"Chọn 1 bạn bất kỳ trong lớp: trong 24h bạn ấy bị dán ghi chú truy nã trên Bảng Xếp Hạng. Ai dùng Phá Giới Chùy hoặc thẻ công kích có chọn mục tiêu (Thần Thâu, Bàn Tay Vàng, Phong Ấn, Phong Tỏa Ngân Khố, Phục Thù) lên bạn ấy (trúng hay trượt đều tính) sẽ nhận 300 🎋 từ hệ thống, sau đó ghi chú truy nã biến mất và thẻ hết hiệu lực. Người treo thưởng không được tự nhận tiền thưởng của mình. Không chọn được bạn đang Ẩn Thân hoặc đang bị truy nã sẵn."},
     phuc_thu:{k:"atk",icon:"🔥",name:"Phục Thù Lệnh",type:"⚔️ Công kích",desc:"Chỉ dùng được khi trong 24h qua bạn đã bị mất Trúc vì thẻ Thần Thâu hoặc Kiếp Phú. Chọn đúng kẻ đã ra tay: bạn lấy lại 120% số Trúc đã mất. Kẻ đó bị trừ Trúc trong túi; nếu túi không đủ (đã cho gấu ăn hết) thì phần thiếu bị trừ thành XP (1 Trúc = 10 XP). Chọn nhầm người thì thẻ biến mất và không có tác dụng. Không bị Kết Giới, Gương, Suối Nguồn cản. Không chọn được bạn đang Ẩn Thân. Đang bị Phong Ấn thì không dùng được."},
     ban_sao:{k:"spc",icon:"🪞",name:"Bản Sao Ảo Ảnh",type:"🎲 Đặc biệt",desc:"Dùng lại đúng hiệu ứng của thẻ gần nhất bạn đã dùng (không tính thẻ phòng thủ, Ẩn Dấu Phù và chính thẻ này; thẻ phòng thủ dùng xen giữa không làm mất thẻ cần sao chép). Nếu thẻ đó cần chọn bạn, bạn chọn mục tiêu mới hoặc dùng lại mục tiêu cũ. Chưa có thẻ nào để sao chép, hoặc bản sao bị chặn (đang bị phong ấn, mục tiêu ẩn thân…) thì báo lỗi và KHÔNG tiêu thẻ."},
-    thanh_tay:{k:"def",icon:"🌸",name:"Thanh Tẩy Phù",type:"🛡️ Kháng",desc:"Gỡ ngay Phong Ấn và Truy Nã đang có trên người bạn, rồi miễn nhiễm cả hai hiệu ứng này trong 12h (không ai phong ấn hay truy nã được bạn). Dùng được cả khi đang bị phong ấn. Không chiếm ô thẻ phòng thủ nên dùng chung được với Kết Giới, Suối Nguồn, Gương Thần. Đang miễn nhiễm thì không dùng thêm được. Cũng gỡ ngay Phong Tỏa Ngân Khố đang đè lên bạn và miễn nhiễm hiệu ứng này trong 12h."},
+    thanh_tay:{k:"def",icon:"🌸",name:"Thanh Tẩy Phù",type:"🛡️ Kháng",desc:"Gỡ ngay cả 3 hiệu ứng đang đè lên người bạn: Phong Ấn, Truy Nã và Phong Tỏa Ngân Khố, rồi miễn nhiễm cả 3 trong 12h (không ai phong ấn, truy nã hay phong tỏa được bạn). Dùng được cả khi đang bị phong ấn. Không chiếm ô thẻ phòng thủ nên dùng chung được với Kết Giới, Suối Nguồn, Gương Thần. Đang miễn nhiễm thì không dùng thêm được."},
     am_duong:{k:"spc",icon:"☯️",name:"Âm Dương Đổ Vận",type:"🎲 Đặc biệt",desc:"Tung đồng xu: 50% nhận +15% số Trúc đang có (tối đa 3000), 50% mất 8% số Trúc đang có (tối đa 1500). Cần túi có ít nhất 100 Trúc. Liều hay không là do bạn!"},
     thien_co:{k:"spc",icon:"📖",name:"Thiên Cơ Tam Quyển",type:"🎲 Đặc biệt",desc:"Mở ra 3 thẻ ngẫu nhiên khác nhau, bạn chọn 1 thẻ để đổi lấy chính thẻ này (số thẻ trong túi không đổi). Danh sách 3 thẻ được lưu lại: tải lại trang vẫn thấy đúng 3 thẻ đó, không rút lại được. Không rút ra chính Thiên Cơ. Bảng thông báo chỉ hiện bạn đã đổi lấy 1 thẻ mới, không nói là thẻ gì."},
     huyet_te:{k:"spc",icon:"🩸",name:"Huyết Tế",type:"🎲 Đặc biệt",desc:"Hy sinh 4% tổng XP của bạn (tối thiểu 100 XP, tối đa 5.000 XP, cần tổng XP từ 500) để nhận ngay 1 thẻ Thần Thâu và 1 thẻ công kích ngẫu nhiên vào túi. Có thể làm tụt Level. Túi cần trống 2 ô sau khi dùng. Mỗi ngày dùng được 1 lần. Bảng Tin chỉ báo ẩn danh “Có người vừa hiến tế XP...”."},
@@ -15610,7 +15610,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     var _wa=wantedExp(ctx()&&ctx().username);
     if(_wa){
-      h+='<div class="tb-wanted">📜 Bạn đang bị truy nã (hết hạn '+esc(new Date(_wa).toLocaleString("vi-VN"))+'): ai dùng Phá Giới Chùy lên bạn sẽ nhận '+wantedBounty+' 🎋 tiền thưởng từ hệ thống. Ẩn Thân Phù giúp bạn không bị chọn làm mục tiêu.</div>';
+      h+='<div class="tb-wanted">📜 Bạn đang bị truy nã (hết hạn '+esc(new Date(_wa).toLocaleString("vi-VN"))+'): ai dùng Phá Giới Chùy hoặc thẻ công kích lên bạn sẽ nhận '+wantedBounty+' 🎋 tiền thưởng từ hệ thống. Ẩn Thân Phù giúp bạn không bị chọn làm mục tiêu.</div>';
     }
     h+='<div class="tb-bag">';
     for(var i=0;i<max;i++) h+= bag[i] ? cardHtml(bag[i],i) : '<div class="tb-slot">＋</div>';
@@ -15647,6 +15647,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var x="";
     try{
       if(r&&r.wasFrozen) x+=" 🧊 Phong Tỏa Ngân Khố đã được gỡ.";
+      if(r&&r.bounty&&({than_thau:1,ban_tay_vang:1,phong_an:1,phong_toa:1,phuc_thu:1})[r.card]) x+=" 📜 "+(r.target||"Bạn ấy")+" đang bị truy nã: bạn nhận +"+r.bounty+" 🎋 tiền thưởng từ hệ thống!";
       if(r&&r.counter) x+=" ☠️ "+r.counter.holder+" đang bật Đồng Quy Vu Tận: bạn mất "+r.counter.attackerLoss+" XP, "+r.counter.holder+" mất "+r.counter.holderLoss+" XP.";
       if(r&&r.fisher&&r.fisher.length) x+=" 🎣 "+r.fisher.map(function(f){ return f.name+" hưởng lợi"+(f.pouch>0?" +"+f.pouch+" Trúc":"")+(f.xp>0?" +"+f.xp+" XP":""); }).join("; ")+" (Ngư Ông Đắc Lợi).";
     }catch(e){}
@@ -15660,10 +15661,10 @@ window.addEventListener("DOMContentLoaded", () => {
     if(r.card==="ngu_ong") return "🎣 Đã giăng cần câu 24h: bạn nhận 50% phần Trúc/XP biến mất trong các đòn tấn công của lớp (chia đều nếu nhiều bạn cùng bật; tối đa 3000 Trúc và 10000 XP).";
     if(r.card==="hong_thuy") return "🌊 Đại Hồng Thủy! "+r.hit+" bạn mất tổng "+r.loss+" Trúc, "+r.immune+" bạn được phòng thủ cứu. Bạn nhận +"+r.gain+" Trúc.";
     if(r.card==="huyet_te"){ var _h=(r.cards||[]).map(function(x){ var c=CARDS[x]; return c?c.icon+" "+c.name:x; }).join(" + "); return "🩸 Hiến tế "+r.cost+" XP thành công! Bạn nhận vào túi: "+_h+"."; }
-    if(r.card==="thanh_tay") return "🌸 Đã dùng Thanh Tẩy Phù."+(r.wasSealed?" Phong Ấn đã được gỡ.":"")+(r.wasWanted?" Truy Nã đã được gỡ.":"")+" Trong 12h tới không ai phong ấn hay truy nã được bạn.";
+    if(r.card==="thanh_tay") return "🌸 Đã dùng Thanh Tẩy Phù."+(r.wasSealed?" Phong Ấn đã được gỡ.":"")+(r.wasWanted?" Truy Nã đã được gỡ.":"")+" Trong 12h tới không ai phong ấn, truy nã hay phong tỏa được bạn.";
     if(r.card==="am_duong") return r.outcome==="win" ? "☯️ Đồng xu ngả về phía Dương! Bạn thắng +"+r.amount+" Cành Trúc ("+r.pct+"%)." : "☯️ Đồng xu ngả về phía Âm... Bạn mất "+r.amount+" Cành Trúc ("+r.pct+"%).";
     if(r.card==="thien_ly_nhan") return r.hasWard ? "👁️ "+t+" ĐANG bật 1 thẻ phòng thủ (không biết là loại nào). Kết quả chỉ đúng tại lúc này." : "👁️ "+t+" hiện KHÔNG bật thẻ phòng thủ nào. Kết quả chỉ đúng tại lúc này.";
-    if(r.card==="truy_na") return "📜 Đã treo thưởng truy nã "+t+" trong 24h: ai dùng Phá Giới Chùy lên bạn ấy sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống.";
+    if(r.card==="truy_na") return "📜 Đã treo thưởng truy nã "+t+" trong 24h: ai dùng Phá Giới Chùy hoặc thẻ công kích lên bạn ấy sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống.";
     if(r.card==="phuc_thu") return r.outcome==="wrong" ? "❌ "+t+" không phải kẻ đã lấy Trúc của bạn trong 24h qua. Thẻ Phục Thù đã biến mất." : "🔥 Phục thù "+t+" thành công: bạn lấy lại +"+r.gain+" Trúc. "+t+" bị trừ "+r.loss+" Trúc"+(r.xpLoss>0 ? " và "+r.xpLoss+" XP (vì đã cho gấu ăn)" : "")+".";
     if(r.card==="pha_gioi_chuy") return (r.outcome==="broken" ? "💥 Trúng! Thẻ phòng thủ của "+t+" đã bị phá vỡ." : "💨 Trượt rồi: "+t+" không có thẻ phòng thủ nào đang bật.")+(r.bounty ? " 📜 "+t+" đang bị truy nã: bạn nhận +"+r.bounty+" 🎋 tiền thưởng từ hệ thống!" : "");
     if(r.card==="kiep_phu"){
@@ -15708,6 +15709,7 @@ window.addEventListener("DOMContentLoaded", () => {
       var logCard=function(t){ if(viaCopy) t="🪞 Bản Sao Ảo Ảnh · "+t; if(typeof addCardFeedLog==="function") addCardFeedLog(t); else addActivityLog(t); };
       var s=ctx(); if(!s) return;
       var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username);
+      if(r.bounty&&({than_thau:1,ban_tay_vang:1,phong_an:1,phong_toa:1,phuc_thu:1})[r.card]) logCard("📜 "+me+" bắt được "+esc(r.target||"")+" (đang bị truy nã) và nhận "+r.bounty+" 🎋 tiền thưởng!");
       if(r.counter) logCard("☠️ "+me+" tấn công "+esc(r.counter.holder)+" nhưng dính Đồng Quy Vu Tận: "+me+" mất "+r.counter.attackerLoss+" XP, "+esc(r.counter.holder)+" mất "+r.counter.holderLoss+" XP!");
       if(r.fisher&&r.fisher.length) r.fisher.forEach(function(f){ logCard("🎣 "+esc(f.name)+" hưởng lợi từ Ngư Ông Đắc Lợi:"+(f.pouch>0?" +"+f.pouch+" Trúc":"")+(f.xp>0?" +"+f.xp+" XP":"")+"!"); });
     }catch(e){}
@@ -15725,7 +15727,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if(cid==="ngu_ong") return; // bật thẻ không báo gì; mỗi lần hưởng lợi sẽ báo riêng
       var me=traceOn()?"Người Ẩn Danh":esc(s.studentName||s.username), t=esc(r.target||""), txt;
       if(cid==="thien_co"){ if(r.outcome==="picked") logCard("📖 "+me+" dùng thẻ Thiên Cơ Tam Quyển, đổi lấy 1 thẻ mới trong túi!"); return; }
-      if(cid==="thanh_tay"){ logCard("🌸 "+me+" dùng thẻ Thanh Tẩy Phù: gỡ sạch Phong Ấn và Truy Nã, miễn nhiễm 12h!"); return; }
+      if(cid==="thanh_tay"){ logCard("🌸 "+me+" dùng thẻ Thanh Tẩy Phù: gỡ sạch Phong Ấn, Truy Nã và Phong Tỏa Ngân Khố, miễn nhiễm 12h!"); return; }
       if(cid==="am_duong"){ logCard(r.outcome==="win" ? "☯️ "+me+" tung Âm Dương Đổ Vận và thắng, nhận +"+r.amount+" Cành Trúc ("+r.pct+"%)!" : "☯️ "+me+" tung Âm Dương Đổ Vận nhưng thua, mất "+r.amount+" Cành Trúc ("+r.pct+"%)!"); return; }
       if(cid==="kiep_phu"){
         switch(r.outcome){
@@ -15740,7 +15742,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if(cid==="phong_an"){ logCard(r.outcome==="blocked" ? "🔒 "+me+" dùng Phong Ấn lên "+t+" nhưng bị Kết Giới Hộ Thân chặn đứng! 🛡️" : "🔒 "+me+" dùng thẻ Phong Ấn lên "+t+": 12h không dùng được thẻ công kích và không bật được phòng thủ mới!"); return; }
       if(cid==="thien_ly_nhan") return; // nhìn trộm: không báo gì lên Bảng Tin
       if(cid==="phong_toa"){ logCard("🧊 "+me+" phong tỏa Ngân Khố của "+t+" trong 12h: bạn ấy không tiêu được Trúc!"); return; }
-      if(cid==="truy_na"){ logCard("📜 "+me+" treo thưởng truy nã "+t+" trong 24h! Ai dùng Phá Giới Chùy lên "+t+" sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống."); return; }
+      if(cid==="truy_na"){ logCard("📜 "+me+" treo thưởng truy nã "+t+" trong 24h! Ai dùng Phá Giới Chùy hoặc thẻ công kích lên "+t+" sẽ nhận "+(r.bounty||wantedBounty)+" 🎋 từ hệ thống."); return; }
       if(cid==="phuc_thu"){ logCard(r.outcome==="wrong" ? "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+" nhưng đoán nhầm kẻ thù, thẻ tan biến!" : "🔥 "+me+" dùng Phục Thù Lệnh lên "+t+": lấy lại "+r.gain+" Trúc, "+t+" bị trừ "+r.loss+" Trúc"+(r.xpLoss>0 ? " và "+r.xpLoss+" XP" : "")+"!"); return; }
       if(cid==="pha_gioi_chuy"){ logCard("💥 "+me+" vừa vung Phá Giới Chùy lên "+t+"!"); if(r.bounty) logCard("📜 "+me+" bắt được "+t+" (đang bị truy nã) và nhận "+r.bounty+" 🎋 tiền thưởng!"); return; } // không nói trúng hay trượt
       if(cid==="an_than"){ logCard("🌫️ "+me+" vừa dùng thẻ Ẩn Thân Phù, 24h không ai chọn được!"); return; }
@@ -15841,7 +15843,7 @@ window.addEventListener("DOMContentLoaded", () => {
     else if(a==="spin"){ if(confirm("Dùng 1000 Cành Trúc để quay Vòng Quay Ngũ Hành?")) act("spin"); }
     else if(a==="use"&&SEAL_BLOCK[bag[sel]]&&isSealed(ctx()&&ctx().username)){ msg=ERR.sealed; draw(); }
     else if(a==="use"&&bag[sel]==="am_duong"&&!confirm("Âm Dương Đổ Vận: 50% nhận +15% Trúc (tối đa 3000), 50% mất 8% Trúc (tối đa 1500). Dùng thẻ?")){ /* hủy */ }
-    else if(a==="use"&&bag[sel]==="thanh_tay"&&!isSealed(ctx()&&ctx().username)&&!isWanted(ctx()&&ctx().username)&&!confirm("Bạn hiện không bị Phong Ấn hay Truy Nã. Dùng bây giờ chỉ để miễn nhiễm 12h. Dùng thẻ?")){ /* hủy */ }
+    else if(a==="use"&&bag[sel]==="thanh_tay"&&!isSealed(ctx()&&ctx().username)&&!isWanted(ctx()&&ctx().username)&&!isFrozen(ctx()&&ctx().username)&&!confirm("Bạn hiện không bị Phong Ấn, Truy Nã hay Phong Tỏa Ngân Khố. Dùng bây giờ chỉ để miễn nhiễm 12h. Dùng thẻ?")){ /* hủy */ }
     else if(a==="use"&&bag[sel]==="hong_thuy"&&!confirm("Đại Hồng Thủy: cả lớp (trừ bạn) mất 4% Trúc; ai đang bật thẻ phòng thủ thì được miễn nhưng thẻ phòng thủ đó bị tiêu. Bạn nhận 25% tổng phần mất. Không hoàn lại. Dùng thẻ?")){ /* hủy */ }
     else if(a==="use"&&bag[sel]==="dong_quy"&&!confirm("Đồng Quy Vu Tận: trong 24h, ai tấn công bạn sẽ mất 10% XP nhưng bạn cũng mất 3% XP mỗi lần (kể cả khi đòn bị chặn), có thể làm tụt Level. Bật thẻ?")){ /* hủy */ }
     else if(a==="use"&&bag[sel]==="huyet_te"){
@@ -15868,7 +15870,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }catch(e){}
     try{
       var u2=p&&(p.username||(p.name===state.studentName?state.username:null)), tw=wantedExp(u2);
-      if(tw) h+=' <span class="tb-wanted-tag" title="Đang bị truy nã: ai dùng Phá Giới Chùy lên bạn này sẽ nhận tiền thưởng từ hệ thống.">📜 Truy nã · '+wantedBounty+'🎋 · còn '+sealLeft(tw)+'</span>';
+      if(tw) h+=' <span class="tb-wanted-tag" title="Đang bị truy nã: ai dùng Phá Giới Chùy hoặc thẻ công kích lên bạn này sẽ nhận tiền thưởng từ hệ thống.">📜 Truy nã · '+wantedBounty+'🎋 · còn '+sealLeft(tw)+'</span>';
     }catch(e){}
     try{
       var u3=p&&(p.username||(p.name===state.studentName?state.username:null)), tf=frozenExp(u3);
