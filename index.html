@@ -3194,13 +3194,36 @@ function getCharmRequiredForLevel(lv) {
 const REINCARNATION_START_LEVEL = 40;
 const REINCARNATION_STEP = 10;
 const REINCARNATION_COST = 300;
+/* ===== SAO BẢN MỆNH (08/10) =====
+   Có Sao Bản Mệnh (id huy hiệu "sbm_<n>_<sao>" trong unlockedBadges; n LỚN NHẤT = lần chọn hiện tại)
+   thì MỖI ải Luân Hồi / Độ Kiếp / Phi Thăng chưa mua được giảm cố định DESTINY_GATE_DISCOUNT Trúc.
+   3 hàm tính giá bên dưới nhận thêm tham số `badges` (mặc định = huy hiệu của chính mình) để Bảng Xếp Hạng
+   tính đúng giá cho từng bạn. Chỉ áp ở phía HTML (giống cách các ải này vẫn trừ Trúc từ trước). */
+const DESTINY_GATE_DISCOUNT = 100;
+function getDestinyStarId(badges) {
+  let bestN = 0, bestStar = 0;
+  (Array.isArray(badges) ? badges : []).forEach(b => {
+    const m = /^sbm_(\d+)_(\d+)$/.exec(String(b));
+    if (!m) return;
+    const n = parseInt(m[1], 10), s = parseInt(m[2], 10);
+    if (s >= 1 && s <= 12 && n > bestN) { bestN = n; bestStar = s; }
+  });
+  return bestStar; // 0 = chưa có Sao Bản Mệnh
+}
+function getDestinyGateDiscount(badges) {
+  try {
+    const b = Array.isArray(badges) ? badges
+      : ((typeof state !== "undefined" && state && state.gamification && state.gamification.unlockedBadges) || []);
+    return getDestinyStarId(b) ? DESTINY_GATE_DISCOUNT : 0;
+  } catch (e) { return 0; }
+}
 /* Mỗi Ải Luân Hồi tiếp theo tốn Trúc GẤP ĐÔI ải trước: Ải 1 (LV40) = 300,
    Ải 2 (LV50) = 600, Ải 3 (LV60) = 1200, Ải 4 (LV70) = 2400... Dùng
    reincarnationGateIndex() để biết đây là ải thứ mấy rồi nhân REINCARNATION_COST
    lên theo lũy thừa 2. */
-function getReincarnationCostForGate(gateLevel) {
+function getReincarnationCostForGate(gateLevel, badges) {
   const idx = Math.max(1, reincarnationGateIndex(gateLevel || REINCARNATION_START_LEVEL));
-  return REINCARNATION_COST * Math.pow(2, idx - 1);
+  return Math.max(0, REINCARNATION_COST * Math.pow(2, idx - 1) - getDestinyGateDiscount(badges));
 }
 /* true nếu `lv` là 1 mốc "Ải Luân Hồi" (40, 50, 60...) */
 function isReincarnationGateLevel(lv) {
@@ -3234,9 +3257,9 @@ const TRIBULATION_BASE_COST = 1200;
    tribulationGateIndex() để biết đây là Kiếp thứ mấy rồi nhân
    TRIBULATION_BASE_COST lên theo lũy thừa 2 — giống hệt cách tính của
    Ải Luân Hồi ở trên. */
-function getTribulationCostForGate(gateLevel) {
+function getTribulationCostForGate(gateLevel, badges) {
   const idx = Math.max(1, tribulationGateIndex(gateLevel || TRIBULATION_START_LEVEL));
-  return TRIBULATION_BASE_COST * Math.pow(2, idx - 1);
+  return Math.max(0, TRIBULATION_BASE_COST * Math.pow(2, idx - 1) - getDestinyGateDiscount(badges));
 }
 /* true nếu `lv` là 1 mốc "Kiếp Nạn" (70, 85, 100...) */
 function isTribulationGateLevel(lv) {
@@ -3261,7 +3284,7 @@ const LEGACY_GATES_MAX_LEVEL = 100;
 const ASCENSION_START_LEVEL = 125;
 const ASCENSION_STEP = 25;
 const ASCENSION_COST = 20000;
-function getAscensionCostForGate(gateLevel) { return ASCENSION_COST; }
+function getAscensionCostForGate(gateLevel, badges) { return Math.max(0, ASCENSION_COST - getDestinyGateDiscount(badges)); }
 /* true nếu `lv` là 1 mốc "Cổng Phi Thăng" (125, 150, 175...) */
 function isAscensionGateLevel(lv) {
   return lv >= ASCENSION_START_LEVEL && (lv - ASCENSION_START_LEVEL) % ASCENSION_STEP === 0;
@@ -7048,7 +7071,7 @@ function renderReincarnationModal() {
   const noteEl = document.getElementById("reincarnation-note");
   if (noteEl) {
     noteEl.innerHTML = pendingLevel
-      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong>, nhưng đây là một "Ải Luân Hồi"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi mua <strong>Luân Hồi Đan ⚗️</strong> mới được thăng cấp. Lưu ý: các bạn học khác vẫn có thể CƯỚP TRÚC của bạn trong lúc gom góp, nên hãy nhanh tay!`
+      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong>, nhưng đây là một "Ải Luân Hồi"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi mua <strong>Luân Hồi Đan ⚗️</strong> mới được thăng cấp. Lưu ý: các bạn học khác vẫn có thể CƯỚP TRÚC của bạn trong lúc gom góp, nên hãy nhanh tay!${(window.SBM&&SBM.gateNote)?SBM.gateNote():""}`
       : `📌 Đây là "Ải Luân Hồi" — cứ mỗi ${REINCARNATION_STEP} Level sau Level ${REINCARNATION_START_LEVEL} (đến hết Level ${LEGACY_GATES_MAX_LEVEL}), Gấu Trúc cần tốn Cành Trúc mua Luân Hồi Đan ⚗️ mới được thăng cấp tiếp. Ải đầu (LV${REINCARNATION_START_LEVEL}) tốn ${REINCARNATION_COST} 🎋, và mỗi Ải sau đó lại <strong>tăng gấp đôi</strong> (LV${REINCARNATION_START_LEVEL + REINCARNATION_STEP}: ${REINCARNATION_COST * 2} 🎋, LV${REINCARNATION_START_LEVEL + REINCARNATION_STEP * 2}: ${REINCARNATION_COST * 4} 🎋...).`;
   }
 
@@ -7189,7 +7212,7 @@ function renderTribulationModal() {
   const noteEl = document.getElementById("tribulation-note");
   if (noteEl) {
     noteEl.innerHTML = pendingLevel
-      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong>, nhưng đây là một "Kiếp Nạn"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi bấm <strong>Độ Kiếp ⚡</strong> mới được thăng cấp. Lưu ý: trong lúc chờ Độ Kiếp, bạn KHÔNG THỂ cho Gấu Trúc ăn thêm Trúc để tăng XP — và các bạn học khác vẫn có thể CƯỚP TRÚC của bạn, nên hãy nhanh tay tích đủ!`
+      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong>, nhưng đây là một "Kiếp Nạn"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi bấm <strong>Độ Kiếp ⚡</strong> mới được thăng cấp. Lưu ý: trong lúc chờ Độ Kiếp, bạn KHÔNG THỂ cho Gấu Trúc ăn thêm Trúc để tăng XP — và các bạn học khác vẫn có thể CƯỚP TRÚC của bạn, nên hãy nhanh tay tích đủ!${(window.SBM&&SBM.gateNote)?SBM.gateNote():""}`
       : `📌 Đây là "Kiếp Nạn" — cứ mỗi ${TRIBULATION_STEP} Level sau Level ${TRIBULATION_START_LEVEL} (đến hết Level ${LEGACY_GATES_MAX_LEVEL}), Gấu Trúc cần tốn Cành Trúc Độ Kiếp ⚡ mới được thăng cấp tiếp. Kiếp đầu (LV${TRIBULATION_START_LEVEL}) tốn ${TRIBULATION_BASE_COST} 🎋, và mỗi Kiếp sau đó lại <strong>tăng gấp đôi</strong> (LV${TRIBULATION_START_LEVEL + TRIBULATION_STEP}: ${TRIBULATION_BASE_COST * 2} 🎋, LV${TRIBULATION_START_LEVEL + TRIBULATION_STEP * 2}: ${TRIBULATION_BASE_COST * 4} 🎋...). Trong lúc "Chờ Độ Kiếp", KHÔNG thể cho ăn Trúc để tăng XP được.`;
   }
 
@@ -7304,7 +7327,7 @@ function renderAscensionModal() {
   const noteEl = document.getElementById("ascension-note");
   if (noteEl) {
     noteEl.innerHTML = pendingLevel
-      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong> (${getAscensionTitleInfo(pendingLevel).title}), nhưng đây là một "Cổng Phi Thăng"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi bấm <strong>Phi Thăng 🌠</strong> mới được thăng cấp. Trong lúc chờ Phi Thăng, bạn KHÔNG THỂ cho Gấu Trúc ăn thêm Trúc để tăng XP (XP dư vẫn được giữ nguyên) — và các bạn học khác vẫn có thể CƯỚP TRÚC của bạn, nên hãy nhanh tay tích đủ!`
+      ? `📌 Gấu Trúc của bạn đã tích ĐỦ XP để lên <strong>Level ${pendingLevel}</strong> (${getAscensionTitleInfo(pendingLevel).title}), nhưng đây là một "Cổng Phi Thăng"! Cần tích đủ <strong>${gateCost} 🎋 Cành Trúc</strong> rồi bấm <strong>Phi Thăng 🌠</strong> mới được thăng cấp. Trong lúc chờ Phi Thăng, bạn KHÔNG THỂ cho Gấu Trúc ăn thêm Trúc để tăng XP (XP dư vẫn được giữ nguyên) — và các bạn học khác vẫn có thể CƯỚP TRÚC của bạn, nên hãy nhanh tay tích đủ!${(window.SBM&&SBM.gateNote)?SBM.gateNote():""}`
       : `📌 Đây là "Cổng Phi Thăng" — cứ mỗi ${ASCENSION_STEP} Level sau Level ${ASCENSION_BASE_LEVEL} (LV${ASCENSION_START_LEVEL}, ${ASCENSION_START_LEVEL + ASCENSION_STEP}, ${ASCENSION_START_LEVEL + ASCENSION_STEP * 2}...), Gấu Trúc cần tốn <strong>${ASCENSION_COST} 🎋</strong> Cành Trúc (cố định mỗi cổng) mới được thăng danh hiệu tiếp theo. Trong lúc "Chờ Phi Thăng", KHÔNG thể cho ăn Trúc để tăng XP được.`;
   }
 
@@ -12590,11 +12613,11 @@ function renderLeaderboardContent() {
          Ưu tiên hiện "Chờ Độ Kiếp" trước vì đây là cổng khóa MẠNH hơn
          (chặn hẳn cho ăn), dù về lý thuyết 2 cổng có thể trùng mốc Level. */
       const levelStatusHtml = isPendingAscension
-        ? `🌠 Chờ Phi Thăng (LV${p.pendingAscension}) · 🎋 ${p.bambooPouch || 0}/${getAscensionCostForGate(p.pendingAscension)}`
+        ? `🌠 Chờ Phi Thăng (LV${p.pendingAscension}) · 🎋 ${p.bambooPouch || 0}/${getAscensionCostForGate(p.pendingAscension, p.badges)}`
         : isPendingTribulation
-        ? `⚡ Chờ Độ Kiếp (LV${p.pendingTribulation}) · 🎋 ${p.bambooPouch || 0}/${getTribulationCostForGate(p.pendingTribulation)}`
+        ? `⚡ Chờ Độ Kiếp (LV${p.pendingTribulation}) · 🎋 ${p.bambooPouch || 0}/${getTribulationCostForGate(p.pendingTribulation, p.badges)}`
         : isPendingReincarnation
-        ? `⏳ Chờ Luân Hồi (LV${p.pendingReincarnation}) · 🎋 ${p.bambooPouch || 0}/${getReincarnationCostForGate(p.pendingReincarnation)}`
+        ? `⏳ Chờ Luân Hồi (LV${p.pendingReincarnation}) · 🎋 ${p.bambooPouch || 0}/${getReincarnationCostForGate(p.pendingReincarnation, p.badges)}`
         : `Level ${p.level}`;
       const rowExtraClass = isAscended ? (isPendingAscension ? 'lb-row-ascended lb-row-pending-ascension' : 'lb-row-ascended') : isPendingTribulation ? 'lb-row-pending-tribulation' : hasTribulation ? 'lb-row-tribulation' : isPendingReincarnation ? 'lb-row-pending-reincarnation' : '';
       html += `
@@ -15890,6 +15913,102 @@ window.addEventListener("DOMContentLoaded", () => {
 })();
 </script>
 
+<!-- ============ SAO BẢN MỆNH (08/10): huy hiệu siêu sao trên Bảng Xếp Hạng + ưu đãi giảm 100 🎋 các ải ============
+     Module độc lập. Sao Bản Mệnh lưu trong gamification.unlockedBadges dưới dạng id "sbm_<n>_<sao>" (n lớn nhất = hiện tại),
+     nên đi theo roster có sẵn, KHÔNG tốn thêm lệnh gọi. Việc chọn/đổi nằm ở mục "🌟 Sao Bản Mệnh" trong Kho sao (chomsao-js). Cần chạy MỤC 24 trong file SQL.
+     Hàm getDestinyStarId / getDestinyGateDiscount nằm ở script chính (cạnh 3 hàm tính giá ải). Muốn gỡ: xoá khối script id="saobanmenh-js" này. -->
+<script id="saobanmenh-js">
+(function(){
+  "use strict";
+  var NAMES=[null,"Bạch Dương","Kim Ngưu","Song Tử","Cự Giải","Sư Tử","Xử Nữ","Thiên Bình","Bọ Cạp","Nhân Mã","Ma Kết","Bảo Bình","Song Ngư"];
+  var GLYPH=[null,"♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
+  /* [màu đầu, màu cuối, màu sáng, RGB ánh sáng] — mỗi sao 1 sắc riêng, độ "xịn" như nhau */
+  var PAL=[null,
+    ["#FF5252","#B71C1C","#FFCDD2","255,82,82"],     /* Bạch Dương — đỏ lửa */
+    ["#43A047","#1B5E20","#C8E6C9","67,160,71"],     /* Kim Ngưu — lục bảo */
+    ["#C0CA33","#827717","#F0F4C3","192,202,51"],    /* Song Tử — xanh chanh */
+    ["#4DB6AC","#00695C","#E0F2F1","77,182,172"],    /* Cự Giải — ngọc trai biển */
+    ["#FFB300","#E65100","#FFE082","255,179,0"],     /* Sư Tử — vàng kim */
+    ["#F48FB1","#AD1457","#FCE4EC","244,143,177"],   /* Xử Nữ — hồng phấn */
+    ["#4FC3F7","#0277BD","#E1F5FE","79,195,247"],    /* Thiên Bình — lam trời */
+    ["#AB47BC","#4A148C","#E1BEE7","171,71,188"],    /* Bọ Cạp — tím huyền */
+    ["#FF7043","#BF360C","#FFCCBC","255,112,67"],    /* Nhân Mã — lửa cam */
+    ["#A1887F","#3E2723","#EFEBE9","161,136,127"],   /* Ma Kết — đồng nâu */
+    ["#5C6BF5","#1A237E","#C5CAE9","92,107,245"],    /* Bảo Bình — lam điện */
+    ["#80DEEA","#5E35B1","#EDE7F6","128,222,234"]    /* Song Ngư — thủy tinh */
+  ];
+  var DISC=(typeof DESTINY_GATE_DISCOUNT==="number")?DESTINY_GATE_DISCOUNT:100;
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function starOf(badges){ try{ return (typeof getDestinyStarId==="function"?getDestinyStarId(badges):0)||0; }catch(e){ return 0; } }
+  function mine(){ try{ return starOf(state&&state.gamification&&state.gamification.unlockedBadges); }catch(e){ return 0; } }
+
+  /* Huy hiệu siêu sao. opts.lg = bản to (dùng ở bảng chọn). */
+  function html(id,opts){
+    id=id|0; if(id<1||id>12) return "";
+    opts=opts||{};
+    var p=PAL[id], nm=NAMES[id];
+    return '<span class="sbm'+(opts.lg?' sbm-lg':'')+'" style="--c1:'+p[0]+';--c2:'+p[1]+';--c3:'+p[2]+';--g:'+p[3]+'"'+
+      ' title="'+esc("Sao Bản Mệnh: "+nm+" — huy hiệu siêu sao của chòm sao này. Có Sao Bản Mệnh thì các ải Luân Hồi / Độ Kiếp / Phi Thăng giảm "+DISC+" Trúc.")+'">'+
+      '<span class="sbm-orb"><span class="sbm-g">'+GLYPH[id]+'\uFE0E</span></span>'+
+      '<span class="sbm-n">'+esc(nm)+'</span>'+
+      '<i class="sbm-sp sbm-sp1"></i><i class="sbm-sp sbm-sp2"></i><i class="sbm-sp sbm-sp3"></i></span>';
+  }
+  /* Câu ghi chú ưu đãi gắn vào cửa sổ Luân Hồi / Độ Kiếp / Phi Thăng của chính mình */
+  function gateNote(){
+    var id=mine(); if(!id) return "";
+    return ' ✨ Ưu đãi Sao Bản Mệnh '+GLYPH[id]+'\uFE0E '+esc(NAMES[id])+': giá ải này đã được giảm '+DISC+' 🎋.';
+  }
+  /* Cập nhật ngay trên máy mình sau khi server báo chọn/đổi thành công (bỏ id sbm_ cũ, thêm id mới) */
+  function applyLocal(id){
+    var g=state&&state.gamification; if(!g||!id) return;
+    var a=Array.isArray(g.unlockedBadges)?g.unlockedBadges:[];
+    g.unlockedBadges=a.filter(function(x){ return !/^sbm_\d+_\d+$/.test(String(x)); }).concat([id]);
+    try{ if(typeof saveState==="function") saveState(); }catch(e){}
+  }
+  window.SBM={NAMES:NAMES,GLYPH:GLYPH,DISC:DISC,html:html,starOf:starOf,mine:mine,gateNote:gateNote,applyLocal:applyLocal};
+
+  /* ---- Bảng Xếp Hạng: bọc thêm vào hook renderDebtTagHtml_ có sẵn (huy hiệu sao nằm ngay cạnh tên, trước các tag khác) ---- */
+  var _prev=window.renderDebtTagHtml_;
+  window.renderDebtTagHtml_=function(p){
+    var h=""; try{ if(typeof _prev==="function") h=_prev.apply(this,arguments)||""; }catch(e){}
+    try{ var id=(p&&Array.isArray(p.badges))?starOf(p.badges):0; if(id) h=html(id)+h; }catch(e){}
+    return h;
+  };
+
+  /* ---- CSS ---- */
+  var css=document.createElement("style"); css.id="saobanmenh-css";
+  css.textContent=
+    ".sbm{--c1:#FFB300;--c2:#E65100;--c3:#FFE082;--g:255,179,0;position:relative;display:inline-flex;align-items:center;gap:.5em;margin-left:6px;padding:.22em .95em .22em .38em;border-radius:999px;font-size:11px;font-weight:900;line-height:1.2;letter-spacing:.2px;color:#fff;vertical-align:middle;white-space:nowrap;overflow:hidden;isolation:isolate;"+
+      "background:linear-gradient(120deg,var(--c1),var(--c2));text-shadow:0 1px 2px rgba(0,0,0,.55);"+
+      "box-shadow:0 0 0 1.5px rgba(255,255,255,.75) inset,0 0 0 2.5px rgba(var(--g),.35),0 2px 10px rgba(var(--g),.6);}"+
+    ".sbm .sbm-orb{position:relative;width:1.9em;height:1.9em;flex:none;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;"+
+      "background:radial-gradient(circle at 32% 28%,#fff 0,var(--c3) 40%,var(--c1) 100%);box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 8px rgba(var(--g),.95);}"+
+    ".sbm .sbm-orb::before{content:'';position:absolute;inset:-.22em;border-radius:50%;"+
+      "background:conic-gradient(from 0deg,rgba(255,255,255,0) 0,rgba(255,255,255,.95) 12%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 100%);"+
+      "-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px));mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px));animation:sbmSpin 3.2s linear infinite;}"+
+    ".sbm .sbm-g{position:relative;font-size:1.3em;line-height:1;font-weight:900;color:var(--c2);text-shadow:none;font-family:'Segoe UI Symbol','Noto Sans Symbols','Apple Symbols',system-ui,sans-serif;}"+
+    ".sbm .sbm-n{position:relative;}"+
+    ".sbm::after{content:'';position:absolute;top:0;bottom:0;left:0;width:36%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:translateX(-170%) skewX(-18deg);animation:sbmSweep 4.4s ease-in-out infinite;pointer-events:none;}"+
+    ".sbm .sbm-sp{position:absolute;width:.34em;height:.34em;border-radius:50%;background:#fff;opacity:0;box-shadow:0 0 5px 1px rgba(255,255,255,.95);animation:sbmTw 2.6s ease-in-out infinite;}"+
+    ".sbm .sbm-sp1{right:.55em;top:.18em;}.sbm .sbm-sp2{right:1.7em;bottom:.12em;animation-delay:.9s;}.sbm .sbm-sp3{right:.18em;bottom:.5em;animation-delay:1.7s;}"+
+    "@keyframes sbmSpin{to{transform:rotate(360deg);}}"+
+    "@keyframes sbmSweep{0%,55%{transform:translateX(-170%) skewX(-18deg);}100%{transform:translateX(440%) skewX(-18deg);}}"+
+    "@keyframes sbmTw{0%,100%{opacity:0;transform:scale(.3);}50%{opacity:1;transform:scale(1);}}"+
+    ".sbm.sbm-lg{font-size:17px;margin-left:0;padding:.3em 1.2em .3em .45em;}"+
+    "@media (prefers-reduced-motion:reduce){.sbm .sbm-orb::before,.sbm::after,.sbm .sbm-sp{animation:none;}.sbm .sbm-sp{opacity:.85;}}"+
+    /* bảng chọn trong Kho sao */
+    "#cs-root .sbm-cur{display:flex;justify-content:center;margin:8px 0 4px;}"+
+    "#cs-root .sbm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0;}"+
+    "#cs-root .sbm-pk{display:flex;justify-content:center;align-items:center;padding:8px 4px;border:2px solid var(--paper-darker,#ddd);border-radius:16px;background:var(--card-bg,#fff);cursor:pointer;font:inherit;}"+
+    "#cs-root .sbm-pk .sbm{margin-left:0;}"+
+    "#cs-root .sbm-pk.sbm-on{border-color:#FFC107;box-shadow:0 0 0 3px rgba(255,193,7,.4);}"+
+    "#cs-root .sbm-pk.sbm-now{opacity:.55;cursor:default;}"+
+    "#cs-root .sbm-tag{display:block;text-align:center;font-size:10px;font-weight:800;color:var(--ink-soft,#666);margin-top:2px;}";
+  document.head.appendChild(css);
+})();
+</script>
+
 <!-- ============ CHÒM SAO (05/10): vòng quay 12 sao + kho + Bụi Sao + đổi vé + chợ sao ============
      Module độc lập, KHÔNG sửa module thẻ bài (thebai-js). Nhận trạng thái sao từ chính kết quả card_get_state
      (bọc callServer, không thêm lệnh gọi). Chợ chỉ tải khi mở tab Chợ / bấm Làm mới / mỗi 45 giây khi tab đang hiển thị.
@@ -15917,9 +16036,11 @@ window.addEventListener("DOMContentLoaded", () => {
     already_owned:"Bạn đã có Ngọc Bội Ngũ Hành, hãy chọn Vé Mở Thẻ.",no_ticket:"Bạn không có vé loại này.",bag_full:"Túi thẻ đã đầy, hãy dùng hoặc bỏ 1 thẻ rồi dùng vé.",
     price_too_low:"Giá thấp hơn giá sàn.",bad_price:"Giá phải là số nguyên dương.",max_listings:"Bạn đang treo tối đa "+MAX_LIST+" sao.",
     not_enough_star:"Bạn không còn sao khả dụng loại này (sao đang treo bị khóa).",sold_out:"Sao này vừa được bán hoặc đã bị hủy treo, hãy làm mới chợ.",
-    price_changed:"Giá vừa thay đổi, hãy xem lại giá mới.",own_listing:"Không thể mua sao do chính mình treo.",bad_star:"Sao không hợp lệ.",missing_fields:"Thiếu thông tin."};
+    price_changed:"Giá vừa thay đổi, hãy xem lại giá mới.",own_listing:"Không thể mua sao do chính mình treo.",bad_star:"Sao không hợp lệ.",missing_fields:"Thiếu thông tin.",bad_card:"Thẻ này không chọn được.",bad_kind:"Loại đổi không hợp lệ.",same_star:"Bạn đang dùng đúng sao này làm Sao Bản Mệnh rồi, hãy chọn sao khác. 12 sao chưa bị trừ."};
   var S=null, tab="kho", msg="", busy=false, spinning=false, fresh=false, lastRes=null, lastNew={}, M=null, mLoading=false, mAt=0;
   var sellStar=0, sellPrice="", fo={rules:false,sell:false,list:true};
+  var pickOpen=false, pickSel="";   /* 08/10: bảng chọn thẻ khi dùng Vé Mở Thẻ */
+  var destSel=0;                    /* 08/10: sao đang được chọn trong bảng Sao Bản Mệnh */
 
   function g(id){ return document.getElementById(id); }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -15949,6 +16070,8 @@ window.addEventListener("DOMContentLoaded", () => {
       reg("star_exchange","star_exchange_p",{kind:"p_kind"});
       reg("star_tk_nh","star_use_ticket_nh_p");
       reg("star_tk_card","star_use_ticket_card_p");
+      reg("star_tk_pick","star_pick_ticket_card_p",{card:"p_card"});   /* 08/10: Vé Mở Thẻ chọn thẻ tùy ý */
+      reg("star_destiny","star_set_destiny_p",{star:"p_star"});          /* 08/10: chọn/đổi Sao Bản Mệnh */
       reg("star_market","star_market_list_p",{className:"p_class"});
       reg("star_list","star_list_p",{className:"p_class",star:"p_star",price:"p_price"});
       reg("star_cancel","star_cancel_p",{id:"p_id"});
@@ -16026,14 +16149,42 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
   async function doExchange(kind){
-    var nm=kind==="nh"?"Vé Quay Ngũ Hành":"Vé Mở Thẻ";
-    if(!confirm("Dùng hết 12 sao (mỗi loại 1) để đổi lấy "+nm+"? Tuần này bạn đã đổi "+(S.weekSets|0)+"/"+SETS_WEEK+" bộ.")) return;
+    var isXp=(kind==="xp");
+    var nm=isXp?"XP":(kind==="nh"?"Vé Quay Ngũ Hành":"Vé Mở Thẻ");
+    var q=isXp?"Dùng hết 12 sao (mỗi loại 1) để đổi lấy XP ngẫu nhiên từ 8.000 đến 15.000 (8.000: 50% · 10.000: 30% · 12.500: 15% · 15.000: 5%)?":"Dùng hết 12 sao (mỗi loại 1) để đổi lấy "+nm+"?";
+    if(!confirm(q+" Tuần này bạn đã đổi "+(S.weekSets|0)+"/"+SETS_WEEK+" bộ.")) return;
     await run(async function(){
       var r=await call("star_exchange",{kind:kind});
       if(!r||!r.ok){ msg=errText(r); return; }
       S.stars=r.stars; S.tkNh=r.tkNh; S.tkCard=r.tkCard; S.weekSets=r.weekSets;
-      msg="🌌 Đã đổi bộ 12 sao lấy "+nm+"!";
-      feed("🌌 "+meName()+" gom đủ 12 chòm sao và đổi lấy "+nm+"!");
+      if(isXp){
+        msg="🌌 Đã đổi 12 sao lấy +"+fmt(r.xp)+" XP!"+(r.xp>=15000?" 🎉 Bạn trúng phần thưởng lớn nhất!":"");
+        feed(r.xp>=15000?"🌌 "+meName()+" đổi 12 chòm sao lấy XP và trúng phần thưởng lớn nhất: +15000 XP! 🎉":"🌌 "+meName()+" gom đủ 12 chòm sao và đổi lấy XP!");
+        await refreshPouch();
+        try{ await refreshServerRoster(); }catch(e){}
+        try{ if(typeof lbActive==="function"&&lbActive()&&typeof renderLeaderboardContent==="function") renderLeaderboardContent(); }catch(e){}
+      } else {
+        msg="🌌 Đã đổi bộ 12 sao lấy "+nm+"!";
+        feed("🌌 "+meName()+" gom đủ 12 chòm sao và đổi lấy "+nm+"!");
+      }
+    });
+  }
+  /* 08/10: SAO BẢN MỆNH — dùng 1 bộ 12 sao để chọn/đổi chòm sao bản mệnh (tính chung 2 bộ/tuần) */
+  async function doDestiny(){
+    var B=window.SBM, id=destSel|0; if(!B||!id) return;
+    var cur=B.mine(), nm=STARS[id].i+" "+STARS[id].n;
+    if(!confirm((cur?"Đổi":"Chọn")+" "+nm+" làm Sao Bản Mệnh? Sẽ dùng hết 12 sao (mỗi loại 1) và tính vào giới hạn "+SETS_WEEK+" bộ/tuần (tuần này bạn đã đổi "+(S.weekSets|0)+"/"+SETS_WEEK+" bộ).")) return;
+    await run(async function(){
+      var r=await call("star_destiny",{star:id});
+      if(!r||!r.ok){ msg=errText(r); return; }
+      S.stars=r.stars; S.weekSets=r.weekSets; destSel=0;
+      try{ B.applyLocal(r.badge); }catch(e){}
+      msg="🌟 Sao Bản Mệnh của bạn là "+nm+"! Huy hiệu đã sáng trên Bảng Xếp Hạng, các ải Luân Hồi / Độ Kiếp / Phi Thăng giảm "+B.DISC+" 🎋.";
+      feed("🌟 "+meName()+(cur?" đã đổi sang":" đã chọn")+" Sao Bản Mệnh "+nm+"!");
+      await refreshPouch();
+      try{ await refreshServerRoster(); }catch(e){}
+      try{ if(typeof lbActive==="function"&&lbActive()&&typeof renderLeaderboardContent==="function") renderLeaderboardContent(); }catch(e){}
+      try{ if(typeof updateGamificationUI==="function") updateGamificationUI(); }catch(e){}
     });
   }
   async function doTicketNh(){
@@ -16055,12 +16206,67 @@ window.addEventListener("DOMContentLoaded", () => {
       reloadCards();
     });
   }
-  async function doTicketCard(){
+  /* 08/10: Vé Mở Thẻ = CHỌN 1 thẻ tùy ý (không còn bốc random). Danh sách khớp card_pick_allowed() trên server. */
+  var PICK_GROUPS=[["atk","⚔️ Công kích"],["def","🛡️ Kháng"],["cnt","🔄 Phản công"],["spc","🎲 Đặc biệt"]];
+  var PICKS=[
+    {k:"thien_thach",i:"☄️",n:"Thiên Thạch Diệt Thế",t:"atk",d:"Chọn ngẫu nhiên 1 bạn trong Top 5 XP: bạn ấy mất 5% XP, bạn nhận một nửa số đó, phần còn lại biến mất."},
+    {k:"than_thau",i:"🥷",n:"Thần Thâu Cành Trúc",t:"atk",d:"Chọn 1 bạn bất kỳ trong lớp: bạn ấy mất 10–20% Trúc (tối đa 1000), bạn nhận một nửa số đó."},
+    {k:"kiep_phu",i:"🏴‍☠️",n:"Kiếp Phú Cành Trúc",t:"atk",d:"Hệ thống chọn ngẫu nhiên 1 trong 4 bạn nhiều Trúc nhất lớp: cướp 5–20% Trúc của bạn ấy."},
+    {k:"ban_tay_vang",i:"🖐️",n:"Bàn Tay Vàng",t:"atk",d:"Chọn 1 bạn: cướp ngẫu nhiên 1 thẻ trong túi của bạn ấy. Chỉ Kết Giới chặn được."},
+    {k:"phong_an",i:"🔒",n:"Phong Ấn Thẻ",t:"atk",d:"Chọn 1 bạn: trong 12h bạn ấy không dùng được thẻ công kích và không bật được thẻ phòng thủ mới."},
+    {k:"pha_gioi_chuy",i:"💥",n:"Phá Giới Chùy",t:"atk",d:"Chọn 1 bạn: nếu bạn ấy đang bật thẻ phòng thủ thì thẻ đó bị phá vỡ; nếu không thì cú đập trượt và thẻ vẫn bị tiêu."},
+    {k:"phuc_thu",i:"🔥",n:"Phục Thù Lệnh",t:"atk",d:"Chỉ dùng được khi 24h qua bạn bị mất Trúc vì Thần Thâu hoặc Kiếp Phú: chọn đúng kẻ ra tay để lấy lại 120% số Trúc đã mất."},
+    {k:"phong_toa",i:"🧊",n:"Phong Tỏa Ngân Khố",t:"atk",d:"Chọn 1 bạn: trong 12h bạn ấy không tiêu được Trúc (nhưng không bị mất Trúc). Kết Giới, Suối Nguồn, Gương Thần không chặn được."},
+    {k:"hong_thuy",i:"🌊",n:"Đại Hồng Thủy",t:"atk",d:"Rất hiếm: cả lớp (trừ bạn) mất 4% Trúc, bạn nhận 25% tổng phần mất. Ai đang bật phòng thủ được miễn nhưng thẻ phòng thủ bị tiêu. Bảng Tin báo rõ tên bạn."},
+    {k:"ket_gioi",i:"🛡️",n:"Kết Giới Hộ Thân",t:"def",d:"Chặn 1 đòn công kích trong 24h. Bảng Tin không lộ tên bạn."},
+    {k:"suoi_nguon",i:"💧",n:"Suối Nguồn Sinh Mệnh",t:"def",d:"24h: đòn công kích đầu tiên nhắm vào bạn không làm bạn mất gì (người tung vẫn nhận một nửa)."},
+    {k:"an_than",i:"🌫️",n:"Ẩn Thân Phù",t:"def",d:"24h không ai chọn được bạn làm mục tiêu của thẻ công kích."},
+    {k:"thanh_tay",i:"🌸",n:"Thanh Tẩy Phù",t:"def",d:"Gỡ Phong Ấn, Truy Nã, Phong Tỏa đang đè lên bạn và miễn nhiễm cả 3 trong 12h."},
+    {k:"guong",i:"🪞",n:"Gương Thần Phản Chiếu",t:"cnt",d:"24h: đòn công kích đầu tiên nhắm vào bạn bị bật ngược lại người tung."},
+    {k:"dong_quy",i:"☠️",n:"Đồng Quy Vu Tận",t:"cnt",d:"24h: ai dùng thẻ công kích nhắm vào bạn thì mất 10% XP, bạn mất 3% XP, kể cả khi đòn bị chặn."},
+    {k:"phuc_lanh",i:"🍀",n:"Phúc Lành Giáng Xuống",t:"spc",d:"Nhận 10% tổng Trúc của 3 bạn ngẫu nhiên trong Top 5 nhiều Trúc nhất lớp (các bạn đó không bị trừ)."},
+    {k:"mua_xuan",i:"🌧️",n:"Mưa Xuân Cành Trúc",t:"spc",d:"Nhận ngẫu nhiên 5–30% số Trúc đang có (tối thiểu 50, tối đa 5000)."},
+    {k:"dong_tam",i:"🤝",n:"Đồng Tâm Kết Nghĩa",t:"spc",d:"Chọn 1 bạn cùng lớp: cả hai cùng nhận +500 Trúc từ hệ thống."},
+    {k:"doi_van",i:"🔮",n:"Đổi Vận Bài",t:"spc",d:"Bỏ tất cả thẻ còn lại trong túi và đổi bằng thẻ mới ngẫu nhiên, số thẻ giữ nguyên. Cần ít nhất 1 thẻ khác trong túi."},
+    {k:"an_dau",i:"🕵️",n:"Ẩn Dấu Phù",t:"spc",d:"24h: thẻ bạn dùng vẫn hiện trên Bảng Tin nhưng dưới tên “Người Ẩn Danh”."},
+    {k:"thien_ly_nhan",i:"👁️",n:"Thiên Lý Nhãn",t:"spc",d:"Chọn 1 bạn để biết bạn ấy có đang bật thẻ phòng thủ hay không (chỉ mình bạn thấy kết quả)."},
+    {k:"truy_na",i:"📜",n:"Truy Nã Lệnh",t:"spc",d:"Chọn 1 bạn: 24h bị truy nã; ai dùng Phá Giới Chùy hoặc thẻ công kích có chọn mục tiêu lên bạn ấy nhận 300 🎋."},
+    {k:"ban_sao",i:"🪞",n:"Bản Sao Ảo Ảnh",t:"spc",d:"Dùng lại hiệu ứng của thẻ gần nhất bạn đã dùng (không tính thẻ phòng thủ, Ẩn Dấu Phù)."},
+    {k:"thien_co",i:"📖",n:"Thiên Cơ Tam Quyển",t:"spc",d:"Mở 3 thẻ ngẫu nhiên khác nhau, chọn 1 để đổi lấy chính thẻ này."},
+    {k:"am_duong",i:"☯️",n:"Âm Dương Đổ Vận",t:"spc",d:"Tung đồng xu: 50% nhận +15% Trúc (tối đa 3000), 50% mất 8% Trúc (tối đa 1500). Cần ít nhất 100 Trúc."},
+    {k:"huyet_te",i:"🩸",n:"Huyết Tế",t:"spc",d:"Hy sinh 4% XP (100–5000, cần từ 500 XP) để nhận ngay 1 thẻ Thần Thâu và 1 thẻ công kích ngẫu nhiên. Túi cần trống 2 ô, mỗi ngày 1 lần."},
+    {k:"ngu_ong",i:"🎣",n:"Ngư Ông Đắc Lợi",t:"spc",d:"24h: 50% phần Trúc/XP bị thẻ công kích làm biến mất trong lớp chảy về bạn (chia đều nếu nhiều người bật). Tối đa 3000 Trúc và 10000 XP mỗi lần bật."}
+  ];
+  var PICK_BY={}; PICKS.forEach(function(c){ PICK_BY[c.k]=c; });
+  function viewPick(){
+    var bag=(S.bag&&S.bag.length)|0, bm=(S.bagMax|0)||4, full=bag>=bm;
+    var h='<div class="cs-pick"><div class="cs-ptitle">🎴 Chọn 1 thẻ bạn muốn nhận</div>';
+    if(full) h+='<div class="cs-note">⚠️ Túi thẻ đã đầy ('+bag+'/'+bm+'), hãy dùng hoặc bỏ bớt 1 thẻ rồi mới nhận thẻ được.</div>';
+    PICK_GROUPS.forEach(function(gr){
+      h+='<div class="cs-pg">'+gr[1]+'</div><div class="cs-pgrid">';
+      PICKS.forEach(function(c){ if(c.t!==gr[0]) return;
+        h+='<button type="button" class="cs-pc'+(pickSel===c.k?' cs-pcon':'')+'" data-cs="pickc" data-c="'+c.k+'"><span>'+c.i+'</span><b>'+esc(c.n)+'</b></button>'; });
+      h+='</div>';
+    });
+    if(pickSel&&PICK_BY[pickSel]){
+      var c=PICK_BY[pickSel];
+      h+='<div class="cs-pdesc"><b>'+c.i+' '+esc(c.n)+'</b><br>'+esc(c.d)+'</div>';
+      h+='<div class="cs-row"><button class="btn btn-ok" data-cs="pickok"'+(full?' disabled':'')+'>✅ Nhận thẻ này</button><button class="btn btn-outline" data-cs="pickx">Đóng</button></div>';
+    } else {
+      h+='<div class="cs-note">Bấm vào 1 thẻ để xem mô tả rồi xác nhận.</div><div class="cs-row"><button class="btn btn-outline" data-cs="pickx">Đóng</button></div>';
+    }
+    return h+'</div>';
+  }
+  function openPick(){ pickOpen=!pickOpen; pickSel=""; msg=""; render(); }
+  async function doPickCard(){
+    var key=pickSel, def=PICK_BY[key]; if(!def) return;
+    if(!confirm("Dùng 1 Vé Mở Thẻ để nhận thẻ "+def.i+" "+def.n+"?")) return;
     await run(async function(){
-      var r=await call("star_tk_card");
+      var r=await call("star_tk_pick",{card:key});
       if(!r||!r.ok){ msg=errText(r); return; }
       S.tkCard=Math.max(0,(S.tkCard|0)-1);
-      msg="🎴 Vé Mở Thẻ: bạn nhận được thẻ mới trong túi!";
+      pickOpen=false; pickSel="";
+      msg="🎴 Đã nhận thẻ "+def.i+" "+def.n+" vào túi thẻ!";
       reloadCards();
     });
   }
@@ -16179,6 +16385,24 @@ window.addEventListener("DOMContentLoaded", () => {
     h+='</div></div></div>';
     return h;
   }
+  /* 08/10: mục Sao Bản Mệnh trong Kho sao */
+  function viewDestiny(){
+    var B=window.SBM; if(!B) return "";
+    var cur=B.mine(), ok=complete(), wk=(S.weekSets|0)>=SETS_WEEK, sel=destSel|0, i;
+    var h='<div class="cs-sub"><h4>🌟 Sao Bản Mệnh</h4>';
+    h+='<div class="sbm-cur">'+(cur?B.html(cur,{lg:true}):'<span class="cs-note">Bạn chưa chọn Sao Bản Mệnh.</span>')+'</div>';
+    h+='<div class="cs-note">Chọn 1 chòm sao làm Sao Bản Mệnh: <b>huy hiệu siêu sao</b> của chòm sao đó sẽ sáng ngay cạnh tên bạn trên Bảng Xếp Hạng. Khi đã có Sao Bản Mệnh, mỗi ải <b>Luân Hồi · Độ Kiếp · Phi Thăng</b> chưa mua được <b>giảm '+B.DISC+' 🎋</b> (đổi sang sao khác vẫn giữ ưu đãi).</div>';
+    h+='<div class="sbm-grid">';
+    for(i=1;i<=12;i++){
+      var isNow=(i===cur);
+      h+='<button type="button" class="sbm-pk'+(sel===i?' sbm-on':'')+(isNow?' sbm-now':'')+'" data-cs="dsel" data-s="'+i+'"'+(isNow?' disabled':'')+' title="'+esc(STARS[i].n)+'">'+B.html(i)+'</button>';
+    }
+    h+='</div>';
+    h+='<div class="cs-note">Lần đầu chọn và mỗi lần đổi đều dùng hết 12 sao (mỗi loại 1, không tính sao đang treo), tính chung giới hạn '+SETS_WEEK+' bộ/tuần với đổi vé và đổi XP (tuần này: '+(S.weekSets|0)+'/'+SETS_WEEK+').'+(!ok?' Bạn chưa đủ bộ 12 sao.':'')+(wk?' Tuần này bạn đã đổi đủ.':'')+'</div>';
+    var can=ok&&!wk&&sel>=1&&sel!==cur;
+    h+='<div class="cs-row"><button class="btn btn-ok" data-cs="dok"'+(can?'':' disabled')+'>'+(sel?(cur?'🔁 Đổi sang ':'🌟 Chọn ')+STARS[sel].i+'\uFE0E '+esc(STARS[sel].n):'Bấm vào 1 huy hiệu để chọn')+'</button></div>';
+    return h+'</div>';
+  }
   function viewKho(){
     var d=dupes(), h='<div class="cs-box"><div class="cs-grid">';
     for(var i=1;i<=12;i++){
@@ -16194,16 +16418,20 @@ window.addEventListener("DOMContentLoaded", () => {
     h+='<div class="cs-row"><button class="btn btn-outline" data-cs="dust"'+(d.n<1?' disabled':'')+'>✨ Tán '+d.n+' sao trùng thành '+d.d+' Bụi Sao</button></div>';
     h+='<div class="cs-note">Bụi Sao dùng để chế đúng 1 sao còn thiếu (Thường 15 · Hiếm 40 · Siêu hiếm 100). Bụi Sao không bán, không chuyển được. Sao trùng = sao dư sau khi giữ lại 1 sao mỗi loại.</div>';
 
+    h+=viewDestiny();
     var tkNh=S.tkNh|0, tkCard=S.tkCard|0, ok=complete(), wk=(S.weekSets|0)>=SETS_WEEK, full=(tkNh+tkCard)>=MAX_TK;
     h+='<div class="cs-sub"><h4>🌌 Đổi bộ 12 sao lấy vé</h4>';
-    h+='<div class="cs-note">Đủ 12 loại (mỗi loại 1 sao, không tính sao đang treo) thì dùng hết 12 sao đổi 1 vé. Tối đa '+SETS_WEEK+' bộ/tuần, cầm tối đa '+MAX_TK+' vé.'+(!ok?' Bạn chưa đủ bộ.':'')+(wk?' Tuần này bạn đã đổi đủ.':'')+(full?' Bạn đang cầm đủ vé.':'')+'</div>';
+    h+='<div class="cs-note">Đủ 12 loại (mỗi loại 1 sao, không tính sao đang treo) thì dùng hết 12 sao đổi 1 vé hoặc đổi XP. Tối đa '+SETS_WEEK+' bộ/tuần (đổi vé và đổi XP tính chung), cầm tối đa '+MAX_TK+' vé.'+(!ok?' Bạn chưa đủ bộ.':'')+(wk?' Tuần này bạn đã đổi đủ.':'')+(full?' Bạn đang cầm đủ vé.':'')+'</div>';
     h+='<div class="cs-row"><button class="btn btn-ok" data-cs="ex" data-k="nh"'+((!ok||wk||full||S.jade)?' disabled':'')+'>🔮 Đổi lấy Vé Ngũ Hành'+(S.jade?' (bạn đã có Ngọc Bội)':'')+'</button>';
-    h+='<button class="btn btn-ok" data-cs="ex" data-k="card"'+((!ok||wk||full)?' disabled':'')+'>🎴 Đổi lấy Vé Mở Thẻ</button></div>';
+    h+='<button class="btn btn-ok" data-cs="ex" data-k="card"'+((!ok||wk||full)?' disabled':'')+'>🎴 Đổi lấy Vé Mở Thẻ (chọn thẻ tùy ý)</button></div>';
+    h+='<div class="cs-row"><button class="btn btn-ok" data-cs="ex" data-k="xp"'+((!ok||wk)?' disabled':'')+'>💰 Đổi lấy XP (8.000 – 15.000)</button></div>';
+    h+='<div class="cs-note">Đổi XP ngẫu nhiên: 8.000 XP (50%) · 10.000 XP (30%) · 12.500 XP (15%) · 15.000 XP (5%). Không cần vé, không cần chỗ trống trong túi thẻ, tính chung vào giới hạn '+SETS_WEEK+' bộ/tuần.</div>';
     if(tkNh+tkCard>0){
       h+='<div class="cs-row">';
       if(tkNh>0) h+='<button class="btn btn-outline" data-cs="tknh">🔮 Dùng Vé Ngũ Hành ('+tkNh+')</button>';
-      if(tkCard>0) h+='<button class="btn btn-outline" data-cs="tkcard">🎴 Dùng Vé Mở Thẻ ('+tkCard+')</button>';
-      h+='</div><div class="cs-note">Vé Ngũ Hành = 1 lượt quay Ngũ Hành miễn phí. Vé Mở Thẻ = bốc thêm 1 thẻ, không tính vào 2 lần bốc/ngày nhưng cần chỗ trống trong túi thẻ.</div>';
+      if(tkCard>0) h+='<button class="btn btn-outline" data-cs="tkcard">🎴 '+(pickOpen?'Đóng bảng chọn thẻ':'Dùng Vé Mở Thẻ — chọn thẻ')+' ('+tkCard+')</button>';
+      h+='</div><div class="cs-note">Vé Ngũ Hành = 1 lượt quay Ngũ Hành miễn phí. Vé Mở Thẻ = chọn 1 thẻ tùy ý trong tất cả các thẻ, không tính vào 2 lần bốc/ngày nhưng cần chỗ trống trong túi thẻ.</div>';
+      if(pickOpen&&tkCard>0) h+=viewPick();
     }
     return h+'</div></div>';
   }
@@ -16284,8 +16512,13 @@ window.addEventListener("DOMContentLoaded", () => {
     else if(a==="dust1") doDust(parseInt(b.getAttribute("data-s"),10));
     else if(a==="craft") doCraft(parseInt(b.getAttribute("data-s"),10));
     else if(a==="ex") doExchange(b.getAttribute("data-k"));
+    else if(a==="dsel"){ destSel=parseInt(b.getAttribute("data-s"),10)||0; render(); }
+    else if(a==="dok") doDestiny();
     else if(a==="tknh") doTicketNh();
-    else if(a==="tkcard") doTicketCard();
+    else if(a==="tkcard") openPick();
+    else if(a==="pickc"){ pickSel=b.getAttribute("data-c")||""; render(); }
+    else if(a==="pickok") doPickCard();
+    else if(a==="pickx"){ pickOpen=false; pickSel=""; render(); }
     else if(a==="fold"){ var fk=b.getAttribute("data-f"); fo[fk]=!fo[fk]; render(); }
     else if(a==="refresh") loadMarket(true);
     else if(a==="list") doList();
@@ -16320,6 +16553,13 @@ window.addEventListener("DOMContentLoaded", () => {
     "#cs-root .cs-tabs,#cs-root .cs-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;}"+
     "#cs-root .cs-msg{margin:10px 0;padding:10px 14px;border-radius:14px;background:#FFF8E1;color:#3E2723;border:2px solid #FFC107;font-size:13px;font-weight:700;}"+
     "#cs-root .cs-sub{margin-top:14px;padding-top:10px;border-top:2px dashed var(--paper-darker,#ddd);}"+
+    "#cs-root .cs-pick{margin-top:10px;padding:10px;border:2px solid var(--paper-darker,#ddd);border-radius:14px;}"+
+    "#cs-root .cs-ptitle{font-weight:800;margin-bottom:4px;}"+
+    "#cs-root .cs-pg{font-weight:700;font-size:13px;margin:8px 0 4px;}"+
+    "#cs-root .cs-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;}"+
+    "#cs-root .cs-pc{display:flex;align-items:center;gap:6px;text-align:left;padding:7px 8px;border:2px solid var(--paper-darker,#ddd);border-radius:10px;background:var(--card-bg,#fff);cursor:pointer;font:inherit;font-size:13px;color:inherit;}"+
+    "#cs-root .cs-pc.cs-pcon{border-color:#FFC107;background:#FFF8E1;color:#3E2723;}"+
+    "#cs-root .cs-pdesc{margin-top:8px;padding:8px 10px;border-radius:10px;background:#FFF8E1;color:#3E2723;font-size:13px;line-height:1.45;}"+
     "#cs-root .cs-busy button{pointer-events:none;opacity:.55;}"+
     "#cs-root .cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;}"+
     "#cs-root .cs-star{border-radius:16px;padding:10px 6px;text-align:center;color:#fff;border:2px solid rgba(0,0,0,.15);}"+
